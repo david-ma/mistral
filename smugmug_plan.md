@@ -42,8 +42,8 @@ New Thalia project **smugmug** at `/usr/local/dev/Thalia/websites/smugmug`: a se
 
 ## What the User Wants (Feature Checklist)
 
-- [ ] **View all galleries** — List galleries (albums) from SmugMug (e.g. from user’s root or a chosen folder node).
-- [ ] **Enter a gallery** — Navigate into a gallery and see **all images** in that gallery.
+- [x] **View all galleries** — List galleries (albums) from SmugMug (e.g. from user’s root or a chosen folder node).
+- [x] **Enter a gallery** — Navigate into a gallery and see **all images** in that gallery.
 - [ ] **Bulk upload** — Upload multiple images to a chosen album in one go.
 - [ ] **View individual image and metadata** — Open a single image and display its metadata (caption, filename, dimensions, etc.).
 - [ ] **Edit metadata on a single image** — Change caption/title or other editable fields for one image (SmugMug PATCH).
@@ -84,24 +84,26 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 ### Phase 1: Project and auth
 
-- [ ] Create minimal Thalia project under `websites/smugmug` (config, src, public, package.json, thalia symlink).
-- [ ] Add `config/smugmugAuth.js` (gitignored) and `config/smugmugAuth.example.js` (template); document in README or plan.
-- [ ] In `config/config.ts`, load auth file at startup (like thalia_ubc’s mailAuth); fail fast if missing; do not commit secrets.
-- [ ] Add `smugmug_skill.md` (done) and keep it updated as we add patterns.
+- [x] Create minimal Thalia project under `websites/smugmug` (config, src, public, package.json, thalia symlink).
+- [x] Add `config/smugmugAuth.js` (gitignored) and `config/smugmugAuth.example.js` (template); document in README or plan. (We load from `config/secrets.js` or `config/smugmugAuth.js`; 503 when missing.)
+- [x] In `config/config.ts`, load auth file via loadSmugMugCreds(); do not commit secrets.
+- [x] Add `smugmug_skill.md` and keep it updated as we add patterns.
 
 ### Phase 2: SmugMug API client (reusable)
 
-- [ ] Introduce a **SmugMug API client** (e.g. in `websites/smugmug/lib/` or Thalia `server/` if we upstream later) that:
-  - Takes credentials (from auth object),
-  - Implements OAuth 1.0a signing (reuse/refactor logic from `server/controllers.ts` SmugMugUploader),
-  - Exposes: **list nodes/albums**, **list images in album**, **get image**, **upload image to album**, **PATCH image metadata**, **PATCH multiple images** (or batch).
-- [ ] Use SmugMug API v2 doc (https://api.smugmug.com/api/v2/doc) for endpoints (e.g. `!authuser`, node children, album images, upload endpoint, PATCH AlbumImage).
-- [ ] Optionally: make this client usable from other projects (e.g. import from `websites/smugmug` or copy to Thalia and import from `thalia`).
+- [x] Introduce a **SmugMug API client** in `config/lib-smugmug.ts`: credentials, OAuth 1.0a, **list albums** (`listAlbums`), **list images in album** (`getAlbumImages`), **get album** (`getAlbum`), **PATCH album** (`patchAlbum`), **get node children** (`getNodeChildren`); generic **GET/PATCH** via `get(creds, path)` / `patch(creds, path, body)` with **`apiPath`** helper (e.g. `apiPath.album(key)`, `apiPath.albumImages(key)`).
+- [ ] **Get one image** (by image key) — not yet a dedicated helper; can use `get(creds, path)` with appropriate path.
+- [x] **Upload image to album** — Thalia's `SmugMugUploader` used from album page (override `image` partial with `albumKey`).
+- [ ] **PATCH image metadata** — single-image PATCH not yet in lib-smugmug.
+- [ ] **PATCH multiple images** (or batch) — not yet.
+- [x] Use SmugMug API v2 for endpoints (album, album!images, User!albums, etc.).
+- [ ] Optionally: make client importable from other projects (e.g. import from `websites/smugmug`).
 
 ### Phase 3: Webapp – galleries and images
 
-- [ ] **List galleries:** Controller + template that call SmugMug client to get user’s albums (or root children); display as list with links.
-- [ ] **Gallery detail:** Route like `gallery/:albumKey` (or by node/key from API); controller fetches images in that album; template shows thumbnails + links to image detail.
+- [x] **List galleries:** Controller `galleries` + template; JSON at `list-smugmug-albums`; display as list with links to `/album/:albumKey`.
+- [x] **Gallery detail:** Route `/album/:albumKey`; controller fetches album + images; template `album-show.hbs` shows thumbnails, metadata, edit form, upload.
+- [x] **Album metadata edit:** POST to `album-edit` → `patchAlbum` → redirect to album.
 - [ ] **Image detail:** Route like `image/:imageKey` (or album + image); show image and metadata (caption, filename, dimensions, etc.).
 - [ ] **Single-image metadata edit:** Form + PATCH request to SmugMug to update caption/title etc.; then redirect or re-render image detail.
 
@@ -112,9 +114,37 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 ### Phase 5: Polish and reuse
 
-- [ ] Document in `smugmug_skill.md`: how to use the client from another Thalia site, auth file shape, and the two use cases (dataviz, user uploads).
+- [x] Document in `smugmug_skill.md`: auth file shape, API notes, album-json endpoint, use cases (dataviz, user uploads).
 - [ ] If we upstream a client to Thalia: keep `websites/smugmug` as the main consumer and document import path in skill file.
 - [ ] Ensure `models/smugmug.ts` remains the shared place for album/image schema when other sites need to store keys/URLs.
+
+### Extra (implemented)
+
+- [x] **`GET /album-json/:albumKey`** — JSON endpoint returning combined album metadata + `images` array (Promise.all of `getAlbum` + `getAlbumImages`). Documented in "JSON endpoints" and skill.
+- [x] **`apiPath`** in `lib-smugmug.ts` — `apiPath.album(key)`, `apiPath.albumImages(key)` for use with `get(creds, path)` to call any endpoint.
+- [x] **Album show UI** — Prominent album title (h1), full metadata dl, edit form (Name, Description, Privacy, UrlName), upload partial with `albumKey`.
+
+---
+
+## Review findings (plan vs implementation)
+
+- **Phase 1:** Project exists; auth loaded via `loadSmugMugCreds()` from `secrets.js` or `smugmugAuth.js` (503 when missing, not fail-fast). Skill doc in place.
+- **Phase 2:** Full client in `config/lib-smugmug.ts`: OAuth 1.0a, `get`/`patch`, `apiPath`, `listAlbums`, `getAlbum`, `getAlbumImages`, `patchAlbum`, `getNodeChildren`. Upload uses Thalia's `SmugMugUploader`. Still missing: dedicated get-one-image helper, PATCH image metadata, batch PATCH.
+- **Phase 3:** Galleries list (`/galleries`, `list-smugmug-albums`), album detail (`/album/:albumKey` with metadata + images + edit + upload), album-edit POST. Not yet: image detail page, single-image metadata edit.
+- **Phase 4–5:** Bulk upload and bulk metadata edit not started. Skill doc updated (auth, API notes, album-json).
+- **Feature checklist:** View galleries and Enter gallery are done. Bulk upload, view/edit single image, bulk metadata edit remain.
+- **Extra:** `/album-json/:albumKey` returns combined album + images; `apiPath` for generic endpoint calls.
+
+---
+
+## Next steps (recommended order)
+
+1. **Image detail page** — Route (e.g. `/image/:imageKey` or `/album/:albumKey/image/:imageKey`); controller to fetch one image metadata (add `getImage(creds, imageKey)` in lib-smugmug or use `get(creds, apiPath.image(imageKey))`); template to show image, caption, filename, dimensions, link back to album.
+2. **Single-image metadata edit** — On image detail, form + POST to controller that calls PATCH on the AlbumImage (add `patchImage(creds, imageKey, fields)` in lib-smugmug); redirect back to image or album.
+3. **Bulk upload** — Allow multiple file selection on album page (or dedicated page); POST multiple files; server loops uploads via existing upload endpoint and reports success/failure.
+4. **Bulk metadata edit** — From album page, form (e.g. caption prefix/suffix or keyword); controller fetches image list, loops PATCH per image (or batch if API supports it).
+5. **Optional:** Route protection (ThaliaSecurity) so galleries/album/image/upload require login; homepage or entry point for unauthenticated users.
+6. **Optional:** Dedicated `getImage` and `patchImage` in lib-smugmug; extend `apiPath` for image paths for consistency.
 
 ---
 
@@ -136,7 +166,7 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 ## JSON endpoints (this app)
 
-- **`GET /album-json/:albumKey`** — Returns album metadata as JSON for the given SmugMug album key (e.g. `/album-json/jHhcL7`). Uses `loadSmugMugCreds()` and `getAlbum()` from `config/lib-smugmug.ts`. Response shape matches `SmugMugAlbumDetail`: `albumKey`, `name`, `description`, `privacy`, `urlName`, `uri`, `webUri`, `dateAdded`, `dateModified`. Errors: 400 if album key missing, 503 if credentials not configured, 500 with `{ error: "..." }` on API failure.
+- **`GET /album-json/:albumKey`** — Returns album metadata plus images as JSON (e.g. `/album-json/jHhcL7`). Uses `loadSmugMugCreds()`, then `Promise.all([getAlbum(), getAlbumImages()])` from `config/lib-smugmug.ts`. Response: `SmugMugAlbumDetail` fields plus `images` array (normalised `SmugMugImage[]`). Errors: 400 if album key missing, 503 if credentials not configured, 500 with `{ error: "..." }` on API failure.
 
 ---
 
