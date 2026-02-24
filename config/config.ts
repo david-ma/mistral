@@ -11,7 +11,7 @@ import { ThaliaSecurity } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
 import { eq, isNull, asc } from 'drizzle-orm'
 import { albums, images } from '../models/master-schema.js'
-import { listAlbums, getAlbumImages, getAlbum, patchAlbum } from './lib-smugmug.js'
+import { listAlbums, getAlbumImages, getAlbum, patchAlbum, createAlbum } from './lib-smugmug.js'
 import { topUpAlbumsFromApi, topUpAlbumAndImagesFromApi } from './smugmug-topup.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
@@ -191,6 +191,53 @@ const smugmugConfig: RawWebsiteConfig = {
           loadSmugMugCreds().then((creds) => {
             if (creds) topUpAlbumAndImagesFromApi(creds, db, albumKey, albums, images).catch(() => {})
           })
+        })
+        .catch((err) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${(err as Error).message}</p>`)
+        })
+    },
+    'create-album': (res, _req, website, _requestInfo) => {
+      const html = website.getContentHtml('create-album', 'wrapper')({})
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    'album-create': (res, req, website, _requestInfo) => {
+      if (req.method !== 'POST') {
+        res.statusCode = 405
+        res.end('Method Not Allowed')
+        return
+      }
+      parseForm(res, req)
+        .then((form: { fields: Record<string, string> }) => {
+          const name = (form.fields?.Name ?? '').trim()
+          if (!name) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Bad Request</h1><p>Album name is required.</p>')
+            return null
+          }
+          return loadSmugMugCreds().then((creds) => {
+            if (!creds) {
+              res.statusCode = 503
+              res.setHeader('Content-Type', 'text/html')
+              res.end('<h1>Service Unavailable</h1><p>SmugMug credentials not configured.</p>')
+              return null
+            }
+            return createAlbum(creds, {
+              Name: name,
+              Description: form.fields?.Description?.trim() || undefined,
+              Privacy: form.fields?.Privacy?.trim() || undefined,
+              UrlName: form.fields?.UrlName?.trim() || undefined,
+            }).then(({ albumKey }) => ({ albumKey }))
+          })
+        })
+        .then((out) => {
+          if (!out) return
+          res.statusCode = 302
+          res.setHeader('Location', `/album/${out.albumKey}`)
+          res.end()
         })
         .catch((err) => {
           res.statusCode = 500

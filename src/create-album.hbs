@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="/styles/main.css">
+
+<p><a href="/galleries">&larr; Back to albums</a></p>
+<h1>Create new album</h1>
+
+<form method="post" action="/album-create" class="album-create-form">
+  <div class="mb-2">
+    <label for="albumName" class="form-label">Name <span class="text-danger">*</span></label>
+    <input type="text" class="form-control" id="albumName" name="Name" required placeholder="Album title" />
+  </div>
+  <div class="mb-2">
+    <label for="albumDescription" class="form-label">Description</label>
+    <textarea class="form-control" id="albumDescription" name="Description" rows="3" placeholder="Optional description"></textarea>
+  </div>
+  <div class="mb-2">
+    <label for="albumPrivacy" class="form-label">Privacy</label>
+    <select class="form-control" id="albumPrivacy" name="Privacy">
+      <option value="Public">Public</option>
+      <option value="Unlisted">Unlisted</option>
+      <option value="Private">Private</option>
+    </select>
+  </div>
+  <div class="mb-2">
+    <label for="albumUrlName" class="form-label">URL name</label>
+    <input type="text" class="form-control" id="albumUrlName" name="UrlName" placeholder="Optional slug for the album URL" />
+  </div>
+  <button type="submit" class="btn btn-primary">Create album</button>
+  <a href="/galleries" class="btn btn-secondary">Cancel</a>
+</form>

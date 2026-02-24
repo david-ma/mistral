@@ -153,6 +153,47 @@ export function get(creds: SmugMugCredentials, path: string): Promise<unknown> {
 }
 
 /**
+ * Perform a signed POST with a JSON body. path is e.g. /api/v2/user/name!albums
+ */
+export function post(creds: SmugMugCredentials, path: string, body: Record<string, unknown>): Promise<unknown> {
+  const targetUrl = `${BASE_URL}${path}`
+  const params = signRequest(creds, 'POST', targetUrl)
+  const bodyStr = JSON.stringify(body)
+  return new Promise((resolve, reject) => {
+    const opts: https.RequestOptions = {
+      host: 'api.smugmug.com',
+      port: 443,
+      path: path,
+      method: 'POST',
+      headers: {
+        Authorization: bundleAuthorization(targetUrl, params),
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Smug-ResponseType': 'JSON',
+        'Content-Length': Buffer.byteLength(bodyStr, 'utf8'),
+      },
+    }
+    const req = https.request(opts, (res) => {
+      let data = ''
+      res.on('data', (chunk) => { data += chunk })
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`SmugMug API ${res.statusCode}: ${data.slice(0, 300)}`))
+          return
+        }
+        try {
+          resolve(data ? JSON.parse(data) : {})
+        } catch {
+          reject(new Error(`SmugMug API non-JSON: ${data.slice(0, 200)}`))
+        }
+      })
+    })
+    req.on('error', reject)
+    req.end(bodyStr, 'utf8')
+  })
+}
+
+/**
  * Perform a signed PATCH with a JSON body. path is e.g. /api/v2/album/XYZ
  */
 export function patch(creds: SmugMugCredentials, path: string, body: Record<string, unknown>): Promise<unknown> {
@@ -239,6 +280,49 @@ export function patchAlbum(
 ): Promise<unknown> {
   const path = `/api/v2/album/${encodeURIComponent(albumKey)}`
   return patch(creds, path, fields)
+}
+
+/** Fields for creating a new album (POST to folder!albums per Album reference). */
+export type CreateAlbumFields = {
+  Name: string
+  Description?: string
+  Privacy?: string
+  UrlName?: string
+}
+
+/**
+ * Create a new album under the authenticated user's root folder.
+ * Per https://api.smugmug.com/api/v2/doc/reference/album.html: POST to the FolderAlbums
+ * endpoint of the folder, e.g. /api/v2/folder/user/example!albums with body
+ * { Title, NiceName?, Privacy?, Description? }. Returns the new album key.
+ */
+export function createAlbum(
+  creds: SmugMugCredentials,
+  fields: CreateAlbumFields
+): Promise<{ albumKey: string; uri?: string }> {
+  return getAuthUserUri(creds).then((userPath) => {
+    const match = userPath.match(/\/user\/([^/!]+)/)
+    const username = match ? match[1] : ''
+    if (!username) throw new Error('SmugMug createAlbum: could not get username from user URI')
+    const folderPath = `/api/v2/folder/user/${encodeURIComponent(username)}!albums`
+    const body: Record<string, string> = { Title: fields.Name }
+    if (fields.Privacy != null) body.Privacy = fields.Privacy
+    if (fields.UrlName != null && fields.UrlName.trim()) body.NiceName = fields.UrlName.trim()
+    else if (fields.Name) body.NiceName = fields.Name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')
+    if (fields.Description != null && fields.Description.trim()) body.Description = fields.Description.trim()
+    return post(creds, folderPath, body).then((data: any) => {
+      const album = data?.Response?.Album ?? data?.Response
+      const uri = album?.Uri ?? album?.uri
+      const albumKey =
+        (uri ? uri.split('/').filter(Boolean).pop() : null) ??
+        album?.AlbumKey ??
+        album?.Key ??
+        album?.NodeID ??
+        ''
+      if (!albumKey) throw new Error('SmugMug createAlbum: no album key in response')
+      return { albumKey, uri }
+    })
+  })
 }
 
 /**
