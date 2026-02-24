@@ -44,19 +44,21 @@ function loadSmugMugCreds(): Promise<import('./lib-smugmug.js').SmugMugCredentia
   const p = fs.existsSync(secretsPath) ? secretsPath : fs.existsSync(authPath) ? authPath : null
   if (!p) return Promise.resolve(null)
   const url = pathToFileURL(p).href
-  return import(url).then((m) => {
-    const creds = m.smugmug ?? m.default
-    if (
-      creds &&
-      typeof creds.consumer_key === 'string' &&
-      typeof creds.consumer_secret === 'string' &&
-      typeof creds.oauth_token === 'string' &&
-      typeof creds.oauth_token_secret === 'string'
-    ) {
-      return creds as import('./lib-smugmug.js').SmugMugCredentials
-    }
-    return null
-  }).catch(() => null)
+  return import(url)
+    .then((m) => {
+      const creds = m.smugmug ?? m.default
+      if (
+        creds &&
+        typeof creds.consumer_key === 'string' &&
+        typeof creds.consumer_secret === 'string' &&
+        typeof creds.oauth_token === 'string' &&
+        typeof creds.oauth_token_secret === 'string'
+      ) {
+        return creds as import('./lib-smugmug.js').SmugMugCredentials
+      }
+      return null
+    })
+    .catch(() => null)
 }
 
 const smugmugConfig: RawWebsiteConfig = {
@@ -122,13 +124,22 @@ const smugmugConfig: RawWebsiteConfig = {
           res.end(JSON.stringify({ error: (err as Error).message }))
         })
     },
-    'list-smugmug-albums': (res: ServerResponse, _req: IncomingMessage, _website: Website, _requestInfo: RequestInfo) => {
+    'list-smugmug-albums': (
+      res: ServerResponse,
+      _req: IncomingMessage,
+      _website: Website,
+      _requestInfo: RequestInfo,
+    ) => {
       loadSmugMugCreds()
         .then((creds) => {
           if (!creds) {
             res.statusCode = 503
             res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ error: 'SmugMug credentials not configured (config/secrets.js or config/smugmugAuth.js)' }))
+            res.end(
+              JSON.stringify({
+                error: 'SmugMug credentials not configured (config/secrets.js or config/smugmugAuth.js)',
+              }),
+            )
             return
           }
           return listAlbums(creds)
@@ -158,7 +169,7 @@ const smugmugConfig: RawWebsiteConfig = {
         .orderBy(asc(albums.name))
         .then((rows: any[]) => {
           const albumsList = rows.map((r: any) => {
-            const slug = (r.urlName && String(r.urlName).trim()) ? r.urlName : r.albumKey
+            const slug = r.urlName && String(r.urlName).trim() ? r.urlName : r.albumKey
             return {
               name: r.name,
               urlName: r.urlName,
@@ -176,7 +187,7 @@ const smugmugConfig: RawWebsiteConfig = {
         .catch((err: Error) => {
           res.statusCode = 500
           res.setHeader('Content-Type', 'text/html')
-          res.end(`<h1>Error</h1><p>${(err).message}</p>`)
+          res.end(`<h1>Error</h1><p>${err.message}</p>`)
         })
     },
     album: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
@@ -205,46 +216,58 @@ const smugmugConfig: RawWebsiteConfig = {
           db.select().from(albums).where(eq(albums.albumKey, albumKey)).limit(1),
           db.select().from(images).where(eq(images.albumKey, albumKey)),
         ])
-        .then(([albumRows, imageRows]) => {
-          const albumRow = albumRows[0]
-          const album = albumRow
-            ? {
-                name: albumRow.name,
-                description: albumRow.description,
-                privacy: albumRow.privacy,
-                urlName: albumRow.urlName,
-                uri: albumRow.uri,
-                webUri: albumRow.webUri,
-                dateAdded: albumRow.dateAdded,
-                dateModified: albumRow.dateModified,
-              }
-            : { name: null, description: null, privacy: null, urlName: null, uri: null, webUri: null, dateAdded: null, dateModified: null }
-          const imagesForTemplate = imageRows.map((r: any) => ({
-            imageKey: r.imageKey,
-            caption: r.caption,
-            thumbnailUrl: r.thumbnailUrl,
-            url: r.url,
-            fileName: r.filename,
-          }))
-          const displaySlug = (albumRow?.urlName && String(albumRow.urlName).trim()) ? albumRow.urlName : albumKey
-          const html = website.getContentHtml('album-show', 'wrapper')({
-            albumKey,
-            albumSlug: displaySlug,
-            album,
-            images: imagesForTemplate,
+          .then(([albumRows, imageRows]) => {
+            const albumRow = albumRows[0]
+            const album = albumRow
+              ? {
+                  name: albumRow.name,
+                  description: albumRow.description,
+                  privacy: albumRow.privacy,
+                  urlName: albumRow.urlName,
+                  uri: albumRow.uri,
+                  webUri: albumRow.webUri,
+                  dateAdded: albumRow.dateAdded,
+                  dateModified: albumRow.dateModified,
+                }
+              : {
+                  name: null,
+                  description: null,
+                  privacy: null,
+                  urlName: null,
+                  uri: null,
+                  webUri: null,
+                  dateAdded: null,
+                  dateModified: null,
+                }
+            const imagesForTemplate = imageRows.map((r: any) => ({
+              imageKey: r.imageKey,
+              caption: r.caption,
+              thumbnailUrl: r.thumbnailUrl,
+              url: r.url,
+              fileName: r.filename,
+            }))
+            const displaySlug = albumRow?.urlName && String(albumRow.urlName).trim() ? albumRow.urlName : albumKey
+            const html = website.getContentHtml(
+              'album-show',
+              'wrapper',
+            )({
+              albumKey,
+              albumSlug: displaySlug,
+              album,
+              images: imagesForTemplate,
+            })
+            res.setHeader('Content-Type', 'text/html')
+            res.end(html)
+            loadSmugMugCreds().then((creds) => {
+              if (creds) topUpAlbumAndImagesFromApi(creds, db, albumKey, albums, images).catch(() => {})
+            })
           })
-          res.setHeader('Content-Type', 'text/html')
-          res.end(html)
-          loadSmugMugCreds().then((creds) => {
-            if (creds) topUpAlbumAndImagesFromApi(creds, db, albumKey, albums, images).catch(() => {})
+          .catch((err: Error) => {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'text/html')
+            res.end(`<h1>Error</h1><p>${err.message}</p>`)
           })
-        })
-        .catch((err: Error) => {
-          res.statusCode = 500
-          res.setHeader('Content-Type', 'text/html')
-          res.end(`<h1>Error</h1><p>${(err).message}</p>`)
-        })
-      });
+      })
     },
     'create-album': (res: ServerResponse, _req: IncomingMessage, website: Website, _requestInfo: RequestInfo) => {
       const html = website.getContentHtml('create-album', 'wrapper')({})
@@ -279,7 +302,7 @@ const smugmugConfig: RawWebsiteConfig = {
               Privacy: form.fields?.Privacy?.trim() || undefined,
               UrlName: form.fields?.UrlName?.trim() || undefined,
             }).then(({ albumKey, uri }) => {
-              const slug = (uri && uri.trim()) ? encodeURIComponent(uri.trim()) : albumKey
+              const slug = uri && uri.trim() ? encodeURIComponent(uri.trim()) : albumKey
               return { slug }
             })
           })
