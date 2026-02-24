@@ -132,18 +132,17 @@ export function get(creds: SmugMugCredentials, path: string): Promise<unknown> {
 }
 
 /**
- * Fetch the authenticated user's root node URI from the API.
- * Response shape: Response.User.Uris.Node.Uri or similar.
+ * Get the authenticated user's URI from /api/v2!authuser (e.g. /api/v2/user/frostickle).
  */
-function getAuthUserRootNodeUri(creds: SmugMugCredentials): Promise<string> {
+function getAuthUserUri(creds: SmugMugCredentials): Promise<string> {
   return get(creds, '/api/v2!authuser').then((body: any) => {
     const user = body?.Response?.User
     if (!user) throw new Error('SmugMug authuser: no User in response')
-    const uri = user.Uris?.Node?.Uri ?? user.Node?.Uri ?? user.Uri
-    if (!uri || typeof uri !== 'string') {
-      throw new Error('SmugMug authuser: could not find root Node URI')
+    const userUri = user.Uri ?? user.Uris?.Node?.Uri ?? user.Node?.Uri
+    if (!userUri || typeof userUri !== 'string') {
+      throw new Error('SmugMug authuser: could not find User URI')
     }
-    return uri
+    return userUri.startsWith('http') ? new URL(userUri).pathname : userUri
   })
 }
 
@@ -171,22 +170,32 @@ export function getNodeChildren(
 }
 
 /**
- * List the authenticated user's albums. Uses authuser to get the root node, then fetches
- * !children. Returns only nodes with Type === 'Album' by default; set includeFolders to true
- * to include folders (and optionally recurse later).
+ * List albums for a user via the User!albums endpoint (e.g. /api/v2/user/frostickle!albums).
+ * Response shape may be Response.Album or Response.User.Albums etc.
+ */
+function getUserAlbums(creds: SmugMugCredentials, userPath: string): Promise<SmugMugAlbum[]> {
+  const base = userPath.replace(/\/$/, '').replace(/!albums$/, '')
+  const path = base + '!albums'
+  return get(creds, path).then((body: any) => {
+    const res = body?.Response
+    const list = res?.Album ?? res?.Albums ?? res?.User?.Albums ?? res?.User?.Album ?? []
+    const albums = Array.isArray(list) ? list : (list ? [list] : [])
+    return albums.map((a: any) => ({
+      nodeId: a.NodeID ?? a.NodeId ?? a.AlbumKey ?? a.Key ?? '',
+      name: a.Name ?? a.Title ?? '',
+      type: a.Type ?? 'Album',
+      uri: a.Uri ?? '',
+      urlName: a.UrlName,
+    }))
+  })
+}
+
+/**
+ * List the authenticated user's albums. Uses User!albums (e.g. /api/v2/user/frostickle!albums).
  */
 export function listAlbums(
   creds: SmugMugCredentials,
-  options: { includeFolders?: boolean } = {}
+  _options: { includeFolders?: boolean } = {}
 ): Promise<SmugMugAlbum[]> {
-  const { includeFolders = false } = options
-  return getAuthUserRootNodeUri(creds)
-    .then((rootUri) => {
-      const path = rootUri.startsWith('http') ? new URL(rootUri).pathname : rootUri
-      return getNodeChildren(creds, path)
-    })
-    .then((children) => {
-      if (includeFolders) return children
-      return children.filter((c) => c.type === 'Album')
-    })
+  return getAuthUserUri(creds).then((userPath) => getUserAlbums(creds, userPath))
 }
