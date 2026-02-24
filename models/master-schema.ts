@@ -5,6 +5,7 @@
  * - bun drizzle-kit push
  */
 
+// Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Consider adding an extension to the import path.ts(2834)
 import { models } from '../node_modules/thalia/models'
 // import { SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core'
 import { MySqlTableWithColumns } from 'drizzle-orm/mysql-core'
