@@ -1,44 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}}</title>
-  <style>
-    html{
-      background: grey;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>Hello World</h1>
-  <a href="/fruit">Fruit</a>
-
-  <a href="/logon">Login</a>
-  <a href="/logout">Logout</a>
-
-  <br>
-
-  <table>
-    <tr>
-      <td>Role</td><td>{{userAuth.role}}</td>
-    </tr>
-    <tr>
-      <td>Name</td><td>{{userAuth.name}}</td>
-    </tr>
-    <tr>
-      <td>Email</td><td>{{userAuth.email}}</td>
-    </tr>
-    <tr>
-  </table>
-
-  <script src="/js/vendor.min.js"></script>
-
-  {{> image }}
-
-
-</body>
-
-</html>
+<section class="home-hero">
+  <h1>Galleries</h1>
+  <p class="lead">View and manage your SmugMug albums. Browse galleries, open an album to see its images, or sign in to create and edit albums.</p>
+  <p>
+    <a href="/galleries" class="btn btn-primary">Browse galleries</a>
+    {{#unless userAuth.role}}
+    <a href="/logon" class="btn btn-default">Sign in</a>
+    {{/unless}}
+  </p>
+</section>

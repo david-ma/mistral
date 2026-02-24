@@ -90,6 +90,17 @@ const smugmugConfig: RawWebsiteConfig = {
     },
   },
   controllers: {
+    '': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const userAuth = requestInfo.userAuth ?? {}
+      const html = website.getContentHtml('index', 'wrapper')({
+        title: 'Galleries',
+        siteName: 'SmugMug',
+        currentYear: new Date().getFullYear(),
+        userAuth,
+      })
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
     smugmugAlbums: AlbumMachine.controller.bind(AlbumMachine),
     smugmugImages: ImageMachine.controller.bind(ImageMachine),
     uploadPhoto: smugMugUploader.controller.bind(smugMugUploader),
@@ -170,7 +181,7 @@ const smugmugConfig: RawWebsiteConfig = {
           res.end(JSON.stringify({ error: (err as Error).message }))
         })
     },
-    galleries: (res: ServerResponse, _req: IncomingMessage, website: Website, _requestInfo: RequestInfo) => {
+    galleries: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
       if (!website.db) {
         res.statusCode = 503
         res.setHeader('Content-Type', 'text/html')
@@ -192,7 +203,13 @@ const smugmugConfig: RawWebsiteConfig = {
               slugEncoded: encodeURIComponent(slug),
             }
           })
-          const html = website.getContentHtml('galleries', 'wrapper')({ albums: albumsList })
+          const html = website.getContentHtml('galleries', 'wrapper')({
+            title: 'Galleries',
+            albums: albumsList,
+            userAuth: requestInfo.userAuth ?? {},
+            siteName: 'SmugMug',
+            currentYear: new Date().getFullYear(),
+          })
           res.setHeader('Content-Type', 'text/html')
           res.end(html)
           loadSmugMugCreds().then((creds) => {
@@ -266,10 +283,14 @@ const smugmugConfig: RawWebsiteConfig = {
               'album-show',
               'wrapper',
             )({
+              title: albumRow?.name ?? 'Album',
               albumKey,
               albumSlug: displaySlug,
               album,
               images: imagesForTemplate,
+              userAuth: requestInfo.userAuth ?? {},
+              siteName: 'SmugMug',
+              currentYear: new Date().getFullYear(),
             })
             res.setHeader('Content-Type', 'text/html')
             res.end(html)
@@ -284,8 +305,13 @@ const smugmugConfig: RawWebsiteConfig = {
           })
       })
     },
-    'create-album': (res: ServerResponse, _req: IncomingMessage, website: Website, _requestInfo: RequestInfo) => {
-      const html = website.getContentHtml('create-album', 'wrapper')({})
+    'create-album': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const html = website.getContentHtml('create-album', 'wrapper')({
+        title: 'New album',
+        userAuth: requestInfo.userAuth ?? {},
+        siteName: 'SmugMug',
+        currentYear: new Date().getFullYear(),
+      })
       res.setHeader('Content-Type', 'text/html')
       res.end(html)
     },

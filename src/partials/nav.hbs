@@ -1,0 +1,16 @@
+<nav class="nav" role="navigation">
+  <div class="nav-inner container">
+    <a href="/" class="nav-brand">{{siteName}}</a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/galleries">Galleries</a></li>
+      {{#if userAuth.role}}
+      <li><a href="/create-album">New album</a></li>
+      <li><a href="/logout">Logout</a></li>
+      {{else}}
+      <li><a href="/logon">Login</a></li>
+      <li><a href="/newUser">Sign up</a></li>
+      {{/if}}
+    </ul>
+  </div>
+</nav>
