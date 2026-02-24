@@ -9,8 +9,10 @@ import { RawWebsiteConfig } from 'thalia'
 import { CrudFactory, SmugMugUploader, parseForm } from 'thalia/controllers'
 import { ThaliaSecurity } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
+import { eq, isNull, asc } from 'drizzle-orm'
 import { albums, images } from '../models/master-schema.js'
 import { listAlbums, getAlbumImages, getAlbum, patchAlbum } from './lib-smugmug.js'
+import { topUpAlbumsFromApi, topUpAlbumAndImagesFromApi } from './smugmug-topup.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -109,21 +111,29 @@ const smugmugConfig: RawWebsiteConfig = {
         })
     },
     galleries: (res, _req, website, _requestInfo) => {
-      loadSmugMugCreds()
-        .then((creds) => {
-          if (!creds) {
-            res.statusCode = 503
-            res.setHeader('Content-Type', 'text/html')
-            res.end('<h1>Service Unavailable</h1><p>SmugMug credentials not configured.</p>')
-            return
-          }
-          return listAlbums(creds)
-        })
-        .then((albumsList) => {
-          if (!albumsList) return
+      if (!website.db) {
+        res.statusCode = 503
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Service Unavailable</h1><p>Database not configured.</p>')
+        return
+      }
+      const db = website.db.drizzle
+      db.select()
+        .from(albums)
+        .where(isNull(albums.deletedAt))
+        .orderBy(asc(albums.name))
+        .then((rows) => {
+          const albumsList = rows.map((r) => ({
+            albumKey: r.albumKey,
+            name: r.name,
+            urlName: r.urlName,
+          }))
           const html = website.getContentHtml('galleries', 'wrapper')({ albums: albumsList })
           res.setHeader('Content-Type', 'text/html')
           res.end(html)
+          loadSmugMugCreds().then((creds) => {
+            if (creds) topUpAlbumsFromApi(creds, db, albums).catch(() => {})
+          })
         })
         .catch((err) => {
           res.statusCode = 500
@@ -139,29 +149,48 @@ const smugmugConfig: RawWebsiteConfig = {
         res.end('<h1>Bad Request</h1><p>Album key required.</p>')
         return
       }
-      loadSmugMugCreds()
-        .then((creds) => {
-          if (!creds) {
-            res.statusCode = 503
-            res.setHeader('Content-Type', 'text/html')
-            res.end('<h1>Service Unavailable</h1><p>SmugMug credentials not configured.</p>')
-            return
-          }
-          return Promise.all([getAlbum(creds, albumKey), getAlbumImages(creds, albumKey)]).then(([album, images]) => ({
-            album,
-            images: images || [],
+      if (!website.db) {
+        res.statusCode = 503
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Service Unavailable</h1><p>Database not configured.</p>')
+        return
+      }
+      const db = website.db.drizzle
+      Promise.all([
+        db.select().from(albums).where(eq(albums.albumKey, albumKey)).limit(1),
+        db.select().from(images).where(eq(images.albumKey, albumKey)),
+      ])
+        .then(([albumRows, imageRows]) => {
+          const albumRow = albumRows[0]
+          const album = albumRow
+            ? {
+                name: albumRow.name,
+                description: albumRow.description,
+                privacy: albumRow.privacy,
+                urlName: albumRow.urlName,
+                uri: albumRow.uri,
+                webUri: albumRow.webUri,
+                dateAdded: albumRow.dateAdded,
+                dateModified: albumRow.dateModified,
+              }
+            : { name: null, description: null, privacy: null, urlName: null, uri: null, webUri: null, dateAdded: null, dateModified: null }
+          const imagesForTemplate = imageRows.map((r) => ({
+            imageKey: r.imageKey,
+            caption: r.caption,
+            thumbnailUrl: r.thumbnailUrl,
+            url: r.url,
+            fileName: r.filename,
           }))
-        })
-        .then((result) => {
-          if (!result) return
-          const { album, images } = result
           const html = website.getContentHtml('album-show', 'wrapper')({
             albumKey,
             album,
-            images,
+            images: imagesForTemplate,
           })
           res.setHeader('Content-Type', 'text/html')
           res.end(html)
+          loadSmugMugCreds().then((creds) => {
+            if (creds) topUpAlbumAndImagesFromApi(creds, db, albumKey, albums, images).catch(() => {})
+          })
         })
         .catch((err) => {
           res.statusCode = 500
