@@ -73,12 +73,12 @@ const smugmugConfig: RawWebsiteConfig = {
             res.end(JSON.stringify({ error: 'SmugMug credentials not configured.' }))
             return
           }
-          return getAlbum(creds, albumKey)
+          return Promise.all([getAlbum(creds, albumKey), getAlbumImages(creds, albumKey)])
         })
-        .then((album) => {
+        .then(([album, images]) => {
           if (!album) return
           res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify(album))
+          res.end(JSON.stringify({ ...album, images: images ?? [] }))
         })
         .catch((err) => {
           res.statusCode = 500

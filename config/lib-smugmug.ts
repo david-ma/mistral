@@ -102,7 +102,17 @@ function signRequest(
 }
 
 /**
- * Perform a signed GET to the SmugMug API. path is the path after the host, e.g. /api/v2!authuser.
+ * Build paths for SmugMug API v2. Use with get(): get(creds, apiPath.album(key)), get(creds, apiPath.albumImages(key)), etc.
+ */
+export const apiPath = {
+  /** GET /api/v2/album/:key */
+  album: (albumKey: string) => `/api/v2/album/${encodeURIComponent(albumKey.replace(/!.*$/, ''))}`,
+  /** GET /api/v2/album/:key!images */
+  albumImages: (albumKey: string) => `${apiPath.album(albumKey)}!images`,
+}
+
+/**
+ * Generic signed GET for any SmugMug API path (e.g. apiPath.album(key), apiPath.albumImages(key), or custom paths like /api/v2!authuser).
  * Returns parsed JSON.
  */
 export function get(creds: SmugMugCredentials, path: string): Promise<unknown> {
