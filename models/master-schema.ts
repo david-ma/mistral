@@ -15,7 +15,7 @@ const audits: MySqlTableWithColumns<any> = models.audits
 const albums: MySqlTableWithColumns<any> = models.albums
 const images: MySqlTableWithColumns<any> = models.images
 
-import { mailTable } from 'thalia/mail'
+import { mailTable } from '../node_modules/thalia/server/mail.js'
 const mail: MySqlTableWithColumns<any> = mailTable as unknown as MySqlTableWithColumns<any>
 
 
