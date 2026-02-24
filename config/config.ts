@@ -7,8 +7,10 @@ import fs from 'fs'
 import { pathToFileURL } from 'url'
 import { RawWebsiteConfig } from 'thalia/types'
 import { CrudFactory, SmugMugUploader, parseForm } from 'thalia/controllers'
-import { ThaliaSecurity } from 'thalia/security'
+import { ThaliaSecurity, type RoleRouteRule } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
+
+const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
 import { eq, isNull, asc, or } from 'drizzle-orm'
 import { albums, images } from '../models/master-schema.js'
 import { listAlbums, getAlbumImages, getAlbum, patchAlbum, createAlbum } from './lib-smugmug.js'
@@ -61,8 +63,21 @@ function loadSmugMugCreds(): Promise<import('./lib-smugmug.js').SmugMugCredentia
     .catch(() => null)
 }
 
+/** Role-based route rules: SmugMug paths require user or admin (concatenated with Thalia default routes). */
+const smugmugRoutes: RoleRouteRule[] = [
+  { path: '/galleries', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
+  { path: '/album', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'update'] } },
+  { path: '/create-album', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'] } },
+  { path: '/album-create', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
+  { path: '/album-edit', permissions: { admin: [...ALL_PERMISSIONS], user: ['update'] } },
+  { path: '/list-smugmug-albums', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
+  { path: '/album-json', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
+  { path: '/uploadPhoto', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
+]
+
 const smugmugConfig: RawWebsiteConfig = {
   domains: ['localhost'],
+  routes: smugmugRoutes,
   database: {
     schemas: {
       albums,
