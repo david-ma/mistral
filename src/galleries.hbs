@@ -3,7 +3,7 @@
 <ul class="album-list">
   {{#each albums}}
     <li>
-      <a href="/album/{{this.albumKey}}">{{this.name}}</a>
+      <a href="/album/{{this.slugEncoded}}">{{this.name}}</a>
       {{#if this.urlName}}<span class="text-muted"> ({{this.urlName}})</span>{{/if}}
     </li>
   {{else}}

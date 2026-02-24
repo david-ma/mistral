@@ -320,7 +320,8 @@ export function createAlbum(
         album?.NodeID ??
         ''
       if (!albumKey) throw new Error('SmugMug createAlbum: no album key in response')
-      return { albumKey, uri }
+      const urlName = album?.UrlName ?? album?.NiceName ?? album?.urlName ?? ''
+      return { albumKey, uri, urlName }
     })
   })
 }
