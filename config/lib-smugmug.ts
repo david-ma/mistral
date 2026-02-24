@@ -306,9 +306,8 @@ export function createAlbum(
     if (!username) throw new Error('SmugMug createAlbum: could not get username from user URI')
     const folderPath = `/api/v2/folder/user/${encodeURIComponent(username)}!albums`
     const body: Record<string, string> = { Title: fields.Name }
-    if (fields.Privacy != null) body.Privacy = fields.Privacy
+    if (fields.Privacy != null && fields.Privacy.trim()) body.Privacy = fields.Privacy.trim()
     if (fields.UrlName != null && fields.UrlName.trim()) body.NiceName = fields.UrlName.trim()
-    else if (fields.Name) body.NiceName = fields.Name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')
     if (fields.Description != null && fields.Description.trim()) body.Description = fields.Description.trim()
     return post(creds, folderPath, body).then((data: any) => {
       const album = data?.Response?.Album ?? data?.Response

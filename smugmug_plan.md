@@ -101,8 +101,8 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 ### Phase 3: Webapp – galleries and images
 
-- [x] **List galleries:** Controller `galleries` + template; JSON at `list-smugmug-albums`; display as list with links to `/album/:albumKey`.
-- [x] **Gallery detail:** Route `/album/:albumKey`; controller fetches album + images; template `album-show.hbs` shows thumbnails, metadata, edit form, upload.
+- [x] **List galleries:** Controller `galleries` + template; JSON at `list-smugmug-albums`; display as list with links to `/album/:slug` (slug = urlName or albumKey).
+- [x] **Gallery detail:** Route `/album/:slug`; controller resolves slug → albumKey via DB, fetches album + images from DB; template `album-show.hbs` shows thumbnails, metadata, edit form, upload; top-up syncs from API after response.
 - [x] **Album metadata edit:** POST to `album-edit` → `patchAlbum` → redirect to album.
 - [ ] **Image detail:** Route like `image/:imageKey` (or album + image); show image and metadata (caption, filename, dimensions, etc.).
 - [ ] **Single-image metadata edit:** Form + PATCH request to SmugMug to update caption/title etc.; then redirect or re-render image detail.
@@ -123,6 +123,8 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 - [x] **`GET /album-json/:albumKey`** — JSON endpoint returning combined album metadata + `images` array (Promise.all of `getAlbum` + `getAlbumImages`). Documented in "JSON endpoints" and skill.
 - [x] **`apiPath`** in `lib-smugmug.ts` — `apiPath.album(key)`, `apiPath.albumImages(key)` for use with `get(creds, path)` to call any endpoint.
 - [x] **Album show UI** — Prominent album title (h1), full metadata dl, edit form (Name, Description, Privacy, UrlName), upload partial with `albumKey`.
+- [x] **Create album** — GET `create-album` (form), POST `album-create` → `createAlbum()` to FolderAlbums; redirect to `/album/:slug` using urlName from response. NiceName only sent when user provides URL name (omit otherwise to avoid API 400/409).
+- [x] **Slug = urlName in URLs** — Public URLs use urlName (e.g. `/album/My-Smug-Album`). albumKey is resolved in the backend via `resolveSlugToAlbumKey(db, slug)` (match by urlName or albumKey). albumKey is not shown in the address bar; forms still post albumKey for API calls.
 
 ---
 
@@ -130,7 +132,7 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 - **Phase 1:** Project exists; auth loaded via `loadSmugMugCreds()` from `secrets.js` or `smugmugAuth.js` (503 when missing, not fail-fast). Skill doc in place.
 - **Phase 2:** Full client in `config/lib-smugmug.ts`: OAuth 1.0a, `get`/`patch`, `apiPath`, `listAlbums`, `getAlbum`, `getAlbumImages`, `patchAlbum`, `getNodeChildren`. Upload uses Thalia's `SmugMugUploader`. Still missing: dedicated get-one-image helper, PATCH image metadata, batch PATCH.
-- **Phase 3:** Galleries list (`/galleries`, `list-smugmug-albums`), album detail (`/album/:albumKey` with metadata + images + edit + upload), album-edit POST. Not yet: image detail page, single-image metadata edit.
+- **Phase 3:** Galleries list (`/galleries`, `list-smugmug-albums`), album detail (`/album/:slug` with slug→albumKey resolution, DB display + top-up), create album, album-edit POST (redirect by slug). Not yet: image detail page, single-image metadata edit.
 - **Phase 4–5:** Bulk upload and bulk metadata edit not started. Skill doc updated (auth, API notes, album-json).
 - **Feature checklist:** View galleries and Enter gallery are done. Bulk upload, view/edit single image, bulk metadata edit remain.
 - **Extra:** `/album-json/:albumKey` returns combined album + images; `apiPath` for generic endpoint calls.
@@ -162,11 +164,18 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 (Consult the live API doc for exact paths and request/response shapes.)
 
+### Create album (SmugMug API)
+
+- **Endpoint:** POST to **FolderAlbums** of the folder where the album should live, not User!albums (User!albums is GET-only and returns 405 for POST). Example: `POST /api/v2/folder/user/username!albums` (user’s root folder). See https://api.smugmug.com/api/v2/doc/reference/album.html.
+- **Body:** `Title` (required), `NiceName` (optional), `Privacy` (optional), `Description` (optional). Use **Title** for the album name; the API doc uses "Title" not "Name".
+- **URL name / NiceName:** Optional. If the user does **not** provide a URL name, **omit** `NiceName` from the request. SmugMug will auto-generate a URL slug from the album title. If you send an empty NiceName or auto-derive one (e.g. from the title), the API can return **400** (bad request) or **409** (e.g. duplicate NiceName). Only include `NiceName` when the user explicitly supplies a value.
+- **Response:** Returns the created Album object; derive `albumKey` from `Uri` (last path segment) and use `UrlName` / `NiceName` for redirects if present.
+
 ---
 
 ## JSON endpoints (this app)
 
-- **`GET /album-json/:albumKey`** — Returns album metadata plus images as JSON (e.g. `/album-json/jHhcL7`). Uses `loadSmugMugCreds()`, then `Promise.all([getAlbum(), getAlbumImages()])` from `config/lib-smugmug.ts`. Response: `SmugMugAlbumDetail` fields plus `images` array (normalised `SmugMugImage[]`). Errors: 400 if album key missing, 503 if credentials not configured, 500 with `{ error: "..." }` on API failure.
+- **`GET /album-json/:slug`** — Returns album metadata plus images as JSON. Slug can be urlName or albumKey; resolved via DB (`resolveSlugToAlbumKey`). Uses `loadSmugMugCreds()`, then `Promise.all([getAlbum(), getAlbumImages()])`. Response: `SmugMugAlbumDetail` fields plus `images` array. Errors: 400 if slug missing, 404 if album not found, 503 if DB/creds not configured, 500 on API failure.
 
 ---
 

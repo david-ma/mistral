@@ -301,8 +301,11 @@ const smugmugConfig: RawWebsiteConfig = {
               Description: form.fields?.Description?.trim() || undefined,
               Privacy: form.fields?.Privacy?.trim() || undefined,
               UrlName: form.fields?.UrlName?.trim() || undefined,
-            }).then(({ albumKey, uri }) => {
-              const slug = uri && uri.trim() ? encodeURIComponent(uri.trim()) : albumKey
+            }).then(({ albumKey, urlName }) => {
+              const slug =
+                urlName && String(urlName).trim()
+                  ? encodeURIComponent(urlName.trim())
+                  : albumKey
               return { slug }
             })
           })
@@ -344,13 +347,29 @@ const smugmugConfig: RawWebsiteConfig = {
             if (form.fields.Description != null) fields.Description = form.fields.Description
             if (form.fields.Privacy != null) fields.Privacy = form.fields.Privacy
             if (form.fields.UrlName != null) fields.UrlName = form.fields.UrlName
-            return patchAlbum(creds, albumKey, fields).then(() => ({ albumKey }))
+            return patchAlbum(creds, albumKey, fields).then(() => {
+              if (!website.db) return { albumKey }
+              return website.db.drizzle
+                .select({ urlName: albums.urlName })
+                .from(albums)
+                .where(eq(albums.albumKey, albumKey))
+                .limit(1)
+                .then((rows: any[]) => {
+                  const r = rows[0]
+                  const slug =
+                    r?.urlName && String(r.urlName).trim()
+                      ? encodeURIComponent(r.urlName.trim())
+                      : albumKey
+                  return { slug }
+                })
+            })
           })
         })
         .then((out) => {
           if (!out) return
+          const slug = 'slug' in out ? out.slug : out.albumKey
           res.statusCode = 302
-          res.setHeader('Location', `/album/${out.albumKey}`)
+          res.setHeader('Location', `/album/${slug}`)
           res.end()
         })
         .catch((err) => {

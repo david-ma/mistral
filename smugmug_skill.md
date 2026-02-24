@@ -4,6 +4,15 @@ Generic knowledge for using SmugMug with Thalia: auth, API client usage, reuse a
 
 ---
 
+## Quick context (smugmug webapp)
+
+- **Display:** Galleries and album pages read from **local DB** first (fast); a **top-up** runs after response (fire-and-forget) to sync from SmugMug API. Top-up lives in `config/smugmug-topup.ts` and can be removed or replaced (e.g. by a JSON endpoint the front end calls).
+- **URLs:** Public routes use **urlName** (NiceName) as the slug, not albumKey (e.g. `/album/My-Smug-Album`). Backend resolves slug → albumKey via DB (match urlName or albumKey). albumKey is used only for API calls and form payloads.
+- **Create album:** POST to **FolderAlbums** (`/api/v2/folder/user/:username!albums`), not User!albums (405). Body: `Title` (required), `NiceName` (optional), `Privacy`, `Description`. **Omit NiceName when the user leaves URL name blank**—SmugMug auto-generates from the title; sending empty or derived NiceName can cause 400/409.
+- **Config:** `config/config.ts` has typed controllers; `resolveSlugToAlbumKey(db, slug)` for slug→albumKey; redirects after create/edit use slug (urlName) when available.
+
+---
+
 ## Where SmugMug Code Lives
 
 | Location | Purpose |
@@ -119,10 +128,11 @@ Generic knowledge for using SmugMug with Thalia: auth, API client usage, reuse a
 - **Upload:** POST to `upload.smugmug.com` for a given node/album; multipart form with file.  
 - **Metadata:** PATCH the AlbumImage resource for caption, title, keywords, etc.  
 - **Structure:** User → Nodes (folders/albums) → Album → AlbumImages. Use `!authuser`, node `!children`, and album `!albumimages` (or equivalent from the doc).
+- **Create album:** POST to **FolderAlbums** (e.g. `/api/v2/folder/user/:username!albums`), not User!albums (GET-only, 405 on POST). Body: `Title`, optional `NiceName`, `Privacy`, `Description`. **NiceName is optional**—omit it when not provided so SmugMug generates a slug from the title; sending empty or auto-derived NiceName can cause 400 or 409.
 
 ### Album JSON endpoint (smugmug webapp)
 
-- **`GET /album-json/:albumKey`** returns normalised album metadata as JSON (`SmugMugAlbumDetail`: `albumKey`, `name`, `description`, `privacy`, `urlName`, `uri`, `webUri`, `dateAdded`, `dateModified`). Use for debugging or API consumers. Requires SmugMug credentials; responds with 503 if not configured, 500 on API errors.
+- **`GET /album-json/:slug`** — Slug is urlName or albumKey (resolved via DB). Returns normalised album metadata + `images` array. 404 if not found, 503 if DB/creds missing, 500 on API errors.
 
 ---
 
