@@ -1,10 +1,9 @@
-<section class="home-hero">
-  <h1>Galleries</h1>
-  <p class="lead">View and manage your SmugMug albums. Browse galleries, open an album to see its images, or sign in to create and edit albums.</p>
-  <p>
-    <a href="/galleries" class="btn btn-primary">Browse galleries</a>
-    {{#unless userAuth.role}}
-    <a href="/logon" class="btn btn-default">Sign in</a>
-    {{/unless}}
-  </p>
-</section>
+<div class="home-gate">
+  {{#if userAuth.role}}
+  <p>You are logged in.</p>
+  <a href="/galleries" class="btn-galleries">Proceed to galleries</a>
+  {{else}}
+  <p class="home-gate-text">Private website, please login.</p>
+  {{> userLogin}}
+  {{/if}}
+</div>

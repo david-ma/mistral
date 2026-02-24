@@ -8,13 +8,32 @@
   {{> styles}}
   {{> scripts}}
   <style>
-    .nav { background: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+    body { background: #1a1a1e; color: #e4e4e7; }
+    .nav { background: #252529; border-bottom: 1px solid #3f3f46; }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 0.75rem 0; }
-    .nav-brand { font-weight: 700; font-size: 1.25rem; color: #333; text-decoration: none; }
+    .nav-brand { font-weight: 700; font-size: 1.25rem; color: #e4e4e7; text-decoration: none; }
     .nav-links { list-style: none; margin: 0; padding: 0; display: flex; gap: 1.25rem; }
-    .nav-links a { color: #337ab7; text-decoration: none; }
-    .nav-links a:hover { text-decoration: underline; }
+    .nav-links a { color: #a1a1aa; text-decoration: none; }
+    .nav-links a:hover { color: #fff; }
     .main { padding-top: 1.5rem; padding-bottom: 2rem; }
+    .main a { color: #93c5fd; }
+    .main a:hover { color: #bfdbfe; }
+    .main .text-muted { color: #71717a; }
+    .footer { color: #71717a; border-top: 1px solid #3f3f46; padding-top: 1rem; margin-top: 2rem; }
+    .footer a { color: #a1a1aa; }
+    .login, .home-gate { background: #252529; border: 1px solid #3f3f46; border-radius: 8px; padding: 1.5rem; max-width: 360px; margin: 0 auto; }
+    .login h2, .home-gate h2 { margin-top: 0; color: #e4e4e7; font-size: 1rem; font-weight: 600; }
+    .login label, .login input[type=email], .login input[type=password], .login .error, .login .message { color: #e4e4e7; }
+    .login input { background: #1a1a1e; border: 1px solid #3f3f46; color: #e4e4e7; padding: 0.5rem; border-radius: 4px; }
+    .login .error { color: #f87171; }
+    .login ul { list-style: none; padding-left: 0; margin: 1rem 0 0; }
+    .login ul a { color: #a1a1aa; }
+    .login input[type=submit], .login #loginButton { background: #3b82f6; color: #fff; border: 0; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; margin-top: 0.5rem; }
+    .login input[type=submit]:hover, .login #loginButton:hover { background: #2563eb; }
+    .home-gate { text-align: center; }
+    .home-gate-text { margin: 0 0 1rem; color: #a1a1aa; }
+    .btn-galleries { display: inline-block; background: #3b82f6; color: #fff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; margin-top: 0.5rem; }
+    .btn-galleries:hover { background: #2563eb; color: #fff; }
   </style>
 </head>
 <body>
