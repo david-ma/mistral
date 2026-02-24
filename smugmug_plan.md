@@ -134,6 +134,12 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 ---
 
+## JSON endpoints (this app)
+
+- **`GET /album-json/:albumKey`** — Returns album metadata as JSON for the given SmugMug album key (e.g. `/album-json/jHhcL7`). Uses `loadSmugMugCreds()` and `getAlbum()` from `config/lib-smugmug.ts`. Response shape matches `SmugMugAlbumDetail`: `albumKey`, `name`, `description`, `privacy`, `urlName`, `uri`, `webUri`, `dateAdded`, `dateModified`. Errors: 400 if album key missing, 503 if credentials not configured, 500 with `{ error: "..." }` on API failure.
+
+---
+
 ## What we need to build for the website
 
 This section describes the app structure, security, and SmugMug integration so the site is explorable and reusable.

@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="/styles/main.css">
 
 <p><a href="/galleries">&larr; Back to albums</a></p>
+{{#if album}}<h1>{{#if album.name}}{{album.name}}{{else}}Album {{albumKey}}{{/if}}</h1>{{/if}}
 
 <div class="row">
   <div class="col-xs-6 col-6">

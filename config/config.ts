@@ -2,7 +2,6 @@
  * SmugMug Thalia website config.
  * Security (users, sessions, audits) + albums/images + SmugMug API helpers.
  */
-
 import path from 'path'
 import fs from 'fs'
 import { pathToFileURL } from 'url'
@@ -58,15 +57,24 @@ const smugmugConfig: RawWebsiteConfig = {
     smugmugAlbums: AlbumMachine.controller.bind(AlbumMachine),
     smugmugImages: ImageMachine.controller.bind(ImageMachine),
     uploadPhoto: smugMugUploader.controller.bind(smugMugUploader),
-    'album-json': (res, _req, _website, _requestInfo) => {
-      const action = _requestInfo.action || ''
-      if (!action) {
+    'album-json': (res, _req, _website, requestInfo) => {
+      const albumKey = requestInfo.action || ''
+      if (!albumKey) {
         res.statusCode = 400
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ error: 'Album key required.' }))
         return
       }
-      return getAlbum(creds, action)
+      loadSmugMugCreds()
+        .then((creds) => {
+          if (!creds) {
+            res.statusCode = 503
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'SmugMug credentials not configured.' }))
+            return
+          }
+          return getAlbum(creds, albumKey)
+        })
         .then((album) => {
           if (!album) return
           res.setHeader('Content-Type', 'application/json')

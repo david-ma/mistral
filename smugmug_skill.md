@@ -120,6 +120,10 @@ Generic knowledge for using SmugMug with Thalia: auth, API client usage, reuse a
 - **Metadata:** PATCH the AlbumImage resource for caption, title, keywords, etc.  
 - **Structure:** User → Nodes (folders/albums) → Album → AlbumImages. Use `!authuser`, node `!children`, and album `!albumimages` (or equivalent from the doc).
 
+### Album JSON endpoint (smugmug webapp)
+
+- **`GET /album-json/:albumKey`** returns normalised album metadata as JSON (`SmugMugAlbumDetail`: `albumKey`, `name`, `description`, `privacy`, `urlName`, `uri`, `webUri`, `dateAdded`, `dateModified`). Use for debugging or API consumers. Requires SmugMug credentials; responds with 503 if not configured, 500 on API errors.
+
 ---
 
 ## Reference
