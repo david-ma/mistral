@@ -5,7 +5,7 @@
  * - bun drizzle-kit push
  */
 
-import { models } from 'thalia/models'
+import { models } from '../node_modules/thalia/models'
 // import { SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core'
 import { MySqlTableWithColumns } from 'drizzle-orm/mysql-core'
 

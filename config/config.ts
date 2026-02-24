@@ -1,8 +1,8 @@
-import { fruit } from '../models/fruit.js';
-import { CrudFactory } from 'thalia/controllers';
+import { fruit } from '../models/master-schema.js';
+import { CrudFactory, SmugMugUploader } from 'thalia/controllers';
 import { ThaliaSecurity } from 'thalia/security';
 import { recursiveObjectMerge } from 'thalia/website';
-const FruitMachine = new CrudFactory(fruit);
+const FruitMachine = new CrudFactory(fruit as any);
 const fruitConfig = {
     database: {
         schemas: {
@@ -33,8 +33,8 @@ const roleBasedSecurityConfig = recursiveObjectMerge(recursiveObjectMerge(securi
         },
     ],
 });
-import { albums, images } from '../models/drizzle-schema'
-import { CrudFactory, SmugMugUploader } from '../../../server/controllers'
+import { albums, images } from '../models/master-schema.js'
+// import { CrudFactory, SmugMugUploader } from '../../../server/controllers'
 
 const AlbumMachine = new CrudFactory(albums as any)
 const ImageMachine = new CrudFactory(images as any)
