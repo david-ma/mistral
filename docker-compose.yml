@@ -1,0 +1,21 @@
+volumes:
+  db_data:
+
+services:
+  db:
+    image: mariadb:11.4.7
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "360:3306"
+    environment:
+      MYSQL_DATABASE: smugmug
+      MYSQL_USER: smugmug_user
+      MYSQL_PASSWORD: smugmug_password
+      MYSQL_ROOT_PASSWORD: smugmug_root_password
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 1s
+      retries: 5

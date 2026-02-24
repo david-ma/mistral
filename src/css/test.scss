@@ -1,0 +1,79 @@
+$cordovan: #8e3b46ff;
+$flax: #e1dd8fff;
+$light-coral: #e0777dff;
+$air-force-blue: #4c86a8ff;
+$cerulean: #477890ff;
+
+$background: $flax;
+$primary: $cordovan;
+$secondary: $cerulean;
+$accent: $light-coral;
+$highlight: $air-force-blue;
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-align: center;
+  font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue',
+    Helvetica, 'Lucida Grande', Arial, sans-serif;
+  color: $primary;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+}
+
+label,
+p,
+sub {
+  color: $secondary;
+}
+
+form {
+  display: flex;
+  flex-flow: column;
+}
+
+label {
+  min-width: 100px;
+}
+sub {
+  vertical-align: sub;
+  font-size: smaller;
+  bottom: -0.5em;
+}
+
+div.profile,
+div.login,
+div.box {
+  max-width: 80%;
+  margin: auto;
+  background: $background;
+  padding: 15px;
+}
+
+div.profile {
+  table {
+    width: 50%;
+    th {
+      text-align: right;
+      padding-right: 10px;
+    }
+    td {
+      text-align: left;
+      padding-left: 10px;
+    }
+  }
+}
+
+div.warning {
+  p {
+    color: red;
+    text-align: center;
+  }
+}

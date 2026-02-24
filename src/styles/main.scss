@@ -1,0 +1,95 @@
+// Variables
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$background-color: #f8f9fa;
+$text-color: #212529;
+$container-width: 1200px;
+$spacing-unit: 1rem;
+
+// Reset and base styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  color: $text-color;
+  background-color: $background-color;
+}
+
+.container {
+  max-width: $container-width;
+  margin: 0 auto;
+  padding: 0 $spacing-unit;
+}
+
+// Header styles
+.header {
+  background-color: $primary-color;
+  color: white;
+  padding: 2rem;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    margin: 0.5rem 0 0;
+    font-size: 1.5rem;
+    opacity: 0.9;
+  }
+}
+
+// Content styles
+.content {
+  padding: $spacing-unit * 3 0;
+
+  .features {
+    h3 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .feature-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: translateY(-4px);
+    }
+
+    h4 {
+      color: $primary-color;
+      margin: 0 0 1rem;
+    }
+
+    p {
+      margin: 0;
+      color: $secondary-color;
+    }
+  }
+}
+
+// Footer styles
+.footer {
+  background-color: $secondary-color;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+} 

@@ -1,0 +1,19 @@
+{
+  "name": "smugmug",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "thalia"
+  },
+  "dependencies": {
+    "drizzle-kit": "^0.31.7",
+    "drizzle-orm": "^0.44.7",
+    "mysql2": "^3.14.1",
+    "thalia": "file:/usr/local/dev/Thalia"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.5",
+    "@types/bun": "latest"
+  }
+}
