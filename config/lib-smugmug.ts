@@ -143,6 +143,95 @@ export function get(creds: SmugMugCredentials, path: string): Promise<unknown> {
 }
 
 /**
+ * Perform a signed PATCH with a JSON body. path is e.g. /api/v2/album/XYZ
+ */
+export function patch(creds: SmugMugCredentials, path: string, body: Record<string, unknown>): Promise<unknown> {
+  const targetUrl = `${BASE_URL}${path}`
+  const params = signRequest(creds, 'PATCH', targetUrl)
+  const bodyStr = JSON.stringify(body)
+
+  return new Promise((resolve, reject) => {
+    const opts: https.RequestOptions = {
+      host: 'api.smugmug.com',
+      port: 443,
+      path: path,
+      method: 'PATCH',
+      headers: {
+        Authorization: bundleAuthorization(targetUrl, params),
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Smug-ResponseType': 'JSON',
+        'Content-Length': Buffer.byteLength(bodyStr, 'utf8'),
+      },
+    }
+    const req = https.request(opts, (res) => {
+      let data = ''
+      res.on('data', (chunk) => { data += chunk })
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`SmugMug API ${res.statusCode}: ${data.slice(0, 300)}`))
+          return
+        }
+        try {
+          resolve(data ? JSON.parse(data) : {})
+        } catch {
+          reject(new Error(`SmugMug API non-JSON: ${data.slice(0, 200)}`))
+        }
+      })
+    })
+    req.on('error', reject)
+    req.end(bodyStr, 'utf8')
+  })
+}
+
+/** Album metadata for display/edit (from GET /api/v2/album/KEY). */
+export type SmugMugAlbumDetail = {
+  albumKey: string
+  name: string
+  description?: string
+  privacy?: string
+  urlName?: string
+  uri: string
+  webUri?: string
+  dateAdded?: string
+  dateModified?: string
+}
+
+/**
+ * Get one album's metadata (GET /api/v2/album/KEY).
+ */
+export function getAlbum(creds: SmugMugCredentials, albumKey: string): Promise<SmugMugAlbumDetail> {
+  const path = `/api/v2/album/${encodeURIComponent(albumKey)}`
+  return get(creds, path).then((body: any) => {
+    const a = body?.Response?.Album ?? body?.Response
+    if (!a) throw new Error('SmugMug getAlbum: no Album in response')
+    return {
+      albumKey,
+      name: a.Name ?? a.Title ?? '',
+      description: a.Description ?? '',
+      privacy: a.Privacy ?? '',
+      urlName: a.UrlName ?? '',
+      uri: a.Uri ?? '',
+      webUri: a.WebUri ?? '',
+      dateAdded: a.DateAdded ?? '',
+      dateModified: a.DateModified ?? '',
+    }
+  })
+}
+
+/**
+ * Update album metadata (PATCH /api/v2/album/KEY). Pass only fields to update, e.g. { Name, Description, Privacy, UrlName }.
+ */
+export function patchAlbum(
+  creds: SmugMugCredentials,
+  albumKey: string,
+  fields: Record<string, string>
+): Promise<unknown> {
+  const path = `/api/v2/album/${encodeURIComponent(albumKey)}`
+  return patch(creds, path, fields)
+}
+
+/**
  * Get the authenticated user's URI from /api/v2!authuser (e.g. /api/v2/user/frostickle).
  */
 function getAuthUserUri(creds: SmugMugCredentials): Promise<string> {

@@ -1,16 +1,115 @@
+<link rel="stylesheet" href="/styles/main.css">
+
 <p><a href="/galleries">&larr; Back to albums</a></p>
-<h1>{{albumName}}</h1>
-<div class="album-images">
-  {{#each images}}
-    <figure class="album-image">
-      {{#if this.thumbnailUrl}}
-        <a href="{{this.url}}" target="_blank" rel="noopener"><img src="{{this.thumbnailUrl}}" alt="{{this.caption}}" loading="lazy" /></a>
+
+<div class="row">
+  <div class="col-xs-6 col-6">
+    <h2>Images</h2>
+    <div class="album-images">
+      {{#each images}}
+        <figure class="album-image">
+          {{#if this.thumbnailUrl}}
+            <a href="{{this.url}}" target="_blank" rel="noopener"><img src="{{this.thumbnailUrl}}" alt="{{this.caption}}" loading="lazy" /></a>
+          {{else}}
+            <a href="{{this.url}}" target="_blank" rel="noopener">{{this.fileName}}</a>
+          {{/if}}
+          {{#if this.caption}}<figcaption>{{this.caption}}</figcaption>{{/if}}
+        </figure>
       {{else}}
-        <a href="{{this.url}}" target="_blank" rel="noopener">{{this.fileName}}</a>
+        <p>No images in this album.</p>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="col-xs-6 col-6">
+    <h2>Album details</h2>
+    <dl class="album-meta">
+      <dt>Title</dt>
+      <dd>{{album.name}}</dd>
+      {{#if album.description}}
+        <dt>Description</dt>
+        <dd>{{album.description}}</dd>
       {{/if}}
-      {{#if this.caption}}<figcaption>{{this.caption}}</figcaption>{{/if}}
-    </figure>
-  {{else}}
-    <p>No images in this album.</p>
-  {{/each}}
+      {{#if album.privacy}}
+        <dt>Privacy</dt>
+        <dd>{{album.privacy}}</dd>
+      {{/if}}
+      {{#if album.urlName}}
+        <dt>URL name</dt>
+        <dd>{{album.urlName}}</dd>
+      {{/if}}
+      {{#if album.uri}}
+        <dt>API URI</dt>
+        <dd><code>{{album.uri}}</code></dd>
+      {{/if}}
+      {{#if album.webUri}}
+        <dt>Web page</dt>
+        <dd><a href="{{album.webUri}}" target="_blank" rel="noopener">{{album.webUri}}</a></dd>
+      {{/if}}
+      {{#if album.dateAdded}}
+        <dt>Date added</dt>
+        <dd>{{album.dateAdded}}</dd>
+      {{/if}}
+      {{#if album.dateModified}}
+        <dt>Date modified</dt>
+        <dd>{{album.dateModified}}</dd>
+      {{/if}}
+    </dl>
+
+    <p><button type="button" class="btn btn-primary" id="albumEditBtn">Edit album</button></p>
+
+    <form id="albumEditForm" method="post" action="/album-edit" style="display: none;" class="album-edit-form">
+      <input type="hidden" name="albumKey" value="{{albumKey}}" />
+      <div class="mb-2">
+        <label for="albumName" class="form-label">Name</label>
+        <input type="text" class="form-control" id="albumName" name="Name" value="{{album.name}}" />
+      </div>
+      <div class="mb-2">
+        <label for="albumDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="albumDescription" name="Description" rows="3">{{album.description}}</textarea>
+      </div>
+      <div class="mb-2">
+        <label for="albumPrivacy" class="form-label">Privacy</label>
+        <select class="form-control" id="albumPrivacy" name="Privacy" data-initial="{{album.privacy}}">
+          <option value="Public">Public</option>
+          <option value="Unlisted">Unlisted</option>
+          <option value="Private">Private</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label for="albumUrlName" class="form-label">URL name</label>
+        <input type="text" class="form-control" id="albumUrlName" name="UrlName" value="{{album.urlName}}" />
+      </div>
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <button type="button" class="btn btn-secondary" id="albumEditCancel">Cancel</button>
+    </form>
+
+
+    <h3>Upload image</h3>
+    {{> image albumKey=albumKey}}
+  </div>
 </div>
+
+<script>
+  (function() {
+    var form = document.getElementById('albumEditForm');
+    if (form) {
+      var privacy = document.getElementById('albumPrivacy');
+      if (privacy && privacy.dataset.initial) {
+        privacy.value = privacy.dataset.initial;
+      }
+    }
+    var btn = document.getElementById('albumEditBtn');
+    var cancel = document.getElementById('albumEditCancel');
+    if (btn && form) {
+      btn.addEventListener('click', function() {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    if (cancel && form) {
+      cancel.addEventListener('click', function() {
+        form.style.display = 'none';
+      });
+    }
+  })();
+</script>

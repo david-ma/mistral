@@ -1,10 +1,16 @@
 // Variables
 $primary-color: #007bff;
 $secondary-color: #6c757d;
-$background-color: #f8f9fa;
+$background-color: #191824;
 $text-color: #212529;
-$container-width: 1200px;
+$container-width: 1600px;
 $spacing-unit: 1rem;
+
+@media (min-width: 1600px) {
+  .container {
+      width: 1570px;
+  }
+}
 
 // Reset and base styles
 * {
@@ -123,9 +129,12 @@ body {
 .album-image {
   margin: 0;
   background: white;
-  padding: 0.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    transform: scale(1.02);
+  }
 
   img {
     width: 100%;
@@ -138,5 +147,49 @@ body {
     margin-top: 0.5rem;
     font-size: 0.875rem;
     color: $secondary-color;
+  }
+}
+
+.album-meta {
+  dt {
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: $secondary-color;
+    &:first-child { margin-top: 0; }
+  }
+  dd {
+    margin-left: 0;
+  }
+  code {
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+}
+
+.album-edit-form {
+  max-width: 28em;
+}
+
+// Two-column layout for album show (works with or without Bootstrap)
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
+.col-xs-6,
+.col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  box-sizing: border-box;
+}
+@media (max-width: 768px) {
+  .col-xs-6,
+  .col-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
   }
 } 

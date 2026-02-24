@@ -1,0 +1,142 @@
+{{!-- Override of Thalia image.hbs: fix image_preview typo, add optional albumKey for uploads to current album --}}
+<style>
+  #uploadImageLabel {
+    font-size: 16px;
+    font-family: 'Bobby Jones', 'Comico', cursive;
+  }
+
+  #uploadImageLabel:hover {
+    pointer: cursor;
+  }
+
+  #imageHelpText {
+    background: none;
+  }
+
+  .image-container {
+    width: 200px;
+    height: 100px;
+    border: 1px dotted #999;
+    padding: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .image-container.drag-over {
+    border: 2px dashed #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: scale(1.02);
+  }
+
+  .image-container.drag-over #imageHelpText {
+    color: #007bff;
+  }
+</style>
+
+<div class="image-container" id="dropZone">
+  <label id="uploadImageLabel" for="fileToUpload">
+    <div id="image_previews">
+      <img id="loading" alt="" />
+    </div>
+    <span id="imageHelpText">Click to upload image or drag &amp; drop</span>
+  </label>
+
+  <form id="imageForm" style="display: none;">
+    <input type="file" accept="image/*" name="fileToUpload" id="fileToUpload" multiple/>
+    {{#if albumKey}}<input type="hidden" name="albumKey" id="imageFormAlbumKey" value="{{albumKey}}" />{{/if}}
+  </form>
+</div>
+
+<br />
+
+<script>
+  (function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileToUpload');
+    const imageHelpText = document.getElementById('imageHelpText');
+
+    if (!dropZone || !fileInput || !imageHelpText) return;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
+      dropZone.addEventListener(eventName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+      document.body.addEventListener(eventName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(function(eventName) {
+      dropZone.addEventListener(eventName, function() {
+        dropZone.classList.add('drag-over');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(function(eventName) {
+      dropZone.addEventListener(eventName, function() {
+        dropZone.classList.remove('drag-over');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      fileInput.files = files;
+      handleFiles({ target: { files: files } });
+    }, false);
+
+    fileInput.addEventListener('change', handleFiles, false);
+
+    function handleFiles(event) {
+      if (!event.target.files || event.target.files.length === 0) return;
+      const files = event.target.files;
+
+      Array.from(files).forEach(function(file) {
+        if (!file.type.startsWith('image/')) {
+          alert('Please select an image file');
+          return;
+        }
+        imageHelpText.textContent = 'Uploading image... please wait';
+        var loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.src = '/images/loading.gif';
+
+        var formData = new FormData();
+        formData.append('fileToUpload', file);
+        formData.append('caption', '');
+        formData.append('filename', file.name);
+        formData.append('title', file.name);
+        formData.append('keywords', '');
+        var albumKeyEl = document.getElementById('imageFormAlbumKey');
+        if (albumKeyEl && albumKeyEl.value) {
+          formData.append('albumKey', albumKeyEl.value);
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/uploadPhoto');
+        xhr.onload = function() {
+          if (loadingEl) loadingEl.src = '';
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              imageHelpText.textContent = 'Image uploaded!';
+              var previews = document.getElementById('image_previews');
+              if (previews && data.thumbnailUrl) {
+                previews.innerHTML += '<img src="' + data.thumbnailUrl.replace(/"/g, '&quot;') + '" alt="" />';
+              }
+            } catch (e) {
+              imageHelpText.textContent = 'Error. Try again :(';
+            }
+          } else {
+            imageHelpText.textContent = 'Error. Try again :(';
+          }
+        };
+        xhr.onerror = function() {
+          if (loadingEl) loadingEl.src = '';
+          imageHelpText.textContent = 'Error. Try again :(';
+        };
+        xhr.send(formData);
+      });
+    }
+  })();
+</script>

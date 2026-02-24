@@ -7,11 +7,11 @@ import path from 'path'
 import fs from 'fs'
 import { pathToFileURL } from 'url'
 import { RawWebsiteConfig } from 'thalia'
-import { CrudFactory, SmugMugUploader } from 'thalia/controllers'
+import { CrudFactory, SmugMugUploader, parseForm } from 'thalia/controllers'
 import { ThaliaSecurity } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
 import { albums, images } from '../models/master-schema.js'
-import { listAlbums, getAlbumImages } from './lib-smugmug.js'
+import { listAlbums, getAlbumImages, getAlbum, patchAlbum } from './lib-smugmug.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -58,6 +58,26 @@ const smugmugConfig: RawWebsiteConfig = {
     smugmugAlbums: AlbumMachine.controller.bind(AlbumMachine),
     smugmugImages: ImageMachine.controller.bind(ImageMachine),
     uploadPhoto: smugMugUploader.controller.bind(smugMugUploader),
+    'album-json': (res, _req, _website, _requestInfo) => {
+      const action = _requestInfo.action || ''
+      if (!action) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'Album key required.' }))
+        return
+      }
+      return getAlbum(creds, action)
+        .then((album) => {
+          if (!album) return
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(album))
+        })
+        .catch((err) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: (err as Error).message }))
+        })
+    },
     'list-smugmug-albums': (res, _req, _website, _requestInfo) => {
       loadSmugMugCreds()
         .then((creds) => {
@@ -119,16 +139,18 @@ const smugmugConfig: RawWebsiteConfig = {
             res.end('<h1>Service Unavailable</h1><p>SmugMug credentials not configured.</p>')
             return
           }
-          return getAlbumImages(creds, albumKey).then((images) => ({ creds, images }))
+          return Promise.all([getAlbum(creds, albumKey), getAlbumImages(creds, albumKey)]).then(([album, images]) => ({
+            album,
+            images: images || [],
+          }))
         })
         .then((result) => {
           if (!result) return
-          const { images } = result
-          const albumName = requestInfo.slug ? decodeURIComponent(requestInfo.slug) : albumKey
+          const { album, images } = result
           const html = website.getContentHtml('album-show', 'wrapper')({
             albumKey,
-            albumName,
-            images: images || [],
+            album,
+            images,
           })
           res.setHeader('Content-Type', 'text/html')
           res.end(html)
@@ -137,6 +159,45 @@ const smugmugConfig: RawWebsiteConfig = {
           res.statusCode = 500
           res.setHeader('Content-Type', 'text/html')
           res.end(`<h1>Error</h1><p>${(err as Error).message}</p>`)
+        })
+    },
+    'album-edit': (res, req, website, requestInfo) => {
+      if (req.method !== 'POST') {
+        res.statusCode = 405
+        res.end('Method Not Allowed')
+        return
+      }
+      parseForm(res, req)
+        .then((form: { fields: Record<string, string> }) => {
+          const albumKey = form.fields?.albumKey || ''
+          if (!albumKey) {
+            res.statusCode = 400
+            res.end('Missing albumKey')
+            return null
+          }
+          return loadSmugMugCreds().then((creds) => {
+            if (!creds) {
+              res.statusCode = 503
+              res.end('SmugMug credentials not configured')
+              return null
+            }
+            const fields: Record<string, string> = {}
+            if (form.fields.Name != null) fields.Name = form.fields.Name
+            if (form.fields.Description != null) fields.Description = form.fields.Description
+            if (form.fields.Privacy != null) fields.Privacy = form.fields.Privacy
+            if (form.fields.UrlName != null) fields.UrlName = form.fields.UrlName
+            return patchAlbum(creds, albumKey, fields).then(() => ({ albumKey }))
+          })
+        })
+        .then((out) => {
+          if (!out) return
+          res.statusCode = 302
+          res.setHeader('Location', `/album/${out.albumKey}`)
+          res.end()
+        })
+        .catch((err) => {
+          res.statusCode = 500
+          res.end((err as Error).message)
         })
     },
   },
