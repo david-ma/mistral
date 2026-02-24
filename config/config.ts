@@ -11,7 +11,7 @@ import { CrudFactory, SmugMugUploader } from 'thalia/controllers'
 import { ThaliaSecurity } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
 import { albums, images } from '../models/master-schema.js'
-import { listAlbums } from './lib-smugmug.js'
+import { listAlbums, getAlbumImages } from './lib-smugmug.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -78,6 +78,65 @@ const smugmugConfig: RawWebsiteConfig = {
           res.statusCode = 500
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ error: (err as Error).message }))
+        })
+    },
+    galleries: (res, _req, website, _requestInfo) => {
+      loadSmugMugCreds()
+        .then((creds) => {
+          if (!creds) {
+            res.statusCode = 503
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Service Unavailable</h1><p>SmugMug credentials not configured.</p>')
+            return
+          }
+          return listAlbums(creds)
+        })
+        .then((albumsList) => {
+          if (!albumsList) return
+          const html = website.getContentHtml('galleries', 'wrapper')({ albums: albumsList })
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        })
+        .catch((err) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${(err as Error).message}</p>`)
+        })
+    },
+    album: (res, _req, website, requestInfo) => {
+      const albumKey = requestInfo.action || ''
+      if (!albumKey) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Bad Request</h1><p>Album key required.</p>')
+        return
+      }
+      loadSmugMugCreds()
+        .then((creds) => {
+          if (!creds) {
+            res.statusCode = 503
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Service Unavailable</h1><p>SmugMug credentials not configured.</p>')
+            return
+          }
+          return getAlbumImages(creds, albumKey).then((images) => ({ creds, images }))
+        })
+        .then((result) => {
+          if (!result) return
+          const { images } = result
+          const albumName = requestInfo.slug ? decodeURIComponent(requestInfo.slug) : albumKey
+          const html = website.getContentHtml('album-show', 'wrapper')({
+            albumKey,
+            albumName,
+            images: images || [],
+          })
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        })
+        .catch((err) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${(err as Error).message}</p>`)
         })
     },
   },

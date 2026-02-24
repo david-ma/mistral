@@ -92,4 +92,51 @@ body {
   text-align: center;
   padding: 1rem;
   margin-top: 2rem;
+}
+
+// Galleries & album show
+.album-list {
+  list-style: none;
+  padding: 0;
+
+  li {
+    margin: 0.5rem 0;
+
+    a {
+      color: $primary-color;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.album-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.album-image {
+  margin: 0;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+
+  figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: $secondary-color;
+  }
 } 

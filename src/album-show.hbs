@@ -1,0 +1,16 @@
+<p><a href="/galleries">&larr; Back to albums</a></p>
+<h1>{{albumName}}</h1>
+<div class="album-images">
+  {{#each images}}
+    <figure class="album-image">
+      {{#if this.thumbnailUrl}}
+        <a href="{{this.url}}" target="_blank" rel="noopener"><img src="{{this.thumbnailUrl}}" alt="{{this.caption}}" loading="lazy" /></a>
+      {{else}}
+        <a href="{{this.url}}" target="_blank" rel="noopener">{{this.fileName}}</a>
+      {{/if}}
+      {{#if this.caption}}<figcaption>{{this.caption}}</figcaption>{{/if}}
+    </figure>
+  {{else}}
+    <p>No images in this album.</p>
+  {{/each}}
+</div>

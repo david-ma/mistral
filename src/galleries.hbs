@@ -1,0 +1,12 @@
+<h1>Albums</h1>
+<p>Select an album to view its images.</p>
+<ul class="album-list">
+  {{#each albums}}
+    <li>
+      <a href="/album/{{this.albumKey}}">{{this.name}}</a>
+      {{#if this.urlName}}<span class="text-muted"> ({{this.urlName}})</span>{{/if}}
+    </li>
+  {{else}}
+    <li>No albums found.</li>
+  {{/each}}
+</ul>

@@ -22,6 +22,17 @@ export type SmugMugAlbum = {
   type: string
   uri: string
   urlName?: string
+  /** Last segment of uri for use in URLs, e.g. /album/{{albumKey}} */
+  albumKey?: string
+}
+
+/** Normalised image for display. */
+export type SmugMugImage = {
+  imageKey: string
+  caption?: string
+  thumbnailUrl?: string
+  url?: string
+  fileName?: string
 }
 
 function oauthEscape(s: string): string {
@@ -180,12 +191,40 @@ function getUserAlbums(creds: SmugMugCredentials, userPath: string): Promise<Smu
     const res = body?.Response
     const list = res?.Album ?? res?.Albums ?? res?.User?.Albums ?? res?.User?.Album ?? []
     const albums = Array.isArray(list) ? list : (list ? [list] : [])
-    return albums.map((a: any) => ({
-      nodeId: a.NodeID ?? a.NodeId ?? a.AlbumKey ?? a.Key ?? '',
-      name: a.Name ?? a.Title ?? '',
-      type: a.Type ?? 'Album',
-      uri: a.Uri ?? '',
-      urlName: a.UrlName,
+    return albums.map((a: any) => {
+      const uri = a.Uri ?? ''
+      const albumKey = uri ? uri.split('/').filter(Boolean).pop() : (a.AlbumKey ?? a.NodeID ?? a.NodeId ?? a.Key ?? '')
+      return {
+        nodeId: a.NodeID ?? a.NodeId ?? a.AlbumKey ?? a.Key ?? '',
+        name: a.Name ?? a.Title ?? '',
+        type: a.Type ?? 'Album',
+        uri,
+        urlName: a.UrlName,
+        albumKey: albumKey ?? '',
+      }
+    })
+  })
+}
+
+/**
+ * List images in an album via Album!images (e.g. /api/v2/album/XYZ!images).
+ */
+export function getAlbumImages(
+  creds: SmugMugCredentials,
+  albumKey: string
+): Promise<SmugMugImage[]> {
+  const base = albumKey.replace(/!images$/, '').replace(/!albumimages$/, '')
+  const path = `/api/v2/album/${encodeURIComponent(base)}!images`
+  return get(creds, path).then((body: any) => {
+    const res = body?.Response
+    const list = res?.AlbumImage ?? res?.AlbumImages ?? res?.Image ?? res?.Images ?? res?.Album?.Images ?? []
+    const items = Array.isArray(list) ? list : (list ? [list] : [])
+    return items.map((img: any) => ({
+      imageKey: img.ImageKey ?? img.Key ?? img.AlbumImageKey ?? '',
+      caption: img.Caption ?? img.Title,
+      thumbnailUrl: img.ThumbnailUrl ?? img.SmallImageUrl,
+      url: img.Url ?? img.LargeImageUrl,
+      fileName: img.FileName,
     }))
   })
 }
