@@ -90,7 +90,8 @@ const smugmugConfig: RawWebsiteConfig = {
     },
   },
   controllers: {
-    '': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+    index: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      console.log("running index controller")
       const userAuth = requestInfo.userAuth ?? {}
       const html = website.getContentHtml('index', 'wrapper')({
         title: 'Galleries',
