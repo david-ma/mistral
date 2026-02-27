@@ -421,3 +421,109 @@ export function listAlbums(
 ): Promise<SmugMugAlbum[]> {
   return getAuthUserUri(creds).then((userPath) => getUserAlbums(creds, userPath))
 }
+
+/** Options for uploading a file buffer to a SmugMug album. */
+export type UploadToAlbumOptions = {
+  caption?: string
+  title?: string
+  keywords?: string
+  filename?: string
+}
+
+/** Raw upload response from upload.smugmug.com (Image.AlbumImageUri, Image.URL, etc.). */
+export type SmugMugUploadResponse = {
+  stat: string
+  method: string
+  Image: {
+    StatusImageReplaceUri: string
+    ImageUri: string
+    AlbumImageUri: string
+    URL: string
+  }
+  Asset: { AssetComponentUri: string; AssetUri: string }
+}
+
+function createMultipartFromBuffer(
+  buffer: Buffer,
+  boundary: string,
+  filename: string,
+  mimeType: string
+): Buffer {
+  const parts = [
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="file"; filename="${filename.replace(/"/g, '\\"')}"`,
+    `Content-Type: ${mimeType}`,
+    '',
+    buffer,
+    '',
+    `--${boundary}--`,
+  ]
+  return Buffer.concat(
+    parts.map((part) => (Buffer.isBuffer(part) ? part : Buffer.from(part + '\r\n')))
+  )
+}
+
+/**
+ * Upload a file buffer to a SmugMug album. Uses OAuth 1.0a POST to upload.smugmug.com.
+ * Returns the raw upload response; use get(creds, response.Image.AlbumImageUri) for full AlbumImage metadata.
+ */
+export function uploadToAlbum(
+  creds: SmugMugCredentials,
+  albumKey: string,
+  fileBuffer: Buffer,
+  mimeType: string,
+  options: UploadToAlbumOptions = {}
+): Promise<SmugMugUploadResponse> {
+  const targetUrl = 'https://upload.smugmug.com/'
+  const params = signRequest(creds, 'POST', targetUrl)
+  const boundary = '----WebKitFormBoundary' + Math.random().toString(16).slice(2, 10)
+  const filename = options.filename ?? 'image.jpg'
+  const caption = options.caption ?? ''
+  const title = options.title ?? filename
+  const keywords = options.keywords ?? ''
+
+  const formData = createMultipartFromBuffer(
+    fileBuffer,
+    boundary,
+    filename,
+    mimeType || 'image/jpeg'
+  )
+
+  return new Promise((resolve, reject) => {
+    const opts: https.RequestOptions = {
+      host: 'upload.smugmug.com',
+      port: 443,
+      path: '/',
+      method: 'POST',
+      headers: {
+        Authorization: bundleAuthorization(targetUrl, params),
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': formData.length,
+        'X-Smug-AlbumUri': `/api/v2/album/${albumKey.replace(/!.*$/, '')}`,
+        'X-Smug-Caption': caption,
+        'X-Smug-FileName': filename,
+        'X-Smug-Keywords': keywords,
+        'X-Smug-ResponseType': 'JSON',
+        'X-Smug-Title': title,
+        'X-Smug-Version': 'v2',
+      },
+    }
+    const req = https.request(opts, (res) => {
+      let data = ''
+      res.on('data', (chunk) => { data += chunk })
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`SmugMug upload ${res.statusCode}: ${data.slice(0, 300)}`))
+          return
+        }
+        try {
+          resolve(JSON.parse(data) as SmugMugUploadResponse)
+        } catch {
+          reject(new Error(`SmugMug upload non-JSON: ${data.slice(0, 200)}`))
+        }
+      })
+    })
+    req.on('error', reject)
+    req.end(formData)
+  })
+}

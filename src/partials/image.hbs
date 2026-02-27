@@ -48,6 +48,7 @@
 
 <br />
 
+<script type="module" src="/js/uploadthing-init.js"></script>
 <script>
   (function() {
     const dropZone = document.getElementById('dropZone');
@@ -88,9 +89,79 @@
 
     fileInput.addEventListener('change', handleFiles, false);
 
+    function showResult(data, loadingEl, previews) {
+      if (loadingEl) loadingEl.src = '';
+      imageHelpText.textContent = 'Image uploaded!';
+      if (previews && data.thumbnailUrl) {
+        previews.innerHTML += '<img src="' + data.thumbnailUrl.replace(/"/g, '&quot;') + '" alt="" />';
+      }
+    }
+
+    function showError(loadingEl) {
+      if (loadingEl) loadingEl.src = '';
+      imageHelpText.textContent = 'Error. Try again :(';
+    }
+
+    function sendToSmugmug(uploadThingUrl, albumKey, filename, loadingEl, previews) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/uploadPhoto');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            var data = JSON.parse(xhr.responseText);
+            showResult(data, loadingEl, previews);
+          } catch (e) {
+            showError(loadingEl);
+          }
+        } else {
+          showError(loadingEl);
+        }
+      };
+      xhr.onerror = function() { showError(loadingEl); };
+      xhr.send(JSON.stringify({
+        uploadThingUrl: uploadThingUrl,
+        albumKey: albumKey,
+        filename: filename || 'image.jpg',
+        fileKey: window._lastUploadThingKey || null,
+        size: window._lastUploadThingSize || null
+      }));
+    }
+
+    function legacyFormUpload(file, albumKey, loadingEl, previews) {
+      var formData = new FormData();
+      formData.append('fileToUpload', file);
+      formData.append('caption', '');
+      formData.append('filename', file.name);
+      formData.append('title', file.name);
+      formData.append('keywords', '');
+      if (albumKey) formData.append('albumKey', albumKey);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/uploadPhoto');
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            var data = JSON.parse(xhr.responseText);
+            showResult(data, loadingEl, previews);
+          } catch (e) {
+            showError(loadingEl);
+          }
+        } else {
+          showError(loadingEl);
+        }
+      };
+      xhr.onerror = function() { showError(loadingEl); };
+      xhr.send(formData);
+    }
+
     function handleFiles(event) {
       if (!event.target.files || event.target.files.length === 0) return;
-      const files = event.target.files;
+      var files = event.target.files;
+      var albumKeyEl = document.getElementById('imageFormAlbumKey');
+      var albumKey = albumKeyEl ? albumKeyEl.value : '';
+      var loadingEl = document.getElementById('loading');
+      var previews = document.getElementById('image_previews');
 
       Array.from(files).forEach(function(file) {
         if (!file.type.startsWith('image/')) {
@@ -98,44 +169,26 @@
           return;
         }
         imageHelpText.textContent = 'Uploading image... please wait';
-        var loadingEl = document.getElementById('loading');
         if (loadingEl) loadingEl.src = '/images/loading.gif';
 
-        var formData = new FormData();
-        formData.append('fileToUpload', file);
-        formData.append('caption', '');
-        formData.append('filename', file.name);
-        formData.append('title', file.name);
-        formData.append('keywords', '');
-        var albumKeyEl = document.getElementById('imageFormAlbumKey');
-        if (albumKeyEl && albumKeyEl.value) {
-          formData.append('albumKey', albumKeyEl.value);
-        }
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/uploadPhoto');
-        xhr.onload = function() {
-          if (loadingEl) loadingEl.src = '';
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              var data = JSON.parse(xhr.responseText);
-              imageHelpText.textContent = 'Image uploaded!';
-              var previews = document.getElementById('image_previews');
-              if (previews && data.thumbnailUrl) {
-                previews.innerHTML += '<img src="' + data.thumbnailUrl.replace(/"/g, '&quot;') + '" alt="" />';
+        if (window.uploadFilesToUploadThing && albumKey) {
+          window.uploadFilesToUploadThing('smugmugImage', { files: [file] })
+            .then(function(results) {
+              var r = results && results[0];
+              if (r && r.url) {
+                window._lastUploadThingKey = r.key || null;
+                window._lastUploadThingSize = r.size != null ? r.size : null;
+                sendToSmugmug(r.url, albumKey, file.name, loadingEl, previews);
+              } else {
+                showError(loadingEl);
               }
-            } catch (e) {
-              imageHelpText.textContent = 'Error. Try again :(';
-            }
-          } else {
-            imageHelpText.textContent = 'Error. Try again :(';
-          }
-        };
-        xhr.onerror = function() {
-          if (loadingEl) loadingEl.src = '';
-          imageHelpText.textContent = 'Error. Try again :(';
-        };
-        xhr.send(formData);
+            })
+            .catch(function() {
+              legacyFormUpload(file, albumKey, loadingEl, previews);
+            });
+        } else {
+          legacyFormUpload(file, albumKey, loadingEl, previews);
+        }
       });
     }
   })();

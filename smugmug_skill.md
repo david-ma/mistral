@@ -2,6 +2,8 @@
 
 Generic knowledge for using SmugMug with Thalia: auth, API client usage, reuse across projects, and best practices. Use this when building or integrating SmugMug in any Thalia website.
 
+SmugMug is a paid image sharing, image hosting service. We have a paid account with them, and we use it to host images for the Thalia website. They have an API that we can use to interact with our account.
+
 ---
 
 ## Quick context (smugmug webapp)

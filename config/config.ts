@@ -1,6 +1,7 @@
 /**
  * SmugMug Thalia website config.
  * Security (users, sessions, audits) + albums/images + SmugMug API helpers.
+ * UploadThing: client uploads to UT (tagged temporary), then we fetch and send to SmugMug.
  */
 import path from 'path'
 import fs from 'fs'
@@ -13,11 +14,23 @@ import { recursiveObjectMerge } from 'thalia/website'
 const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
 import { eq, isNull, asc, or } from 'drizzle-orm'
 import { albums, images } from '../models/master-schema.js'
-import { listAlbums, getAlbumImages, getAlbum, patchAlbum, createAlbum } from './lib-smugmug.js'
+import {
+  listAlbums,
+  getAlbumImages,
+  getAlbum,
+  patchAlbum,
+  createAlbum,
+  get,
+  uploadToAlbum,
+  type SmugMugUploadResponse,
+} from './lib-smugmug.js'
 import { topUpAlbumsFromApi, topUpAlbumAndImagesFromApi } from './smugmug-topup.js'
 import { ServerResponse, IncomingMessage } from 'http'
 import { Website } from 'thalia/website'
 import { RequestInfo } from 'thalia/server'
+import { createRouteHandler } from 'uploadthing/server'
+import { uploadthingRouter } from './uploadthing.js'
+import { addTempFile, runCleanupIfNeeded } from './uploadthing-cleanup.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -63,6 +76,236 @@ function loadSmugMugCreds(): Promise<import('./lib-smugmug.js').SmugMugCredentia
     .catch(() => null)
 }
 
+/** Load UPLOADTHING_TOKEN from config/secrets.js for UploadThing route handler. */
+function loadUploadThingToken(): Promise<string | null> {
+  const secretsPath = path.join(import.meta.dirname, 'secrets.js')
+  if (!fs.existsSync(secretsPath)) return Promise.resolve(null)
+  const url = pathToFileURL(secretsPath).href
+  return import(url)
+    .then((m: any) => (typeof m.UPLOADTHING_TOKEN === 'string' ? m.UPLOADTHING_TOKEN : null))
+    .catch(() => null)
+}
+
+/** Read request body as Buffer (for Node IncomingMessage). */
+function readRequestBody(req: IncomingMessage): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    req.on('data', (c: Buffer) => chunks.push(c))
+    req.on('end', () => resolve(Buffer.concat(chunks)))
+    req.on('error', reject)
+  })
+}
+
+/** Build Fetch Request from Node IncomingMessage (for UploadThing route handler). */
+async function nodeRequestToFetch(
+  req: IncomingMessage,
+  body: Buffer
+): Promise<Request> {
+  const host = req.headers.host ?? 'localhost'
+  const url = `http://${host}${req.url ?? '/'}`
+  return new Request(url, {
+    method: req.method ?? 'GET',
+    headers: req.headers as HeadersInit,
+    body: body.length > 0 ? body : undefined,
+  })
+}
+
+/** Cached UploadThing route handlers (GET/POST) created once token is loaded. */
+let uploadThingHandlers: { GET: (req: Request) => Promise<Response>; POST: (req: Request) => Promise<Response> } | null = null
+
+/**
+ * Handle uploadPhoto: if JSON body with uploadThingUrl/fileKey + albumKey, fetch from UploadThing and send to SmugMug;
+ * otherwise use legacy form upload (file to server then SmugMug).
+ */
+function uploadPhotoController(
+  res: ServerResponse,
+  req: IncomingMessage,
+  website: Website,
+  requestInfo: RequestInfo
+) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method Not Allowed' }))
+    return
+  }
+  const contentType = (req.headers['content-type'] ?? '').toLowerCase()
+  if (contentType.includes('application/json')) {
+    readRequestBody(req)
+      .then((buf) => {
+        let body: { uploadThingUrl?: string; fileKey?: string; albumKey?: string; filename?: string; url?: string }
+        try {
+          body = JSON.parse(buf.toString('utf8'))
+        } catch {
+          res.statusCode = 400
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Invalid JSON' }))
+          return null
+        }
+        const url = body.uploadThingUrl ?? body.url
+        const albumKey = body.albumKey?.trim()
+        const fileKey = body.fileKey ?? null
+        const fileSize = typeof body.size === 'number' ? body.size : null
+        if ((!url && !body.fileKey) || !albumKey) {
+          res.statusCode = 400
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'uploadThingUrl (or url) and albumKey required' }))
+          return null
+        }
+        return loadSmugMugCreds().then((creds) => {
+          if (!creds) {
+            res.statusCode = 503
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'SmugMug credentials not configured' }))
+            return null
+          }
+          if (!url) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'uploadThingUrl or url required (client must send URL from upload response)' }))
+            return null
+          }
+          return fetch(url)
+            .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`Fetch ${r.status}`))))
+            .then((ab) => Buffer.from(ab))
+            .then((buffer) => {
+              const filename = body.filename ?? 'image.jpg'
+              const mime = filename.match(/\.(jpe?g|png|gif|webp)$/i)
+                ? (filename.endsWith('.png') ? 'image/png' : filename.endsWith('.gif') ? 'image/gif' : filename.endsWith('.webp') ? 'image/webp' : 'image/jpeg')
+                : 'image/jpeg'
+              return uploadToAlbum(creds, albumKey, buffer, mime, {
+                filename,
+                title: filename,
+                caption: '',
+                keywords: '',
+              }).then((uploadResp) => {
+                const albumImageUri = uploadResp?.Image?.AlbumImageUri
+                if (!albumImageUri) throw new Error('SmugMug upload response missing AlbumImageUri')
+                return get(creds, albumImageUri).then((apiBody: any) => {
+                  const albumImage = apiBody?.Response?.AlbumImage ?? apiBody?.Response
+                  if (!albumImage) throw new Error('SmugMug API: no AlbumImage in response')
+                  if (!website.db) {
+                    return { thumbnailUrl: uploadResp.Image?.URL ?? '', url: uploadResp.Image?.URL ?? '' }
+                  }
+                  return website.db.drizzle
+                    .insert(images)
+                    .values({
+                      caption: albumImage.Caption ?? '',
+                      filename: albumImage.FileName ?? filename,
+                      url: uploadResp.Image?.URL ?? '',
+                      originalSize: albumImage.OriginalSize ?? null,
+                      originalWidth: albumImage.OriginalWidth ?? null,
+                      originalHeight: albumImage.OriginalHeight ?? null,
+                      thumbnailUrl: albumImage.ThumbnailUrl ?? uploadResp.Image?.URL ?? null,
+                      archivedUri: albumImage.ArchivedUri ?? null,
+                      archivedSize: albumImage.ArchivedSize ?? null,
+                      archivedMD5: albumImage.ArchivedMD5 ?? null,
+                      imageKey: albumImage.ImageKey ?? albumImage.Key ?? '',
+                      preferredDisplayFileExtension: albumImage.PreferredDisplayFileExtension ?? null,
+                      uri: albumImage.Uri ?? null,
+                      albumKey,
+                    })
+                    .then(() => {
+                      if (fileKey) addTempFile(fileKey, fileSize ?? 0)
+                      loadUploadThingToken().then((token) =>
+                        runCleanupIfNeeded(token).catch((e) => console.error('[uploadthing-cleanup]', e))
+                      )
+                      return {
+                        thumbnailUrl: albumImage.ThumbnailUrl ?? uploadResp.Image?.URL ?? '',
+                        url: uploadResp.Image?.URL ?? '',
+                      }
+                    })
+                })
+              })
+            })
+        })
+      })
+      .then((out) => {
+        if (out == null) return
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify(out))
+      })
+      .catch((err) => {
+        console.error('UploadThing→SmugMug error:', err)
+        res.statusCode = 500
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: (err as Error).message }))
+      })
+    return
+  }
+  smugMugUploader.controller.call(smugMugUploader, res, req, website, requestInfo)
+}
+
+/**
+ * UploadThing route handler: GET/POST /api/uploadthing. Converts Node req/res to Fetch and delegates.
+ */
+function uploadThingRouteController(
+  res: ServerResponse,
+  req: IncomingMessage,
+  _website: Website,
+  _requestInfo: RequestInfo
+) {
+  const method = (req.method ?? 'GET').toUpperCase()
+  if (method !== 'GET' && method !== 'POST') {
+    res.statusCode = 405
+    res.end('Method Not Allowed')
+    return
+  }
+  readRequestBody(req)
+    .then((body) => nodeRequestToFetch(req, body))
+    .then((fetchReq) => {
+      if (!uploadThingHandlers) {
+        return loadUploadThingToken().then((token) => {
+          if (!token) {
+            res.statusCode = 503
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'UploadThing token not configured (UPLOADTHING_TOKEN in config/secrets.js)' }))
+            return null
+          }
+          const handlers = createRouteHandler({
+            router: uploadthingRouter,
+            config: { token },
+          })
+          uploadThingHandlers = { GET: handlers.GET, POST: handlers.POST }
+          return uploadThingHandlers[method as 'GET' | 'POST'](fetchReq)
+        })
+      }
+      return uploadThingHandlers[method as 'GET' | 'POST'](fetchReq)
+    })
+    .then((response) => {
+      if (response == null) return
+      res.statusCode = response.status
+      response.headers.forEach((value, key) => res.setHeader(key, value))
+      return response.arrayBuffer().then((ab) => res.end(Buffer.from(ab)))
+    })
+    .catch((err) => {
+      console.error('UploadThing route error:', err)
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: (err as Error).message }))
+    })
+}
+
+/** Manual trigger: run UploadThing temporary-file cleanup when storage is over threshold. */
+function uploadThingCleanupController(
+  res: ServerResponse,
+  _req: IncomingMessage,
+  _website: Website,
+  _requestInfo: RequestInfo
+) {
+  loadUploadThingToken()
+    .then((token) => runCleanupIfNeeded(token))
+    .then((result) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(result))
+    })
+    .catch((err) => {
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: (err as Error).message }))
+    })
+}
+
 /** Role-based route rules: SmugMug paths require user or admin (concatenated with Thalia default routes). */
 const smugmugRoutes: RoleRouteRule[] = [
   { path: '/galleries', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
@@ -73,6 +316,8 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/list-smugmug-albums', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/album-json', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/uploadPhoto', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
+  { path: '/api/uploadthing', permissions: { admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
+  { path: '/api/uploadthing-cleanup', permissions: { admin: [...ALL_PERMISSIONS], user: [] } },
 ]
 
 const smugmugConfig: RawWebsiteConfig = {
@@ -104,7 +349,9 @@ const smugmugConfig: RawWebsiteConfig = {
     },
     smugmugAlbums: AlbumMachine.controller.bind(AlbumMachine),
     smugmugImages: ImageMachine.controller.bind(ImageMachine),
-    uploadPhoto: smugMugUploader.controller.bind(smugMugUploader),
+    uploadPhoto: uploadPhotoController,
+    'api/uploadthing': uploadThingRouteController,
+    'api/uploadthing-cleanup': uploadThingCleanupController,
     'album-json': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
       const slug = requestInfo.action || ''
       if (!slug) {
