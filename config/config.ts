@@ -110,8 +110,8 @@ async function nodeRequestToFetch(
   })
 }
 
-/** Cached UploadThing route handlers (GET/POST) created once token is loaded. */
-let uploadThingHandlers: { GET: (req: Request) => Promise<Response>; POST: (req: Request) => Promise<Response> } | null = null
+/** Cached UploadThing route handler (single function for GET and POST; uploadthing/server returns one handler). */
+let uploadThingHandler: ((req: Request) => Promise<Response>) | null = null
 
 /**
  * Handle uploadPhoto: if JSON body with uploadThingUrl/fileKey + albumKey, fetch from UploadThing and send to SmugMug;
@@ -123,6 +123,7 @@ function uploadPhotoController(
   website: Website,
   requestInfo: RequestInfo
 ) {
+  console.debug("UploadPhotoController: Request received")
   if (req.method !== 'POST') {
     res.statusCode = 405
     res.setHeader('Content-Type', 'application/json')
@@ -131,8 +132,10 @@ function uploadPhotoController(
   }
   const contentType = (req.headers['content-type'] ?? '').toLowerCase()
   if (contentType.includes('application/json')) {
+    console.debug("UploadThing→SmugMug: JSON body received")
     readRequestBody(req)
       .then((buf) => {
+        console.debug("Parsing JSON body")
         let body: { uploadThingUrl?: string; fileKey?: string; albumKey?: string; filename?: string; url?: string }
         try {
           body = JSON.parse(buf.toString('utf8'))
@@ -147,11 +150,13 @@ function uploadPhotoController(
         const fileKey = body.fileKey ?? null
         const fileSize = typeof body.size === 'number' ? body.size : null
         if ((!url && !body.fileKey) || !albumKey) {
+          console.debug("Invalid JSON body", body)
           res.statusCode = 400
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ error: 'uploadThingUrl (or url) and albumKey required' }))
           return null
         }
+        console.debug("Loading SmugMug credentials")
         return loadSmugMugCreds().then((creds) => {
           if (!creds) {
             res.statusCode = 503
@@ -169,6 +174,7 @@ function uploadPhotoController(
             .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`Fetch ${r.status}`))))
             .then((ab) => Buffer.from(ab))
             .then((buffer) => {
+              console.debug("Uploading to SmugMug")
               const filename = body.filename ?? 'image.jpg'
               const mime = filename.match(/\.(jpe?g|png|gif|webp)$/i)
                 ? (filename.endsWith('.png') ? 'image/png' : filename.endsWith('.gif') ? 'image/gif' : filename.endsWith('.webp') ? 'image/webp' : 'image/jpeg')
@@ -254,7 +260,7 @@ function uploadThingRouteController(
   readRequestBody(req)
     .then((body) => nodeRequestToFetch(req, body))
     .then((fetchReq) => {
-      if (!uploadThingHandlers) {
+      if (!uploadThingHandler) {
         return loadUploadThingToken().then((token) => {
           if (!token) {
             res.statusCode = 503
@@ -262,18 +268,18 @@ function uploadThingRouteController(
             res.end(JSON.stringify({ error: 'UploadThing token not configured (UPLOADTHING_TOKEN in config/secrets.js)' }))
             return null
           }
-          const handlers = createRouteHandler({
+          uploadThingHandler = createRouteHandler({
             router: uploadthingRouter,
             config: { token },
           })
-          uploadThingHandlers = { GET: handlers.GET, POST: handlers.POST }
-          return uploadThingHandlers[method as 'GET' | 'POST'](fetchReq)
+          return uploadThingHandler(fetchReq)
         })
       }
-      return uploadThingHandlers[method as 'GET' | 'POST'](fetchReq)
+      return uploadThingHandler(fetchReq)
     })
     .then((response) => {
       if (response == null) return
+      console.log('[uploadthing] Response status:', response.status)
       res.statusCode = response.status
       response.headers.forEach((value, key) => res.setHeader(key, value))
       return response.arrayBuffer().then((ab) => res.end(Buffer.from(ab)))
@@ -306,6 +312,32 @@ function uploadThingCleanupController(
     })
 }
 
+/**
+ * Thalia uses the first path segment as the controller key, so /api/uploadthing
+ * resolves to controller 'api', not 'api/uploadthing'. This controller dispatches
+ * by pathname to the correct handler.
+ */
+function apiController(
+  res: ServerResponse,
+  req: IncomingMessage,
+  website: Website,
+  requestInfo: RequestInfo
+) {
+  const pathname = requestInfo.pathname ?? ''
+  if (pathname === '/api/uploadthing') {
+    console.log('[uploadthing] Request:', req.method, pathname, req.url)
+    uploadThingRouteController(res, req, website, requestInfo)
+    return
+  }
+  if (pathname === '/api/uploadthing-cleanup') {
+    uploadThingCleanupController(res, req, website, requestInfo)
+    return
+  }
+  res.statusCode = 404
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify({ error: 'Not found' }))
+}
+
 /** Role-based route rules: SmugMug paths require user or admin (concatenated with Thalia default routes). */
 const smugmugRoutes: RoleRouteRule[] = [
   { path: '/galleries', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
@@ -316,8 +348,12 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/list-smugmug-albums', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/album-json', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/uploadPhoto', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
-  { path: '/api/uploadthing', permissions: { admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
+  { path: '/api', permissions: { admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
+  /** UploadThing callbacks come from their servers (no session); guest must be allowed so the callback succeeds. */
+  { path: '/api/uploadthing', permissions: { guest: ['create', 'read'], admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
+  /** Longer path so it matches before /api/uploadthing; cleanup stays admin-only. */
   { path: '/api/uploadthing-cleanup', permissions: { admin: [...ALL_PERMISSIONS], user: [] } },
+  { path: '/uploadthing-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
 ]
 
 const smugmugConfig: RawWebsiteConfig = {
@@ -350,8 +386,12 @@ const smugmugConfig: RawWebsiteConfig = {
     smugmugAlbums: AlbumMachine.controller.bind(AlbumMachine),
     smugmugImages: ImageMachine.controller.bind(ImageMachine),
     uploadPhoto: uploadPhotoController,
-    'api/uploadthing': uploadThingRouteController,
-    'api/uploadthing-cleanup': uploadThingCleanupController,
+    api: apiController,
+    'uploadthing-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
+      const html = website.getContentHtml('uploadthing-test', 'uploadthing-test')({})
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
     'album-json': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
       const slug = requestInfo.action || ''
       if (!slug) {

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UploadThing test – client → UploadThing only</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    input[type="file"] { margin: 0.5rem 0; }
+    button { padding: 0.5rem 1rem; cursor: pointer; }
+    #out { margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px; min-height: 80px; }
+    #out.error { background: #fee; }
+    #out.success { background: #efe; }
+  </style>
+</head>
+<body>
+  <h1>UploadThing test</h1>
+  <p>Upload a file to UploadThing only (no SmugMug). Check your <a href="https://uploadthing.com/dashboard" target="_blank" rel="noopener">UploadThing dashboard</a> after a successful upload.</p>
+  <input type="file" id="file" accept="image/*" />
+  <button type="button" id="btn">Upload to UploadThing</button>
+  <div id="out">Result will appear here.</div>
+
+  <script type="module">
+    (function() {
+      const fileInput = document.getElementById('file');
+      const btn = document.getElementById('btn');
+      const out = document.getElementById('out');
+
+      function show(msg, isError) {
+        out.textContent = msg;
+        out.className = isError ? 'error' : 'success';
+      }
+
+      function showError(err) {
+        show('Error: ' + (err && (err.message || String(err))), true);
+      }
+
+      btn.addEventListener('click', async function() {
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (!file) {
+          show('Please select a file first.', true);
+          return;
+        }
+        show('Uploading…');
+        try {
+          const uploadFiles = window.uploadFilesToUploadThing;
+          if (!uploadFiles) {
+            showError(new Error('UploadThing client not loaded. Check console and that /js/uploadthing-init.js loads.'));
+            return;
+          }
+          const results = await uploadFiles('smugmugImage', { files: [file] });
+          const first = results && results[0];
+          if (first && first.url) {
+            show('Upload OK.\n\nkey: ' + (first.key || '') + '\nurl: ' + first.url + '\n\nCheck your UploadThing dashboard.');
+          } else {
+            show('Unexpected response: ' + JSON.stringify(results, null, 2), true);
+          }
+        } catch (e) {
+          showError(e);
+        }
+      });
+    })();
+  </script>
+  <script type="module" src="/js/uploadthing-init.js"></script>
+</body>
+</html>
