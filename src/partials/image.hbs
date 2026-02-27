@@ -102,7 +102,7 @@
       imageHelpText.textContent = 'Error. Try again :(';
     }
 
-    function sendToSmugmug(uploadThingUrl, albumKey, filename, loadingEl, previews) {
+    function sendToSmugmug(uploadThingUrl, albumKey, filename, fileKey, fileSize, loadingEl, previews) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '/uploadPhoto');
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -115,7 +115,17 @@
             showError(loadingEl);
           }
         } else {
-          showError(loadingEl);
+          try {
+            var errData = JSON.parse(xhr.responseText);
+            if (errData && errData.error) {
+              imageHelpText.textContent = errData.error;
+            } else {
+              showError(loadingEl);
+            }
+          } catch (e) {
+            showError(loadingEl);
+          }
+          if (loadingEl) loadingEl.src = '';
         }
       };
       xhr.onerror = function() { showError(loadingEl); };
@@ -123,8 +133,8 @@
         uploadThingUrl: uploadThingUrl,
         albumKey: albumKey,
         filename: filename || 'image.jpg',
-        fileKey: window._lastUploadThingKey || null,
-        size: window._lastUploadThingSize || null
+        fileKey: fileKey || null,
+        size: fileSize != null ? fileSize : null
       }));
     }
 
@@ -176,18 +186,22 @@
             .then(function(results) {
               var r = results && results[0];
               if (r && r.url) {
-                window._lastUploadThingKey = r.key || null;
-                window._lastUploadThingSize = r.size != null ? r.size : null;
-                sendToSmugmug(r.url, albumKey, file.name, loadingEl, previews);
+                sendToSmugmug(r.url, albumKey, file.name, r.key || null, r.size != null ? r.size : null, loadingEl, previews);
               } else {
                 showError(loadingEl);
               }
             })
-            .catch(function() {
+            .catch(function(err) {
+              console.warn('UploadThing failed, falling back to legacy upload', err);
               legacyFormUpload(file, albumKey, loadingEl, previews);
             });
         } else {
-          legacyFormUpload(file, albumKey, loadingEl, previews);
+          if (!albumKey) {
+            imageHelpText.textContent = 'Select an album first, or use the upload on an album page.';
+            if (loadingEl) loadingEl.src = '';
+          } else {
+            legacyFormUpload(file, albumKey, loadingEl, previews);
+          }
         }
       });
     }

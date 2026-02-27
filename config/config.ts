@@ -123,7 +123,6 @@ function uploadPhotoController(
   website: Website,
   requestInfo: RequestInfo
 ) {
-  console.debug("UploadPhotoController: Request received")
   if (req.method !== 'POST') {
     res.statusCode = 405
     res.setHeader('Content-Type', 'application/json')
@@ -132,10 +131,8 @@ function uploadPhotoController(
   }
   const contentType = (req.headers['content-type'] ?? '').toLowerCase()
   if (contentType.includes('application/json')) {
-    console.debug("UploadThing→SmugMug: JSON body received")
     readRequestBody(req)
       .then((buf) => {
-        console.debug("Parsing JSON body")
         let body: { uploadThingUrl?: string; fileKey?: string; albumKey?: string; filename?: string; url?: string }
         try {
           body = JSON.parse(buf.toString('utf8'))
@@ -150,13 +147,11 @@ function uploadPhotoController(
         const fileKey = body.fileKey ?? null
         const fileSize = typeof body.size === 'number' ? body.size : null
         if ((!url && !body.fileKey) || !albumKey) {
-          console.debug("Invalid JSON body", body)
           res.statusCode = 400
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ error: 'uploadThingUrl (or url) and albumKey required' }))
           return null
         }
-        console.debug("Loading SmugMug credentials")
         return loadSmugMugCreds().then((creds) => {
           if (!creds) {
             res.statusCode = 503
@@ -174,7 +169,6 @@ function uploadPhotoController(
             .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`Fetch ${r.status}`))))
             .then((ab) => Buffer.from(ab))
             .then((buffer) => {
-              console.debug("Uploading to SmugMug")
               const filename = body.filename ?? 'image.jpg'
               const mime = filename.match(/\.(jpe?g|png|gif|webp)$/i)
                 ? (filename.endsWith('.png') ? 'image/png' : filename.endsWith('.gif') ? 'image/gif' : filename.endsWith('.webp') ? 'image/webp' : 'image/jpeg')
@@ -279,7 +273,6 @@ function uploadThingRouteController(
     })
     .then((response) => {
       if (response == null) return
-      console.log('[uploadthing] Response status:', response.status)
       res.statusCode = response.status
       response.headers.forEach((value, key) => res.setHeader(key, value))
       return response.arrayBuffer().then((ab) => res.end(Buffer.from(ab)))
@@ -325,7 +318,6 @@ function apiController(
 ) {
   const pathname = requestInfo.pathname ?? ''
   if (pathname === '/api/uploadthing') {
-    console.log('[uploadthing] Request:', req.method, pathname, req.url)
     uploadThingRouteController(res, req, website, requestInfo)
     return
   }
