@@ -12,6 +12,7 @@ SmugMug is a paid image sharing, image hosting service. We have a paid account w
 - **URLs:** Public routes use **urlName** (NiceName) as the slug, not albumKey (e.g. `/album/My-Smug-Album`). Backend resolves slug → albumKey via DB (match urlName or albumKey). albumKey is used only for API calls and form payloads.
 - **Create album:** POST to **FolderAlbums** (`/api/v2/folder/user/:username!albums`), not User!albums (405). Body: `Title` (required), `NiceName` (optional), `Privacy`, `Description`. **Omit NiceName when the user leaves URL name blank**—SmugMug auto-generates from the title; sending empty or derived NiceName can cause 400/409.
 - **Config:** `config/config.ts` has typed controllers; `resolveSlugToAlbumKey(db, slug)` for slug→albumKey; redirects after create/edit use slug (urlName) when available.
+- **Upload (album page):** The image partial uses **UploadThing** first: browser uploads to UploadThing, then POSTs the file URL + albumKey to `/uploadPhoto`; the server fetches from UploadThing and uploads to SmugMug. No file bytes hit our server. Legacy form upload to `/uploadPhoto` remains as a fallback. See [uploadthing_skill.md](uploadthing_skill.md).
 
 ---
 
@@ -20,21 +21,23 @@ SmugMug is a paid image sharing, image hosting service. We have a paid account w
 | Location | Purpose |
 |----------|---------|
 | **Thalia `models/smugmug.ts`** | Shared Drizzle schema: `albums`, `images`. Use when a site needs to store SmugMug album/image references (keys, URLs) in its database. Import from `thalia` or project’s models. |
-| **Thalia `server/controllers.ts`** | `SmugMugUploader`: OAuth 1.0a, single-file upload to an album, `smugmugApiCall`. Used by example-auth and doombox; can be extended or refactored into a standalone client. |
-| **websites/smugmug** | Dedicated SmugMug webapp: galleries, images, bulk upload, metadata edit. Also the place we build a **reusable SmugMug API client** for listing albums/images, PATCH metadata, and uploads. |
-| **Other sites (dataviz, doombox, etc.)** | Import Thalia’s `SmugMugUploader` or the new client from smugmug; load credentials from their own auth file; store only album key, image key, or URL in their DB. |
+| **Thalia `server/controllers.ts`** | `SmugMugUploader`: OAuth 1.0a, single-file upload to an album, `smugmugApiCall`. Used by example-auth and doombox; used as **legacy fallback** when UploadThing is unavailable. |
+| **websites/smugmug – UploadThing** | See [uploadthing_skill.md](uploadthing_skill.md): file router, `/api/uploadthing`, cleanup of temporary files, image partial wiring. |
+| **websites/smugmug** | Dedicated SmugMug webapp: galleries, images, bulk upload, metadata edit. **Upload flow:** client → UploadThing → server fetches and sends to SmugMug via `config/lib-smugmug.ts` `uploadToAlbum()`. Reusable API client in `config/lib-smugmug.ts` for list albums/images, PATCH, create album, and upload. |
+| **Other sites (dataviz, doombox, etc.)** | Import Thalia’s `SmugMugUploader` or the client from smugmug (`lib-smugmug.ts`); load credentials from their own auth file; store only album key, image key, or URL in their DB. |
 
 ---
 
 ## Auth: Never Commit Credentials
 
-- **Use an auth file** outside version control (e.g. `config/smugmugAuth.js`).
-- **Pattern:** Same as `config/mailAuth.js` in thalia_ubc: `path.join(import.meta.dirname, 'smugmugAuth.js')`, check `fs.existsSync`, require at startup.
-- **Shape:** Export an object with:
+- **Use an auth file** outside version control (e.g. `config/smugmugAuth.js` or `config/secrets.js`).
+- **Pattern:** Same as `config/mailAuth.js` in thalia_ubc: load via `path.join(import.meta.dirname, 'secrets.js')` or `smugmugAuth.js`; check `fs.existsSync`; in smugmug webapp, `loadSmugMugCreds()` tries `secrets.js` then `smugmugAuth.js` and expects a `smugmug` export (or default).
+- **Shape (SmugMug):** Export an object with:
   - `consumer_key`, `consumer_secret` (SmugMug app)
   - `oauth_token`, `oauth_token_secret` (after one-time OAuth 1.0a flow)
   - Optional: `album` (default album key for uploads)
-- **.gitignore:** Add `config/smugmugAuth.js` (and optionally `config/*Auth*.js`).
+- **UploadThing (smugmug webapp only):** In `config/secrets.js` also export **`UPLOADTHING_TOKEN`** (string) for the UploadThing route handler and cleanup. See [uploadthing_skill.md](uploadthing_skill.md).
+- **.gitignore:** Add `config/smugmugAuth.js`, `config/secrets.js` (and optionally `config/*Auth*.js`).
 - **Template:** Commit `config/smugmugAuth.example.js` with placeholder keys and a short comment on how to obtain OAuth tokens.
 
 ---
@@ -91,7 +94,13 @@ SmugMug is a paid image sharing, image hosting service. We have a paid account w
 
 **Goal:** Users upload photos; we store them in a SmugMug album we control and only save references in our database.
 
-**Option A – Server proxy (recommended):**
+**Option A – UploadThing then SmugMug (smugmug webapp):**
+
+1. User selects file; browser uploads to **UploadThing** (no file bytes to our server).
+2. Browser POSTs to our endpoint with the UploadThing file URL and albumKey.
+3. Server fetches the file from UploadThing, uploads to SmugMug via `uploadToAlbum`, saves refs in DB, returns thumbnail URL. See [uploadthing_skill.md](uploadthing_skill.md).
+
+**Option A2 – Server proxy (legacy / other sites):**
 
 1. User submits file to our Thalia endpoint (e.g. POST `/upload-photo`).
 2. Server uses SmugMug client to upload to a fixed (or per-user) album.
@@ -140,7 +149,9 @@ SmugMug is a paid image sharing, image hosting service. We have a paid account w
 
 ## Reference
 
-- Project plan and checklist: [websites/smugmug/smugmug_plan.md](/usr/local/dev/Thalia/websites/smugmug/smugmug_plan.md)
+- Project plan and checklist: [smugmug_plan.md](smugmug_plan.md)
+- UploadThing integration (smugmug webapp): [uploadthing_skill.md](uploadthing_skill.md)
 - Thalia guide: [websites/thalia_ubc/thalia_skill.md](/usr/local/dev/Thalia/websites/thalia_ubc/thalia_skill.md)
 - Shared schema: [models/smugmug.ts](/usr/local/dev/Thalia/models/smugmug.ts)
-- Existing uploader: [server/controllers.ts](/usr/local/dev/Thalia/server/controllers.ts) (`SmugMugUploader`)
+- Thalia uploader (legacy fallback): [server/controllers.ts](/usr/local/dev/Thalia/server/controllers.ts) (`SmugMugUploader`)
+- SmugMug upload from buffer: `websites/smugmug/config/lib-smugmug.ts` (`uploadToAlbum`)

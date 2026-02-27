@@ -26,7 +26,7 @@ Images are uploaded **browser → UploadThing** (not to our server), then our se
 | Location | Purpose |
 |----------|---------|
 | **`config/uploadthing.ts`** | UploadThing file router: route `smugmugImage` (images, 16MB, 4 files), middleware returns `{ tag: 'temporary' }`. |
-| **`config/config.ts`** | Loads `UPLOADTHING_TOKEN` from `config/secrets.js`, mounts `/api/uploadthing` (Fetch adapter) and `/api/uploadthing-cleanup`, custom `uploadPhoto` controller (JSON vs form). |
+| **`config/config.ts`** | Loads `UPLOADTHING_TOKEN` from `config/secrets.js`. Single **`api`** controller (Thalia uses first path segment) dispatches by `pathname` to UploadThing handler or cleanup. Uses **`uploadthing/server`**: `createRouteHandler` returns one function for GET and POST, not `{ GET, POST }`. Custom `uploadPhoto` controller (JSON vs form). |
 | **`config/uploadthing-cleanup.ts`** | Track temporary file keys in `data/uploadthing-temp.json`, `addTempFile()`, `runCleanupIfNeeded(token, threshold)`. |
 | **`config/lib-smugmug.ts`** | `uploadToAlbum(creds, albumKey, fileBuffer, mimeType, options)` — OAuth-signed POST to `upload.smugmug.com` (buffer in, no disk write). |
 | **`src/partials/image.hbs`** | Image partial: loads `/js/uploadthing-init.js`, uses `window.uploadFilesToUploadThing('smugmugImage', { files })` then POSTs JSON to `/uploadPhoto`; falls back to legacy form upload. |
@@ -55,9 +55,10 @@ Images are uploaded **browser → UploadThing** (not to our server), then our se
 
 | Path | Method | Purpose |
 |------|--------|---------|
-| **`/api/uploadthing`** | GET, POST | UploadThing route handler (presigned URLs, callbacks). Used by the browser client. |
+| **`/api/uploadthing`** | GET, POST | UploadThing route handler (presigned URLs, callbacks). **Must allow guest** so UploadThing’s callback (no session) succeeds. Used by the browser client. |
 | **`/uploadPhoto`** | POST | **JSON body:** `uploadThingUrl` (or `url`), `albumKey`, optional `filename`, `fileKey`, `size` → fetch from UploadThing, upload to SmugMug, record temp, run cleanup. **Form body:** legacy flow (file to server, then SmugMug). |
 | **`/api/uploadthing-cleanup`** | GET/POST | Admin-only; runs `runCleanupIfNeeded(token)` and returns `{ deleted, freedBytes }`. |
+| **`/uploadthing-test`** | GET | Standalone test page: upload one file to UploadThing only (no SmugMug). Use to verify client → UploadThing before testing the full pipeline. |
 
 ---
 
@@ -74,8 +75,8 @@ Images are uploaded **browser → UploadThing** (not to our server), then our se
 ## Client (browser)
 
 - **`/js/uploadthing-init.js`** loads from ESM (e.g. `esm.sh`), sets **`window.uploadFilesToUploadThing`** using **`genUploader({ url: origin + '/api/uploadthing' })`**.
-- **Image partial:** If `window.uploadFilesToUploadThing` exists and `albumKey` is set, uploads with **`uploadFiles('smugmugImage', { files: [file] })`**, then POSTs to **`/uploadPhoto`** with JSON: `uploadThingUrl`, `albumKey`, `filename`, `fileKey`, `size`.
-- **Fallback:** If the client isn’t loaded or there’s no `albumKey`, uses the existing form POST to `/uploadPhoto` (legacy).
+- **Image partial** (`src/partials/image.hbs`): If `window.uploadFilesToUploadThing` exists and `albumKey` is set, uploads with **`uploadFiles('smugmugImage', { files: [file] })`**, then POSTs to **`/uploadPhoto`** with JSON: `uploadThingUrl`, `albumKey`, `filename`, `fileKey` (from `r.key`), `size` (from `r.size`). Passes `fileKey` and `size` as arguments to avoid races with multiple files. On 4xx/5xx, parses JSON and shows `error` in the UI. If no `albumKey`, shows “Select an album first, or use the upload on an album page.” and does not upload.
+- **Fallback:** If UploadThing client isn’t loaded or the upload fails, falls back to legacy form POST to `/uploadPhoto`.
 
 ---
 
@@ -90,6 +91,14 @@ Images are uploaded **browser → UploadThing** (not to our server), then our se
 ## Dependencies
 
 - **`uploadthing`** (e.g. `^7.7.4`) in `package.json`. Run **`bun install`** in `websites/smugmug` if needed.
+
+---
+
+## Thalia routing and permissions
+
+- Thalia uses the **first path segment** as the controller key. So `/api/uploadthing` resolves to controller **`api`**, not `api/uploadthing`. The **`api`** controller reads `requestInfo.pathname` and dispatches: `/api/uploadthing` → UploadThing handler, `/api/uploadthing-cleanup` → cleanup controller, else 404.
+- **`/api/uploadthing`** must have **`guest: ['create', 'read']`** in route permissions so that UploadThing’s **callback** request (from their servers, no session cookie) returns 2xx. Otherwise the upload succeeds but “callback failed” appears.
+- **`/api/uploadthing-cleanup`** is a longer path so it matches before `/api/uploadthing`; keep it admin-only (no guest).
 
 ---
 
