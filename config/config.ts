@@ -448,12 +448,20 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         return null
       }
       const { card, payload } = ctx
-      const blob = (card.blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
+      let blob = card.blob
+      if (typeof blob === 'string') {
+        try {
+          blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+        } catch {
+          blob = {}
+        }
+      }
+      blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
       const cells = Array.isArray(blob.cells) ? blob.cells.slice() : []
       if (payload.cellIndex >= cells.length) {
         res.statusCode = 400
         res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({ error: 'Invalid cellIndex' }))
+        res.end(JSON.stringify({ error: cells.length === 0 ? 'Card has no cells; please refresh the page.' : 'Invalid cellIndex' }))
         return null
       }
       return loadMistralApiKey().then((key) => (key ? { key, cells, payload, card } : null))
