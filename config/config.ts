@@ -716,7 +716,7 @@ const smugmugRoutes: RoleRouteRule[] = [
 ]
 
 /** Hosts that can serve this site. Add your deployment host (e.g. IP:port or hostname) so the route guard allows access. */
-const smugmugDomains = ['localhost', '100.75.136.113:3535']
+const smugmugDomains = ['localhost', '100.75.136.113:3535', 'mistral.david-ma.net']
 
 const smugmugConfig: RawWebsiteConfig = {
   domains: smugmugDomains,
