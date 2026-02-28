@@ -64,8 +64,7 @@ A single page that confirms the Mistral vision API works end-to-end:
    - **On-demand:** “Annotate” button on an image or album page that triggers the above for that image (or selected images).
    - **Batch:** Script or admin action that iterates over images in an album (or all images) and calls the annotate logic; respect rate limits and error handling.
 
-6. **Advanced (later): facial recognition**
-   - If Mistral (or another provider) supports face detection/recognition, add a second type of note (e.g. `"faces": [...]`) into the same `note` JSON or a separate structure, and merge into `image_notes.note` when you persist.
+6. **Advanced (later): facial recognition** — See “Facial recognition across albums” below. Not supported by Mistral; use a dedicated face API or library. Left as a future project.
 
 ### Phase C: UI to show notes
 
@@ -99,11 +98,39 @@ A single page that confirms the Mistral vision API works end-to-end:
 
 ---
 
-## 4. References
+## 4. Facial recognition across albums (future project)
+
+**Goal:** Upload an album and get “the same person is in photos 1, 3, 8” (identity clustering across images).
+
+**Mistral:** Mistral’s vision API is for general image understanding (descriptions, OCR, comparing two images). It does **not** provide:
+- Stable face embeddings you can compare across photos
+- A dedicated “face identity” or “same person” API
+
+So Mistral is not the right tool for cross-image facial recognition.
+
+**What you need:** (1) **Face detection** (find faces in each image, ideally with bounding boxes), (2) **Face embeddings** (one vector per face), (3) **Matching/clustering** (same embedding → same person). That requires a dedicated face pipeline, not a general vision model.
+
+**Can Mistral do face detection?** It can *describe* that there are people or faces in an image (e.g. “two people, one on the left, one on the right”) but it does **not** return structured detection output (bounding boxes, coordinates). So it can’t replace a proper face detector for a pipeline that needs crop regions or counts per region. Use a dedicated detector (Rekognition, Azure Face, OpenCV, face-api.js, etc.) for that step.
+
+**Better options:**
+
+| Option | Notes |
+|--------|------|
+| **AWS Rekognition** | Face search, face comparison, “Face Collections” to index faces and query “which photos have this person?” |
+| **Azure Face API** | Face detection, verification (1:1), identification (1:many). Good for “same person in photos 1, 3, 8”. |
+| **Google Cloud Vision** | Face detection + landmarks. For full identity clustering you’d pair with Vertex or another embedding service. |
+| **Open source** | **face-api.js** (browser), **DeepFace** (Python), **InsightFace** — run locally; extract embeddings, then cluster or match by similarity. |
+
+**Recommendation:** Leave facial recognition as a **future project**. When you pick it up: choose a provider (e.g. Azure Face or AWS Rekognition for managed APIs, or InsightFace/DeepFace for self-hosted), run face detection + embeddings on each image, then cluster or match embeddings and store results (e.g. in `image_notes.note` under a `faces` or `personIds` structure).
+
+---
+
+## 5. References
 
 - **SmugMug:** [smugmug_skill.md](smugmug_skill.md) — auth, API client, `lib-smugmug.ts`, top-up, album/image keys.
 - **Thalia:** [thalia_skill.md](../thalia_ubc/thalia_skill.md) — Drizzle workflow, migrations, `master-schema`, controllers, full-page vs wrap.
 - **Schema:** `models/image_notes.ts` (this project), Thalia `models/smugmug.ts` for `albums` and `images`.
+- **Mistral vision:** https://docs.mistral.ai/capabilities/vision (no face API).
 
 
 <!-- Example code for using the Mistral API -->

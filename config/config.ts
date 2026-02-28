@@ -12,7 +12,7 @@ import { ThaliaSecurity, type RoleRouteRule } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
 
 const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
-import { eq, isNull, asc, or } from 'drizzle-orm'
+import { eq, isNull, asc, or, and } from 'drizzle-orm'
 import { albums, images, image_notes } from '../models/master-schema.js'
 import {
   listAlbums,
@@ -330,9 +330,65 @@ function apiController(
     mistralDescribeController(res, req)
     return
   }
+  if (pathname === '/api/image-notes') {
+    imageNotesController(res, req, website)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
+}
+
+/** POST /api/image-notes: body { albumKey, imageKey, note }. Upserts image_notes by albumKey+imageKey. */
+function imageNotesController(res: ServerResponse, req: IncomingMessage, website: Website) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
+  }
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  readRequestBody(req)
+    .then((buf) => {
+      const body = JSON.parse(buf.toString()) as { albumKey?: string; imageKey?: string; note?: string }
+      const albumKey = typeof body?.albumKey === 'string' ? body.albumKey.trim() : ''
+      const imageKey = typeof body?.imageKey === 'string' ? body.imageKey.trim() : ''
+      const note = typeof body?.note === 'string' ? body.note : (body?.note != null ? JSON.stringify(body.note) : '')
+      if (!imageKey || !note) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'imageKey and note required' }))
+        return null
+      }
+      return { albumKey, imageKey, note }
+    })
+    .then((payload) => {
+      if (!payload) return null
+      const db = website.db!.drizzle
+      return db
+        .select()
+        .from(image_notes)
+        .where(and(eq(image_notes.albumKey, payload.albumKey), eq(image_notes.imageKey, payload.imageKey)))
+        .limit(1)
+        .then((rows) => (rows[0] ? db.update(image_notes).set({ note: payload.note }).where(eq(image_notes.id, rows[0].id)) : db.insert(image_notes).values({ albumKey: payload.albumKey || null, imageKey: payload.imageKey, note: payload.note })))
+        .then(() => payload)
+    })
+    .then((payload) => {
+      if (!payload) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ ok: true, albumKey: payload.albumKey, imageKey: payload.imageKey }))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
 }
 
 /** POST /api/mistral-describe: body { imageUrl }. Returns { description, usage? } or { error }. */
@@ -568,6 +624,77 @@ const smugmugConfig: RawWebsiteConfig = {
         })
     },
     album: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const pathname = requestInfo.pathname ?? ''
+      const pathParts = pathname.split('/').filter(Boolean)
+      // /album/slug/image/imageKey -> ['album', 'slug', 'image', 'imageKey']
+      const isImageShow = pathParts.length === 4 && pathParts[0] === 'album' && pathParts[2] === 'image'
+      if (isImageShow) {
+        const slug = decodeURIComponent(pathParts[1])
+        const imageKey = pathParts[3]
+        if (!website.db) {
+          res.statusCode = 503
+          res.setHeader('Content-Type', 'text/html')
+          res.end('<h1>Service Unavailable</h1><p>Database not configured.</p>')
+          return
+        }
+        const db = website.db.drizzle
+        resolveSlugToAlbumKey(db, slug)
+          .then((albumKey) => {
+            if (!albumKey) {
+              res.statusCode = 404
+              res.setHeader('Content-Type', 'text/html')
+              res.end('<h1>Not Found</h1><p>Album not found.</p>')
+              return null
+            }
+            return Promise.all([
+              db.select().from(images).where(and(eq(images.albumKey, albumKey), eq(images.imageKey, imageKey))).limit(1),
+              db.select().from(image_notes).where(and(eq(image_notes.albumKey, albumKey), eq(image_notes.imageKey, imageKey))).limit(1),
+            ]).then(([imgRows, noteRows]) => ({ albumKey, image: imgRows[0], noteRow: noteRows[0] ?? null }))
+          })
+          .then((ctx) => {
+            if (!ctx) return
+            if (!ctx.image) {
+              res.statusCode = 404
+              res.setHeader('Content-Type', 'text/html')
+              res.end('<h1>Not Found</h1><p>Image not found.</p>')
+              return
+            }
+            let noteData: { description?: string; usage?: unknown; [k: string]: unknown } | null = null
+            if (ctx.noteRow?.note) {
+              try {
+                noteData = JSON.parse(ctx.noteRow.note) as { description?: string; usage?: unknown; [k: string]: unknown }
+              } catch {
+                noteData = { description: ctx.noteRow.note }
+              }
+            }
+            const displaySlug = encodeURIComponent(slug)
+            const html = website.getContentHtml('image-show', 'wrapper')({
+              title: ctx.image.filename ?? 'Image',
+              albumKey: ctx.albumKey,
+              albumSlug: slug,
+              albumSlugEncoded: displaySlug,
+              image: {
+                imageKey: ctx.image.imageKey,
+                url: ctx.image.url,
+                thumbnailUrl: ctx.image.thumbnailUrl,
+                caption: ctx.image.caption,
+                filename: ctx.image.filename,
+              },
+              note: noteData,
+              userAuth: requestInfo.userAuth ?? {},
+              siteName: 'SmugMug',
+              currentYear: new Date().getFullYear(),
+            })
+            res.setHeader('Content-Type', 'text/html')
+            res.end(html)
+          })
+          .catch((err: Error) => {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'text/html')
+            res.end(`<h1>Error</h1><p>${err.message}</p>`)
+          })
+        return
+      }
       const slug = requestInfo.action || ''
       if (!slug) {
         res.statusCode = 400
@@ -631,6 +758,7 @@ const smugmugConfig: RawWebsiteConfig = {
               title: albumRow?.name ?? 'Album',
               albumKey,
               albumSlug: displaySlug,
+              albumSlugEncoded: encodeURIComponent(displaySlug),
               album,
               images: imagesForTemplate,
               userAuth: requestInfo.userAuth ?? {},

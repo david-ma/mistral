@@ -1,0 +1,137 @@
+{{!-- In config.ts we load this and use the wrapper.hbs template --}}
+
+<style>
+  .image-show-full {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .image-show-main {
+    margin: 1rem 0;
+  }
+
+  .image-show-meta {
+    margin-top: 1.5rem;
+  }
+
+  .image-show-description {
+    white-space: pre-wrap;
+  }
+</style>
+
+<p><a href="/album/{{albumSlugEncoded}}">&larr; Back to album</a></p>
+
+<h1>{{#if image.caption}}{{image.caption}}{{else}}{{image.filename}}{{/if}}</h1>
+
+<div class="image-show-main">
+  {{#if image.url}}
+  <img src="{{image.url}}" alt="{{image.caption}}" class="image-show-full" />
+  {{else}}
+  {{#if image.thumbnailUrl}}
+  <img src="{{image.thumbnailUrl}}" alt="{{image.caption}}" class="image-show-full" />
+  {{else}}
+  <p>No image URL available.</p>
+  {{/if}}
+  {{/if}}
+</div>
+
+<div class="image-show-meta">
+  {{#if note}}
+  <section class="image-show-notes">
+    <h2>Description &amp; metadata</h2>
+    {{#if note.description}}
+    <p class="image-show-description">{{note.description}}</p>
+    {{/if}}
+    {{#if note.usage}}
+    <p class="image-show-usage text-muted"><small>Tokens: {{note.usage.prompt_tokens}} prompt,
+        {{note.usage.completion_tokens}} completion</small></p>
+    {{/if}}
+    {{#unless note.description}}
+    {{#unless note.usage}}
+    <p class="text-muted"><small>Note stored (no description text).</small></p>
+    {{/unless}}
+    {{/unless}}
+  </section>
+  {{else}}
+  <section class="image-show-notes" id="imageShowNotesSection" data-image-url="{{image.url}}"
+    data-album-key="{{albumKey}}" data-image-key="{{image.imageKey}}">
+    <h2>Description &amp; metadata</h2>
+    <p class="text-muted">No description yet.</p>
+    <button type="button" class="btn btn-primary" id="generateDescriptionBtn" onclick="generateDescription()">Generate
+      description</button>
+    <p id="generateDescriptionOut" class="mt-2" style="display: none;"></p>
+  </section>
+  {{/if}}
+</div>
+
+<script>
+  function generateDescription() {
+    console.log("Generating description for image...");
+
+    var section = $("#imageShowNotesSection");
+    var btn = $("#generateDescriptionBtn");
+    var out = $("#generateDescriptionOut");
+    if (!section || !btn || !out) return;
+
+//    var imageUrl = section.data('image-url');
+    var albumKey = section.data('album-key');
+    var imageKey = section.data('image-key');
+
+    console.log("section:", section);
+    console.log("btn:", btn);
+    console.log("out:", out);
+    console.log("imageUrl:", imageUrl);
+    console.log("albumKey:", albumKey);
+    var imageUrl = section.find('img.image-show-full').attr('src');
+
+    console.log("imageKey:", imageKey);
+
+    if (!imageUrl && !imageKey) {
+      console.warn('generateDescription: missing imageUrl or imageKey');
+      return;
+    }
+
+    console.log('Generating description for image:', imageUrl, 'albumKey:', albumKey, 'imageKey:', imageKey);
+
+    btn.disabled = true;
+    out.style.display = 'block';
+    out.textContent = 'Generating…';
+    out.className = 'mt-2';
+
+    fetch('/api/mistral-describe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageUrl: imageUrl })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          out.textContent = 'Error: ' + (result.data.error || 'Unknown');
+          out.className = 'mt-2 text-danger';
+          btn.disabled = false;
+          return;
+        }
+        var noteJson = JSON.stringify({ description: result.data.description, usage: result.data.usage });
+        return fetch('/api/image-notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ albumKey: albumKey, imageKey: imageKey, note: noteJson })
+        }).then(function (r) { return r.json(); }).then(function () { return result.data; });
+      })
+      .then(function (data) {
+        if (data && data.description) {
+          out.textContent = 'Saved. Reloading…';
+          out.className = 'mt-2 text-success';
+          setTimeout(function () { window.location.reload(); }, 800);
+        } else {
+          btn.disabled = false;
+        }
+      })
+      .catch(function (err) {
+        out.textContent = 'Error: ' + (err && err.message ? err.message : String(err));
+        out.className = 'mt-2 text-danger';
+        btn.disabled = false;
+      });
+  }
+</script>

@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/styles/main.css">
+{{!-- In config.ts we load this and use the wrapper.hbs template --}}
 
 <p><a href="/galleries">&larr; Back to albums</a></p>
 {{#if album}}<h1>{{#if album.name}}{{album.name}}{{else}}Album {{albumSlug}}{{/if}}</h1>{{/if}}
@@ -10,9 +10,9 @@
       {{#each images}}
         <figure class="album-image">
           {{#if this.thumbnailUrl}}
-            <a href="{{this.url}}" target="_blank" rel="noopener"><img src="{{this.thumbnailUrl}}" alt="{{this.caption}}" loading="lazy" /></a>
+            <a href="/album/{{../albumSlugEncoded}}/image/{{this.imageKey}}"><img src="{{this.thumbnailUrl}}" alt="{{this.caption}}" loading="lazy" /></a>
           {{else}}
-            <a href="{{this.url}}" target="_blank" rel="noopener">{{this.fileName}}</a>
+            <a href="/album/{{../albumSlugEncoded}}/image/{{this.imageKey}}">{{this.fileName}}</a>
           {{/if}}
           {{#if this.caption}}<figcaption>{{this.caption}}</figcaption>{{/if}}
         </figure>
