@@ -16,11 +16,12 @@ const audits: MySqlTableWithColumns<any> = models.audits
 const albums: MySqlTableWithColumns<any> = models.albums
 const images: MySqlTableWithColumns<any> = models.images
 
-import { mailTable } from '../node_modules/thalia/server/mail.js'
+import { mailTable } from '../node_modules/thalia/server/mail'
 const mail: MySqlTableWithColumns<any> = mailTable as unknown as MySqlTableWithColumns<any>
 
 
 // export { users, sessions, audits, albums, images }
 
-import { fruit } from './fruit.js'
-export { users, sessions, audits, albums, images, fruit, mail }
+import { fruit } from './fruit'
+import { image_notes } from './image_notes'
+export { users, sessions, audits, albums, images, fruit, mail, image_notes }

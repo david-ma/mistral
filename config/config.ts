@@ -13,7 +13,7 @@ import { recursiveObjectMerge } from 'thalia/website'
 
 const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
 import { eq, isNull, asc, or } from 'drizzle-orm'
-import { albums, images } from '../models/master-schema.js'
+import { albums, images, image_notes } from '../models/master-schema.js'
 import {
   listAlbums,
   getAlbumImages,
@@ -355,6 +355,7 @@ const smugmugConfig: RawWebsiteConfig = {
     schemas: {
       albums,
       images,
+      image_notes,
     },
     machines: {
       albums: AlbumMachine,
