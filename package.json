@@ -11,7 +11,6 @@
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "mysql2": "^3.14.1",
-    "thalia": "file:/usr/local/dev/Thalia",
     "uploadthing": "^7.7.4"
   },
   "devDependencies": {
