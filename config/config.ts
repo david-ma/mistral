@@ -338,6 +338,11 @@ function apiController(
     bingoCellController(res, req, website)
     return
   }
+  const bingoGameMatch = pathname.match(/^\/api\/bingo-game\/(\d+)$/)
+  if (bingoGameMatch) {
+    getBingoGameStateController(res, parseInt(bingoGameMatch[1], 10), website)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
@@ -475,6 +480,73 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
       if (!result) return
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify(result))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
+}
+
+/** GET /api/bingo-game/:cardId. Returns JSON { cardId, eventName, gridSize, cells } for client-side render. */
+function getBingoGameStateController(res: ServerResponse, cardId: number, website: Website) {
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  website.db.drizzle.select().from(bingo_cards).where(eq(bingo_cards.id, cardId)).limit(1)
+    .then((rows: any[]) => {
+      const card = rows[0]
+      if (!card) {
+        res.statusCode = 404
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'Card not found' }))
+        return null
+      }
+      return website.db!.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1).then((eventRows: any[]) => {
+        const event = eventRows[0]
+        let blob = card.blob
+        if (typeof blob === 'string') {
+          try {
+            blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+          } catch {
+            blob = {}
+          }
+        }
+        blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
+        let rawCells = Array.isArray(blob.cells) ? blob.cells : []
+        if (rawCells.length === 0 && event?.prompts) {
+          const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
+          const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
+          const gridSizeNum = event.gridSize === '5' ? 5 : 3
+          const total = gridSizeNum * gridSizeNum
+          const centerIndex = total === 9 ? 4 : 12
+          const numPrompts = total - 1
+          const chosen = shuffled.slice(0, numPrompts)
+          rawCells = []
+          let p = 0
+          for (let i = 0; i < total; i++) {
+            if (i === centerIndex) {
+              rawCells.push({ prompt: 'Free space', imageUrl: null, description: null, isFreeSpace: true })
+            } else {
+              rawCells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null, isFreeSpace: false })
+              p++
+            }
+          }
+          website.db!.drizzle.update(bingo_cards).set({ blob: { cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
+        }
+        const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
+        const gridSize = event?.gridSize === '5' ? 5 : 3
+        return { cardId: card.id, eventName: event?.name ?? '', gridSize, cells }
+      })
+    })
+    .then((state) => {
+      if (!state) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(state))
     })
     .catch((err) => {
       if (res.headersSent) return
