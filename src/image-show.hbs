@@ -67,37 +67,23 @@
 
 <script>
   function generateDescription() {
-    console.log("Generating description for image...");
-
     var section = $("#imageShowNotesSection");
     var btn = $("#generateDescriptionBtn");
     var out = $("#generateDescriptionOut");
-    if (!section || !btn || !out) return;
+    if (!section.length || !btn.length || !out.length) return;
 
-//    var imageUrl = section.data('image-url');
+    var imageUrl = section.data('image-url') || $('.image-show-main img.image-show-full').attr('src');
     var albumKey = section.data('album-key');
     var imageKey = section.data('image-key');
 
-    console.log("section:", section);
-    console.log("btn:", btn);
-    console.log("out:", out);
-    console.log("imageUrl:", imageUrl);
-    console.log("albumKey:", albumKey);
-    var imageUrl = section.find('img.image-show-full').attr('src');
-
-    console.log("imageKey:", imageKey);
-
-    if (!imageUrl && !imageKey) {
+    if (!imageUrl || !imageKey) {
       console.warn('generateDescription: missing imageUrl or imageKey');
       return;
     }
-
     console.log('Generating description for image:', imageUrl, 'albumKey:', albumKey, 'imageKey:', imageKey);
 
-    btn.disabled = true;
-    out.style.display = 'block';
-    out.textContent = 'Generating…';
-    out.className = 'mt-2';
+    btn.prop('disabled', true);
+    out.css('display', 'block').text('Generating…').attr('class', 'mt-2');
 
     fetch('/api/mistral-describe', {
       method: 'POST',
@@ -107,9 +93,8 @@
       .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
       .then(function (result) {
         if (!result.ok) {
-          out.textContent = 'Error: ' + (result.data.error || 'Unknown');
-          out.className = 'mt-2 text-danger';
-          btn.disabled = false;
+          out.text('Error: ' + (result.data.error || 'Unknown')).attr('class', 'mt-2 text-danger');
+          btn.prop('disabled', false);
           return;
         }
         var noteJson = JSON.stringify({ description: result.data.description, usage: result.data.usage });
@@ -121,17 +106,15 @@
       })
       .then(function (data) {
         if (data && data.description) {
-          out.textContent = 'Saved. Reloading…';
-          out.className = 'mt-2 text-success';
+          out.text('Saved. Reloading…').attr('class', 'mt-2 text-success');
           setTimeout(function () { window.location.reload(); }, 800);
         } else {
-          btn.disabled = false;
+          btn.prop('disabled', false);
         }
       })
       .catch(function (err) {
-        out.textContent = 'Error: ' + (err && err.message ? err.message : String(err));
-        out.className = 'mt-2 text-danger';
-        btn.disabled = false;
+        out.text('Error: ' + (err && err.message ? err.message : String(err))).attr('class', 'mt-2 text-danger');
+        btn.prop('disabled', false);
       });
   }
 </script>
