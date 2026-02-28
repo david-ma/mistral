@@ -443,3 +443,174 @@ $bingo-text-muted: #94a3b8;
     }
   }
 }
+
+// -----------------------------------------------------------------------------
+// Landing / welcome page (index)
+// -----------------------------------------------------------------------------
+.bingo-landing {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: $bingo-spacing 0 3rem;
+
+  @media (min-width: 768px) {
+    padding: 2rem 0 4rem;
+  }
+}
+
+.bingo-hero {
+  text-align: center;
+  padding: $bingo-spacing-lg 0 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid $bingo-border;
+
+  &__title {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+
+    @media (min-width: 768px) {
+      font-size: 2.5rem;
+    }
+  }
+
+  &__tagline {
+    margin: 0 0 $bingo-spacing-lg;
+    font-size: 1.1rem;
+    color: $bingo-text-muted;
+    line-height: 1.5;
+  }
+
+  &__cta {
+    display: inline-block;
+    padding: 0.85rem 1.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+    background: $bingo-cta;
+    border: none;
+    border-radius: $bingo-radius-sm;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+
+    &:hover {
+      background: $bingo-cta-hover;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.bingo-section {
+  margin-bottom: 2.5rem;
+
+  &__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  &__body {
+    color: $bingo-text-muted;
+    font-size: 0.95rem;
+    line-height: 1.6;
+
+    p {
+      margin: 0 0 0.75rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    a {
+      color: $bingo-accent;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    ul {
+      margin: 0.5rem 0 0.75rem;
+      padding-left: 1.25rem;
+    }
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+.bingo-hackathon {
+  padding: $bingo-spacing-lg;
+  background: $bingo-card-bg;
+  border-radius: $bingo-radius;
+  border: 1px solid $bingo-border;
+
+  &__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  &__link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: $bingo-cta;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__meta {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: $bingo-text-muted;
+  }
+
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  &__stat {
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: $bingo-radius-sm;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &__subtitle {
+    margin: 1rem 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  &__list {
+    margin: 0;
+    padding-left: 1.25rem;
+    font-size: 0.9rem;
+    color: $bingo-text-muted;
+    line-height: 1.5;
+
+    li { margin-bottom: 0.25rem; }
+  }
+
+  &__sponsors {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: $bingo-text-muted;
+
+    strong { color: inherit; }
+  }
+}

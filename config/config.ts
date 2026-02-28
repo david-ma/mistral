@@ -730,8 +730,19 @@ const smugmugConfig: RawWebsiteConfig = {
     },
   },
   controllers: {
+    /** Serves / (root): bingo welcome page for Mistral hackathon. */
+    homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const html = website.getContentHtml('index', 'wrapper')({
+        title: 'Photo Bingo',
+        siteName: 'SmugMug',
+        currentYear: new Date().getFullYear(),
+        userAuth: requestInfo.userAuth ?? {},
+      })
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    /** Old SmugMug galleries gate; use /smugmug_homepage or link from nav if needed. */
     smugmug_homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
-      console.log("running index controller")
       const userAuth = requestInfo.userAuth ?? {}
       const html = website.getContentHtml('smugmug_index', 'wrapper')({
         title: 'Galleries',

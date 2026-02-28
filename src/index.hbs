@@ -1,10 +1,48 @@
-{{#> wrapper }}
+<div class="bingo-landing">
+  <header class="bingo-hero">
+    <h1 class="bingo-hero__title">Photo Bingo</h1>
+    <p class="bingo-hero__tagline">Play bingo with your camera. Get prompts, snap photos, and let AI describe what you captured.</p>
+    <a href="/list-events" class="bingo-hero__cta">Play bingo</a>
+  </header>
 
-<h1>Play bingo!</h1>
-<button>Play bingo</button>
+  <section class="bingo-section">
+    <h2 class="bingo-section__title">How it works</h2>
+    <div class="bingo-section__body">
+      <p>This app is built for the <a href="https://worldwide-hackathon.mistral.ai/" target="_blank" rel="noopener">Mistral AI Worldwide Hackathon 2026</a>. The stack:</p>
+      <ul>
+        <li><strong>Thalia</strong> — lightweight Bun-based web framework (Handlebars, Drizzle ORM, multi-site).</li>
+        <li><strong>Mistral AI</strong> — vision API to describe each photo you upload for a bingo cell.</li>
+        <li><strong>UploadThing</strong> — client uploads images; we send the URL to our server and Mistral.</li>
+        <li><strong>D3.js</strong> — card grid is drawn on the client from a JSON game state; fast load, then fetch.</li>
+        <li><strong>Socket.IO</strong> — real-time updates (e.g. when a cell is filled) for a smoother experience.</li>
+      </ul>
+      <p>Organisers create events with a list of prompts (e.g. “Team photo”, “Photo of lunch”). Players join an event, get a randomised bingo card, then tap each prompt to take or upload a photo. We run the image through Mistral, store the description on the card, and you can review everything on the admin “View all prompts” page.</p>
+    </div>
+  </section>
 
-<div>
-  About this event: https://worldwide-hackathon.mistral.ai/
+  <section class="bingo-section">
+    <h2 class="bingo-section__title">Hackathon &amp; sponsors</h2>
+    <div class="bingo-hackathon">
+      <h3 class="bingo-hackathon__title">Mistral AI Worldwide Hackathon 2026</h3>
+      <a href="https://worldwide-hackathon.mistral.ai/" class="bingo-hackathon__link" target="_blank" rel="noopener">worldwide-hackathon.mistral.ai →</a>
+      <p class="bingo-hackathon__meta">February 28th – March 1st · 7 locations · Build the next era of AI</p>
+
+      <div class="bingo-hackathon__stats">
+        <span class="bingo-hackathon__stat">1000+ hackers</span>
+        <span class="bingo-hackathon__stat">1–4 per team</span>
+        <span class="bingo-hackathon__stat">48 hours</span>
+        <span class="bingo-hackathon__stat">200k+ in prizes</span>
+      </div>
+
+      <p class="bingo-hackathon__subtitle">Prizes</p>
+      <ul class="bingo-hackathon__list">
+        <li><strong>Global winner:</strong> hiring opportunity at Mistral, $15k Mistral credits, $10k cash</li>
+        <li><strong>Per location:</strong> 1st – $3k credits + $1.5k cash; 2nd – $2k credits + $1k cash; 3rd – $2k credits + $500 cash</li>
+        <li>Special awards: Best Vibe Usage, Best Use of ElevenLabs, Best Video Game Project, Best Use of Agent Skills, and more</li>
+      </ul>
+
+      <p class="bingo-hackathon__subtitle">Sponsors</p>
+      <p class="bingo-hackathon__sponsors">Weight &amp; Biases (global track), NVIDIA (New York, London, Paris), Amazon Web Services (London, Paris), Hugging Face, ElevenLabs, Supercell, Raise, Giant, Jump Trading, White Circle, Tilde Research. Hackathon organised by Iterate.</p>
+    </div>
+  </section>
 </div>
-
-{{/wrapper}}
