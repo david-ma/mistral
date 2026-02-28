@@ -23,7 +23,7 @@ This doc describes how Thalia’s role-based security works so the SmugMug proje
 - **Type:** `path: string` + `permissions: Partial<Record<Role, Permission[]>>`.
 - **Roles:** `admin`, `user`, `guest`.
 - **Permissions:** `read`, `create`, `update`, `delete`, `manage`.
-- **Matching:** Longest path prefix wins (e.g. `/album` before `/`). Key used in the guard is `host + pathname` (e.g. `localhost/album`).
+- **Matching:** Longest path prefix wins (e.g. `/album` before `/`). Key used in the guard is **`host + pathname`** (e.g. `localhost/album`). So the **domain (host) being served matters**: routes are registered for each entry in `config.domains`. If you deploy to a different host (e.g. `100.75.136.113:3535` or `bingo.example.com`), add that host to `config.domains`; otherwise no route matches, the request is treated as having no permissions, and the guard returns 401 (login page) even for public paths like `/` or `/css/...`. See “Deployment and domains” below.
 - **Action → permission:** The guard maps the request “action” (e.g. `''`, `list`, `create`) to a permission (e.g. list → `read`, create → `create`). Default is `read`.
 
 ## Default security routes (from Thalia)
@@ -57,6 +57,10 @@ No need to re-export or duplicate Thalia’s default route list; merging is enou
 ## userLogin template
 
 The 401 response body is rendered with `website.getContentHtml('userLogin')(…)`. Partials are loaded from Thalia’s `src/views` (including `scaffold/userLogin.hbs` → `userLogin`) and the website’s `src` (e.g. SmugMug’s). So SmugMug gets the login view from Thalia unless the project overrides it with its own `userLogin` partial.
+
+## Deployment and domains
+
+When you add security (ThaliaSecurity + role-based routes) to a Thalia website, **the domain being served becomes more important**. The route guard (`RoleRouteGuard` / `BasicRouteGuard`) builds route keys as **`domain + path`** from `config.domains` and matches the incoming request using **`requestInfo.host + pathname`**. If the request’s `Host` header (e.g. `100.75.136.113:3535` or `katara.local`) is not in `config.domains`, no route matches, permissions are empty, and the guard returns **401** for all requests—including the homepage and static assets like CSS. Fix: add every host (and port, if present in the `Host` header) you serve the site on to `config.domains`, e.g. `domains: ['localhost', '100.75.136.113:3535', 'bingo.example.com']`.
 
 ## Known issues / caveats
 

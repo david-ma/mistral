@@ -10,6 +10,7 @@ const CELL_PADDING = 8
 interface BingoCell {
   prompt: string
   imageUrl?: string | null
+  thumbnailUrl?: string | null
   description?: string | null
   isFreeSpace?: boolean
 }
@@ -99,10 +100,10 @@ function draw(
     .text((d) => d.prompt)
 
   cell
-    .filter((d) => d.imageUrl)
+    .filter((d) => d.imageUrl || d.thumbnailUrl)
     .append('image')
     .attr('class', 'cell-image')
-    .attr('href', (d) => d.imageUrl!)
+    .attr('href', (d) => (d.thumbnailUrl ?? d.imageUrl)!)
     .attr('x', CELL_PADDING)
     .attr('y', 28)
     .attr('width', cellW - CELL_PADDING * 2)

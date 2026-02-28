@@ -24,7 +24,7 @@ export const bingo_cards: MySqlTableWithColumns<any> = mysqlTable('bingo_cards',
   eventId: int('event_id').references(() => events.id),
   ownerId: int('owner_id').references(() => models.users.id),
   approved: boolean('approved').notNull().default(false),
-  /** { "cells": [ { "prompt": "...", "imageUrl": "...", "description": "..." }, ... ] } — 9 or 25 cells in order */
+  /** { "cells": [ { "prompt": "...", "imageUrl": "...", "thumbnailUrl": "...", "description": "..." }, ... ] } — 9 or 25 cells; imageUrl/thumbnailUrl from SmugMug after upload */
   blob: json('blob'),
 })
 

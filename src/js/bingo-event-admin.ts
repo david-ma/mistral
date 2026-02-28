@@ -7,6 +7,7 @@ import * as d3 from 'd3'
 interface AdminCell {
   prompt?: string
   imageUrl?: string | null
+  thumbnailUrl?: string | null
   description?: string | null
 }
 
@@ -56,13 +57,13 @@ function drawPromptsTable(container: d3.Selection<HTMLDivElement, unknown, null,
   const totalCells = gridSize * gridSize
 
   // For each prompt, collect submissions from all cards (cells where cell.prompt === prompt and has imageUrl)
-  type PromptRow = { index: number; prompt: string; submissions: { cardId: number; imageUrl: string; description?: string | null }[] }
+  type PromptRow = { index: number; prompt: string; submissions: { cardId: number; imageUrl: string; thumbnailUrl?: string | null; description?: string | null }[] }
   const promptRows: PromptRow[] = prompts.map((prompt, index) => {
-    const submissions: { cardId: number; imageUrl: string; description?: string | null }[] = []
+    const submissions: { cardId: number; imageUrl: string; thumbnailUrl?: string | null; description?: string | null }[] = []
     cards.forEach((card) => {
       card.cells.forEach((cell) => {
         if (cell.prompt === prompt && cell.imageUrl) {
-          submissions.push({ cardId: card.id, imageUrl: cell.imageUrl, description: cell.description ?? null })
+          submissions.push({ cardId: card.id, imageUrl: cell.imageUrl, thumbnailUrl: cell.thumbnailUrl ?? null, description: cell.description ?? null })
         }
       })
     })
@@ -90,7 +91,7 @@ function drawPromptsTable(container: d3.Selection<HTMLDivElement, unknown, null,
       } else {
         row.submissions.forEach((sub) => {
           const block = photosCell.append('div').attr('class', 'mb-1')
-          block.append('a').attr('href', `/bingo/${sub.cardId}`).attr('target', '_blank').attr('rel', 'noopener').append('img').attr('src', sub.imageUrl).attr('alt', '').attr('class', 'rounded').style('max-width', '48px').style('max-height', '48px').style('object-fit', 'cover')
+          block.append('a').attr('href', `/bingo/${sub.cardId}`).attr('target', '_blank').attr('rel', 'noopener').append('img').attr('src', sub.thumbnailUrl ?? sub.imageUrl).attr('alt', '').attr('class', 'rounded').style('max-width', '48px').style('max-height', '48px').style('object-fit', 'cover')
           if (sub.description) {
             block.append('div').attr('class', 'small text-muted').style('max-width', '200px').text(sub.description.slice(0, 80) + (sub.description.length > 80 ? '…' : ''))
           }

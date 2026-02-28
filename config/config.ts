@@ -87,6 +87,16 @@ function loadUploadThingToken(): Promise<string | null> {
     .catch(() => null)
 }
 
+/** Load BINGO_ALBUM_KEY from config/secrets.js for forwarding bingo photos to SmugMug. */
+function loadBingoAlbumKey(): Promise<string | null> {
+  const secretsPath = path.join(import.meta.dirname, 'secrets.js')
+  if (!fs.existsSync(secretsPath)) return Promise.resolve(null)
+  const url = pathToFileURL(secretsPath).href
+  return import(url)
+    .then((m: any) => (typeof m.BINGO_ALBUM_KEY === 'string' ? m.BINGO_ALBUM_KEY.trim() : null))
+    .catch(() => null)
+}
+
 /** Read request body as Buffer (for Node IncomingMessage). */
 function readRequestBody(req: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -469,7 +479,22 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         res.end(JSON.stringify({ error: cells.length === 0 ? 'Card has no cells; please refresh the page.' : 'Invalid cellIndex' }))
         return null
       }
-      return loadMistralApiKey().then((key) => (key ? { key, cells, payload, card } : null))
+      return Promise.all([
+        loadMistralApiKey(),
+        loadSmugMugCreds(),
+        loadBingoAlbumKey(),
+      ]).then(([mistralKey, creds, bingoAlbumKey]) => {
+        if (!mistralKey) return null
+        if (!creds || !bingoAlbumKey) {
+          if (!res.headersSent) {
+            res.statusCode = 503
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'SmugMug or BINGO_ALBUM_KEY not configured (config/secrets.js)' }))
+          }
+          return null
+        }
+        return { mistralKey, creds, bingoAlbumKey, cells, payload, card }
+      })
     })
     .then((ctx) => {
       if (!ctx) {
@@ -480,14 +505,45 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         }
         return null
       }
-      const { cells, payload, card } = ctx
-      const updated = { ...cells[payload.cellIndex], imageUrl: payload.imageUrl }
-      cells[payload.cellIndex] = updated
-      const db = website.db!.drizzle
-      return describeImage(ctx.key, payload.imageUrl).then((result) => {
-        updated.description = result.description
-        return db.update(bingo_cards).set({ blob: { cells } }).where(eq(bingo_cards.id, card.id))
-      }).then(() => ({ cell: cells[payload.cellIndex], cells }))
+      const { mistralKey, creds, bingoAlbumKey, cells, payload, card } = ctx
+      const uploadThingUrl = payload.imageUrl
+      return fetch(uploadThingUrl)
+        .then((r) => {
+          if (!r.ok) throw new Error(`Fetch UploadThing image: ${r.status}`)
+          const ct = (r.headers.get('content-type') || '').split(';')[0].trim().toLowerCase()
+          const mime = /^image\/(jpeg|png|gif|webp)$/.test(ct) ? ct : 'image/jpeg'
+          return r.arrayBuffer().then((ab) => ({ buffer: Buffer.from(ab), mime }))
+        })
+        .then(({ buffer, mime }) => {
+          const ext = mime === 'image/png' ? 'png' : mime === 'image/gif' ? 'gif' : mime === 'image/webp' ? 'webp' : 'jpg'
+          const filename = `bingo-${payload.cardId}-${payload.cellIndex}.${ext}`
+          return uploadToAlbum(creds, bingoAlbumKey, buffer, mime, {
+            filename,
+            title: filename,
+            caption: '',
+            keywords: '',
+          }).then((uploadResp: SmugMugUploadResponse) => {
+            const albumImageUri = uploadResp?.Image?.AlbumImageUri
+            if (!albumImageUri) throw new Error('SmugMug upload response missing AlbumImageUri')
+            return get(creds, albumImageUri).then((apiBody: any) => {
+              const albumImage = apiBody?.Response?.AlbumImage ?? apiBody?.Response
+              const imageUrlForCell = uploadResp.Image?.URL ?? ''
+              const thumbnailUrlForCell = albumImage?.ThumbnailUrl ?? imageUrlForCell
+              return describeImage(mistralKey, imageUrlForCell).then((result) => {
+                const updated = {
+                  ...cells[payload.cellIndex],
+                  imageUrl: imageUrlForCell,
+                  thumbnailUrl: thumbnailUrlForCell,
+                  description: result.description,
+                }
+                cells[payload.cellIndex] = updated
+                const db = website.db!.drizzle
+                return db.update(bingo_cards).set({ blob: { cells } }).where(eq(bingo_cards.id, card.id))
+                  .then(() => ({ cell: cells[payload.cellIndex], cells }))
+              })
+            })
+          })
+        })
     })
     .then((result) => {
       if (!result) return
