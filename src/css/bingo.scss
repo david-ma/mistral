@@ -70,6 +70,40 @@ $bingo-text-muted: #94a3b8;
     margin: $bingo-spacing 0;
   }
 
+  .bingo-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    padding: $bingo-spacing-lg;
+    background: $bingo-card-bg;
+    border-radius: $bingo-radius;
+    border: 1px solid $bingo-border;
+
+    &__spinner {
+      width: 48px;
+      height: 48px;
+      margin-bottom: $bingo-spacing;
+      border: 3px solid $bingo-border;
+      border-top-color: $bingo-cta;
+      border-radius: 50%;
+      animation: bingo-spin 0.8s linear infinite;
+    }
+
+    &__text {
+      margin: 0;
+      font-size: 0.95rem;
+      color: $bingo-text-muted;
+    }
+  }
+
+  @keyframes bingo-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .bingo-svg-wrapper {
     aspect-ratio: 1;
     width: 100%;

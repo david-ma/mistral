@@ -140,6 +140,13 @@ function draw(
     .text('Tap to add photo')
 }
 
+function showLoading(container: d3.Selection<HTMLDivElement, unknown, null, undefined>): void {
+  container.selectAll('*').remove()
+  const wrap = container.append('div').attr('class', 'bingo-loading')
+  wrap.append('div').attr('class', 'bingo-loading__spinner')
+  wrap.append('p').attr('class', 'bingo-loading__text').text('Loading your card…')
+}
+
 function showError(container: d3.Selection<HTMLDivElement, unknown, null, undefined>, message: string): void {
   container.selectAll('*').remove()
   container
@@ -218,7 +225,7 @@ function run(): void {
     return
   }
 
-  root.text('Loading…').style('padding', '1rem')
+  showLoading(root)
   fetch(`/api/bingo-game/${cardId}`)
     .then((r) => {
       if (!r.ok) return r.json().then((body) => Promise.reject(new Error(body?.error ?? r.statusText)))
