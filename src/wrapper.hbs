@@ -14,6 +14,9 @@
   {{> nav}}
   <main class="main container">
     {{> content}}
+    {{#if @partial-block }}
+      {{> @partial-block }}
+    {{/if}}
   </main>
   {{> footer}}
 </body>
