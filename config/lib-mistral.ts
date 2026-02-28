@@ -41,7 +41,7 @@ export function loadMistralApiKey(): Promise<string | null> {
  * Image URL must be publicly accessible (e.g. UploadThing URL).
  */
 export function describeImage(apiKey: string, imageUrl: string): Promise<MistralDescribeResult> {
-  console.debug('[mistral] describeImage: model=', VISION_MODEL, 'imageUrl length=', imageUrl?.length, 'imageUrl start=', imageUrl?.slice(0, 60) + (imageUrl?.length > 60 ? '...' : ''))
+  console.log('[mistral] describeImage: model=', VISION_MODEL, 'imageUrl length=', imageUrl?.length, 'imageUrl start=', imageUrl?.slice(0, 60) + (imageUrl?.length > 60 ? '...' : ''))
   const body = {
     model: VISION_MODEL,
     messages: [
@@ -55,7 +55,7 @@ export function describeImage(apiKey: string, imageUrl: string): Promise<Mistral
     ],
     max_tokens: 300,
   }
-  console.debug('[mistral] POST', MISTRAL_CHAT_URL)
+  console.log('[mistral] POST', MISTRAL_CHAT_URL)
   return fetch(MISTRAL_CHAT_URL, {
     method: 'POST',
     headers: {
@@ -65,10 +65,10 @@ export function describeImage(apiKey: string, imageUrl: string): Promise<Mistral
     body: JSON.stringify(body),
   })
     .then((res) => {
-      console.debug('[mistral] response status:', res.status, res.statusText)
+      console.log('[mistral] response status:', res.status, res.statusText)
       if (!res.ok) {
         return res.text().then((t) => {
-          console.debug('[mistral] error body:', t)
+          console.log('[mistral] error body:', t)
           throw new Error(`Mistral API ${res.status}: ${t}`)
         })
       }
@@ -76,7 +76,7 @@ export function describeImage(apiKey: string, imageUrl: string): Promise<Mistral
     })
     .then((data: { choices?: Array<{ message?: { content?: string } }>; usage?: MistralDescribeResult['usage'] }) => {
       const content = data.choices?.[0]?.message?.content ?? ''
-      console.debug('[mistral] success, description length:', content.length)
+      console.log('[mistral] success, description length:', content.length)
       return {
         description: content,
         usage: data.usage,

@@ -441,6 +441,7 @@ export function getImageSizeDetails(
 ): Promise<ImageSizeDetailsUrls> {
   const pathOnly = imageUri.startsWith('http') ? new URL(imageUri).pathname : imageUri
   const path = pathOnly.replace(/\?.*$/, '') + '!sizedetails'
+  console.log('[bingo-cell] getImageSizeDetails GET', path)
   return get(creds, path).then((body: any) => {
     const raw = body?.Response?.ImageSizeDetails ?? body?.Response ?? body
     if (!raw || typeof raw !== 'object') {
@@ -471,7 +472,10 @@ export function getImageSizeDetails(
     }
     if (!url) url = Object.values(byName)[0] ?? ''
     if (!thumbnailUrl) thumbnailUrl = url
-    if (!url) throw new Error('SmugMug ImageSizeDetails: no media URL found')
+    if (!url) {
+      console.log('[bingo-cell] getImageSizeDetails: no media URL in response, keys:', Object.keys(byName))
+      throw new Error('SmugMug ImageSizeDetails: no media URL found')
+    }
     return { url, thumbnailUrl }
   })
 }
