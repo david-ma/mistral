@@ -22,6 +22,7 @@ import {
   createAlbum,
   get,
   uploadToAlbum,
+  getImageSizeDetails,
   type SmugMugUploadResponse,
 } from './lib-smugmug.js'
 import { topUpAlbumsFromApi, topUpAlbumAndImagesFromApi } from './smugmug-topup.js'
@@ -523,12 +524,11 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
             caption: '',
             keywords: '',
           }).then((uploadResp: SmugMugUploadResponse) => {
-            const albumImageUri = uploadResp?.Image?.AlbumImageUri
-            if (!albumImageUri) throw new Error('SmugMug upload response missing AlbumImageUri')
-            return get(creds, albumImageUri).then((apiBody: any) => {
-              const albumImage = apiBody?.Response?.AlbumImage ?? apiBody?.Response
-              const imageUrlForCell = uploadResp.Image?.URL ?? ''
-              const thumbnailUrlForCell = albumImage?.ThumbnailUrl ?? imageUrlForCell
+            const imageUri = uploadResp?.Image?.ImageUri
+            if (!imageUri) throw new Error('SmugMug upload response missing ImageUri')
+            return getImageSizeDetails(creds, imageUri).then((sizeUrls) => {
+              const imageUrlForCell = sizeUrls.url
+              const thumbnailUrlForCell = sizeUrls.thumbnailUrl
               return describeImage(mistralKey, imageUrlForCell).then((result) => {
                 const updated = {
                   ...cells[payload.cellIndex],

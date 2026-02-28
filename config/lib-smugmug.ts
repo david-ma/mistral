@@ -422,6 +422,60 @@ export function listAlbums(
   return getAuthUserUri(creds).then((userPath) => getUserAlbums(creds, userPath))
 }
 
+/** Result of getImageSizeDetails: direct media URLs for display and thumbnail (JPEG/PNG etc.). */
+export type ImageSizeDetailsUrls = {
+  /** URL suitable for display or external consumers (e.g. Mistral); direct image, not a page. */
+  url: string
+  /** Smaller URL for thumbnails. */
+  thumbnailUrl: string
+}
+
+/**
+ * Fetch ImageSizeDetails for an image (raw media URLs). Use this to get direct image URLs
+ * that external APIs (e.g. Mistral) can load; the upload response "URL" may be a web page.
+ * imageUri: path from upload response Image.ImageUri (e.g. /api/v2/image/xxxxx).
+ */
+export function getImageSizeDetails(
+  creds: SmugMugCredentials,
+  imageUri: string
+): Promise<ImageSizeDetailsUrls> {
+  const pathOnly = imageUri.startsWith('http') ? new URL(imageUri).pathname : imageUri
+  const path = pathOnly.replace(/\?.*$/, '') + '!sizedetails'
+  return get(creds, path).then((body: any) => {
+    const raw = body?.Response?.ImageSizeDetails ?? body?.Response ?? body
+    if (!raw || typeof raw !== 'object') {
+      throw new Error('SmugMug ImageSizeDetails: no response')
+    }
+    const byName: Record<string, string> = {}
+    if (Array.isArray(raw)) {
+      for (const item of raw) {
+        const name = item?.Size ?? item?.SizeName ?? item?.Name ?? ''
+        const url = item?.Url ?? item?.url
+        if (name && typeof url === 'string' && url.startsWith('http')) byName[String(name)] = url
+      }
+    } else {
+      for (const key of Object.keys(raw)) {
+        const val = raw[key]
+        const url = val?.Url ?? val?.url
+        if (typeof url === 'string' && url.startsWith('http')) byName[key] = url
+      }
+    }
+    const preferOrder = ['Medium', 'Large', 'Small', 'X2Large', 'X3Large', 'Thumb', 'Tiny']
+    let url = ''
+    let thumbnailUrl = ''
+    for (const name of preferOrder) {
+      if (byName[name]) {
+        if (!url && !['Thumb', 'Tiny'].includes(name)) url = byName[name]
+        if (!thumbnailUrl && (name === 'Thumb' || name === 'Small' || name === 'Tiny')) thumbnailUrl = byName[name]
+      }
+    }
+    if (!url) url = Object.values(byName)[0] ?? ''
+    if (!thumbnailUrl) thumbnailUrl = url
+    if (!url) throw new Error('SmugMug ImageSizeDetails: no media URL found')
+    return { url, thumbnailUrl }
+  })
+}
+
 /** Options for uploading a file buffer to a SmugMug album. */
 export type UploadToAlbumOptions = {
   caption?: string
