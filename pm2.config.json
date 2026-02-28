@@ -1,0 +1,18 @@
+{
+  "apps": [
+    {
+      "name": "mistral",
+      "cwd": "/usr/local/dev/Thalia",
+      "script": "bun",
+      "args": "server/cli.ts --project=mistral",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3535
+      },
+      "error_file": "/usr/local/dev/Thalia/websites/mistral/tmp/pm2-error.log",
+      "out_file": "/usr/local/dev/Thalia/websites/mistral/tmp/pm2-out.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "merge_logs": true
+    }
+  ]
+}
