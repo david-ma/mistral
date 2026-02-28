@@ -178,14 +178,17 @@ function showCellLoading(
   if (rect) {
     const bbox = rect.getBBox()
     const size = Math.min(32, bbox.width * 0.4, bbox.height * 0.4)
-    const x = bbox.width / 2 - size / 2
-    const y = 28 + (bbox.height - 28 - 24) / 2 - size / 2
-    cell
-      .append('image')
+    const cx = bbox.width / 2
+    const cy = 28 + (bbox.height - 28 - 24) / 2
+    const g = cell
+      .append('g')
+      .attr('class', 'bingo-cell-loading-wrap')
+      .attr('transform', `translate(${cx},${cy})`)
+    g.append('image')
       .attr('class', 'bingo-cell-loading-image')
       .attr('href', LOADING_SVG)
-      .attr('x', x)
-      .attr('y', y)
+      .attr('x', -size / 2)
+      .attr('y', -size / 2)
       .attr('width', size)
       .attr('height', size)
   }
@@ -198,7 +201,7 @@ function clearCellLoading(
   const cell = root.select<SVGGElement>(`g.bingo-cell[data-cell-index="${cellIndex}"]`)
   if (cell.empty()) return
   cell.classed('image-loading', false)
-  cell.selectAll('.bingo-cell-loading-image').remove()
+  cell.selectAll('.bingo-cell-loading-wrap').remove()
 }
 
 function attachUpload(
