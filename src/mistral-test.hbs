@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mistral vision test – upload image, get description</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    input[type="file"] { margin: 0.5rem 0; }
+    button { padding: 0.5rem 1rem; cursor: pointer; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    #out { margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 6px; white-space: pre-wrap; word-break: break-word; font-size: 14px; min-height: 60px; }
+    #out.error { background: #fee; }
+    #out.success { background: #efe; }
+    #preview { margin-top: 1rem; max-width: 100%; border-radius: 6px; }
+    #description { margin-top: 0.75rem; padding: 0.75rem; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+    .usage { font-size: 12px; color: #666; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Mistral vision test</h1>
+  <p>Upload an image to UploadThing, then we send its URL to the Mistral vision API and show the description here. Use this to confirm the API key and pipeline work.</p>
+  <input type="file" id="file" accept="image/*" />
+  <button type="button" id="btn">Upload and describe</button>
+  <div id="out">Select an image and click the button.</div>
+  <img id="preview" alt="" style="display: none;" />
+  <div id="description" style="display: none;"></div>
+
+  <script type="module">
+    (function() {
+      const fileInput = document.getElementById('file');
+      const btn = document.getElementById('btn');
+      const out = document.getElementById('out');
+      const preview = document.getElementById('preview');
+      const descriptionEl = document.getElementById('description');
+
+      function setOut(msg, isError) {
+        out.textContent = msg;
+        out.className = isError ? 'error' : 'success';
+      }
+
+      btn.addEventListener('click', async function() {
+        const file = fileInput?.files?.[0];
+        if (!file) {
+          setOut('Please select an image first.', true);
+          return;
+        }
+        preview.style.display = 'none';
+        descriptionEl.style.display = 'none';
+        setOut('Uploading to UploadThing…');
+        btn.disabled = true;
+        try {
+          const uploadFiles = window.uploadFilesToUploadThing;
+          if (!uploadFiles) {
+            setOut('UploadThing client not loaded. Ensure /js/uploadthing-init.js is loaded.', true);
+            return;
+          }
+          const results = await uploadFiles('smugmugImage', { files: [file] });
+          const first = results?.[0];
+          if (!first?.url) {
+            setOut('Upload failed or no URL returned: ' + JSON.stringify(results ?? {}), true);
+            return;
+          }
+          setOut('Asking Mistral to describe the image…');
+          const res = await fetch('/api/mistral-describe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: first.url }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setOut('Error: ' + (data.error || res.statusText), true);
+            return;
+          }
+          setOut('Done.');
+          preview.src = first.url;
+          preview.alt = data.description || 'Uploaded image';
+          preview.style.display = 'block';
+          descriptionEl.style.display = 'block';
+          descriptionEl.innerHTML = '';
+          const p = document.createElement('p');
+          p.textContent = data.description || '(no description)';
+          descriptionEl.appendChild(p);
+          if (data.usage) {
+            const usage = document.createElement('div');
+            usage.className = 'usage';
+            usage.textContent = 'Tokens: ' + (data.usage.prompt_tokens ?? '') + ' prompt, ' + (data.usage.completion_tokens ?? '') + ' completion';
+            descriptionEl.appendChild(usage);
+          }
+        } catch (e) {
+          setOut('Error: ' + (e?.message ?? String(e)), true);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+  <script type="module" src="/js/uploadthing-init.js"></script>
+</body>
+</html>

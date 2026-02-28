@@ -31,6 +31,7 @@ import { RequestInfo } from 'thalia/server'
 import { createRouteHandler } from 'uploadthing/server'
 import { uploadthingRouter } from './uploadthing.js'
 import { addTempFile, runCleanupIfNeeded } from './uploadthing-cleanup.js'
+import { loadMistralApiKey, describeImage } from './lib-mistral.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -325,9 +326,66 @@ function apiController(
     uploadThingCleanupController(res, req, website, requestInfo)
     return
   }
+  if (pathname === '/api/mistral-describe') {
+    mistralDescribeController(res, req)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
+}
+
+/** POST /api/mistral-describe: body { imageUrl }. Returns { description, usage? } or { error }. */
+function mistralDescribeController(res: ServerResponse, req: IncomingMessage) {
+  console.debug('[mistral] mistral-describe request method=', req.method)
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
+  }
+  readRequestBody(req)
+    .then((buf) => {
+      const raw = buf.toString()
+      console.debug('[mistral] body length:', raw.length)
+      const body = JSON.parse(raw) as { imageUrl?: string }
+      const imageUrl = typeof body?.imageUrl === 'string' ? body.imageUrl.trim() : ''
+      if (!imageUrl) {
+        console.debug('[mistral] missing or empty imageUrl')
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'imageUrl required' }))
+        return null
+      }
+      console.debug('[mistral] imageUrl received, length:', imageUrl.length)
+      return loadMistralApiKey().then((key) => (key ? { key, imageUrl } : null))
+    })
+    .then((ctx) => {
+      if (!ctx) {
+        console.debug('[mistral] no API key, returning 503')
+        if (!res.headersSent) {
+          res.statusCode = 503
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Mistral API key not configured (MISTRAL_API_KEY in config/secrets.js)' }))
+        }
+        return null
+      }
+      console.debug('[mistral] calling describeImage')
+      return describeImage(ctx.key, ctx.imageUrl)
+    })
+    .then((result) => {
+      if (result == null) return
+      console.debug('[mistral] sending success response')
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(result))
+    })
+    .catch((err) => {
+      console.debug('[mistral] controller error:', err?.message ?? err)
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
 }
 
 /** Role-based route rules: SmugMug paths require user or admin (concatenated with Thalia default routes). */
@@ -346,6 +404,7 @@ const smugmugRoutes: RoleRouteRule[] = [
   /** Longer path so it matches before /api/uploadthing; cleanup stays admin-only. */
   { path: '/api/uploadthing-cleanup', permissions: { admin: [...ALL_PERMISSIONS], user: [] } },
   { path: '/uploadthing-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
+  { path: '/mistral-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'] } },
 ]
 
 const smugmugConfig: RawWebsiteConfig = {
@@ -382,6 +441,11 @@ const smugmugConfig: RawWebsiteConfig = {
     api: apiController,
     'uploadthing-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
       const html = website.getContentHtml('uploadthing-test', 'uploadthing-test')({})
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    'mistral-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
+      const html = website.getContentHtml('mistral-test', 'mistral-test')({})
       res.setHeader('Content-Type', 'text/html')
       res.end(html)
     },

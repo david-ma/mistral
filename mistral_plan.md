@@ -23,6 +23,20 @@
 
 ## 2. Step-by-step breakdown
 
+### Mistral test page (prove the API)
+
+A single page that confirms the Mistral vision API works end-to-end:
+
+1. **Page:** `/mistral-test` — upload an image, get a description, show both on the page.
+2. **Flow:**
+   - User selects an image and uploads it via **UploadThing** (same client as SmugMug uploads; no file hits our server).
+   - Front end receives the UploadThing file URL, then POSTs `{ "imageUrl": "..." }` to **`/api/mistral-describe`**.
+   - Server loads `MISTRAL_API_KEY` from `config/secrets.js`, calls Mistral [Chat Completions API](https://docs.mistral.ai/capabilities/vision) with the image URL (Mistral accepts public URLs), and returns `{ description, usage?, error? }`.
+   - Page displays the uploaded image and the description (and optional usage/raw).
+3. **Secrets:** In `config/secrets.js` export **`MISTRAL_API_KEY`** (string). Do not commit.
+4. **Implementation:** `config/lib-mistral.ts` for `loadMistralApiKey()` and `describeImage(imageUrl)`; `apiController` handles `POST /api/mistral-describe`; `src/mistral-test.hbs` for the test page; route `mistral-test` with appropriate permissions.
+5. **Secrets:** In `config/secrets.js` add `export const MISTRAL_API_KEY = 'your-key'` (or get from [Mistral console](https://console.mistral.ai/)); do not commit.
+
 ### Phase A: Mistral API – test image recognition
 
 1. **Get Mistral API access**
@@ -30,11 +44,7 @@
    - Store key in `config/secrets.js` (or similar), gitignored; do not commit.
 
 2. **Prove image-in, text-out**
-   - Write a small script (e.g. in `scripts/`) that:
-     - Takes one image URL (e.g. a SmugMug image URL or a local path).
-     - Calls Mistral’s image-capable API (e.g. vision/description endpoint) with that image.
-     - Prints the model’s text response (e.g. image description).
-   - Run it with a real image from your SmugMug account to confirm the pipeline works.
+   - The **Mistral test page** above does this: upload → describe → show. Optionally keep a small `scripts/` script for CLI testing.
 
 3. **Decide response shape**
    - Choose a simple JSON shape for “one image’s notes”, e.g.  
