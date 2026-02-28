@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="/styles/main.css">
 <style>
   .bingo-grid { display: grid; gap: 0.5rem; margin: 1rem 0; }
   .bingo-grid.size-3 { grid-template-columns: repeat(3, 1fr); }
@@ -18,6 +17,8 @@
     min-height: 80px;
   }
   .bingo-cell:hover { border-color: #0d6efd; background: #f0f7ff; }
+  .bingo-cell.bingo-free-space { background: #e0e0e0; cursor: default; }
+  .bingo-cell.bingo-free-space:hover { border-color: #ccc; background: #e0e0e0; }
   .bingo-cell.filled { background: #e8f5e9; }
   .bingo-cell .cell-prompt { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
   .bingo-cell .cell-image { max-width: 100%; max-height: 60px; object-fit: contain; border-radius: 4px; }
@@ -31,13 +32,13 @@
 
 <div class="bingo-grid size-{{gridSize}}" id="bingoGrid" data-card-id="{{cardId}}">
   {{#each cells}}
-    <div class="bingo-cell {{#if this.imageUrl}}filled{{/if}}" data-cell-index="{{@index}}" tabindex="0">
+    <div class="bingo-cell {{#if this.imageUrl}}filled{{/if}} {{#if this.isFreeSpace}}bingo-free-space{{/if}}" data-cell-index="{{@index}}" {{#if this.isFreeSpace}}data-free-space="1"{{/if}} tabindex="0">
       <span class="cell-prompt">{{this.prompt}}</span>
       {{#if this.imageUrl}}
         <img src="{{this.imageUrl}}" alt="" class="cell-image" />
         {{#if this.description}}<span class="cell-desc">{{this.description}}</span>{{/if}}
       {{else}}
-        <span class="text-muted small">Tap to add photo</span>
+        {{#unless this.isFreeSpace}}<span class="text-muted small">Tap to add photo</span>{{/unless}}
       {{/if}}
     </div>
   {{/each}}
@@ -62,6 +63,7 @@
   }
 
   grid.querySelectorAll('.bingo-cell').forEach(function(cell) {
+    if (cell.getAttribute('data-free-space') === '1') return;
     var idx = parseInt(cell.getAttribute('data-cell-index'), 10);
     cell.addEventListener('click', function() { openPicker(idx); });
     cell.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(idx); } });

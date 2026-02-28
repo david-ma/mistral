@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="/styles/main.css">
 <p><a href="/list-events">&larr; Back to events</a></p>
 <h1>Create bingo event</h1>
 <form method="post" action="/create-event" class="mb-3">
@@ -25,7 +24,7 @@
   <div class="mb-2">
     <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
     <textarea class="form-control" id="prompts" name="prompts" rows="12" required placeholder="A red car&#10;Something fluffy&#10;..."></textarea>
-    <small class="text-muted">Enter exactly 9 lines for 3×3, or 25 for 5×5. Or a JSON array: ["prompt1", "prompt2", ...]</small>
+    <small class="text-muted">At least 8 prompts for 3×3 (centre is a free space), or 24 for 5×5. One per line or a JSON array.</small>
   </div>
   <button type="submit" class="btn btn-primary">Create event</button>
   <a href="/list-events" class="btn btn-secondary">Cancel</a>

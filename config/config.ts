@@ -648,11 +648,11 @@ const smugmugConfig: RawWebsiteConfig = {
           } catch {
             prompts = promptsText.split(/\n/).map((s) => s.trim()).filter(Boolean)
           }
-          const required = gridSize === '5' ? 25 : 9
-          if (prompts.length !== required) {
+          const minPrompts = gridSize === '5' ? 24 : 8
+          if (prompts.length < minPrompts) {
             res.statusCode = 400
             res.setHeader('Content-Type', 'text/html')
-            res.end(`<h1>Bad Request</h1><p>Exactly ${required} prompts required for ${gridSize}×${gridSize} grid.</p>`)
+            res.end(`<h1>Bad Request</h1><p>At least ${minPrompts} prompts required for ${gridSize}×${gridSize} grid (centre is a free space).</p>`)
             return
           }
           if (!website.db) {
@@ -717,11 +717,11 @@ const smugmugConfig: RawWebsiteConfig = {
               } catch {
                 prompts = promptsText.split(/\n/).map((s) => s.trim()).filter(Boolean)
               }
-              const required = gridSize === '5' ? 25 : 9
-              if (prompts.length !== required) {
+              const minPrompts = gridSize === '5' ? 24 : 8
+              if (prompts.length < minPrompts) {
                 res.statusCode = 400
                 res.setHeader('Content-Type', 'text/html')
-                res.end(`<h1>Bad Request</h1><p>Exactly ${required} prompts required.</p>`)
+                res.end(`<h1>Bad Request</h1><p>At least ${minPrompts} prompts required (centre is a free space).</p>`)
                 return
               }
               db.update(events).set({ name: name || event.name, gridSize, description: description || null, prompts: JSON.stringify(prompts) }).where(eq(events.id, event.id))
@@ -783,7 +783,21 @@ const smugmugConfig: RawWebsiteConfig = {
           if (isJoin && req.method === 'GET') {
             const prompts: string[] = JSON.parse(event.prompts || '[]')
             const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
-            const cells = shuffled.map((prompt: string) => ({ prompt, imageUrl: null, description: null }))
+            const gridSize = event.gridSize === '5' ? 5 : 3
+            const total = gridSize * gridSize
+            const centerIndex = total === 9 ? 4 : 12 // 3×3 → 4, 5×5 → 12
+            const numPrompts = total - 1 // one free space
+            const chosen = shuffled.slice(0, numPrompts)
+            const cells: Array<{ prompt: string; imageUrl: null; description: null }> = []
+            let p = 0
+            for (let i = 0; i < total; i++) {
+              if (i === centerIndex) {
+                cells.push({ prompt: 'Free space', imageUrl: null, description: null, isFreeSpace: true })
+              } else {
+                cells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null, isFreeSpace: false })
+                p++
+              }
+            }
             return db.insert(bingo_cards).values({ eventId: event.id, ownerId: null, blob: { cells } })
               .then((insertResult: any) => {
                 const cardId = insertResult?.insertId ?? insertResult?.[0]?.insertId
@@ -836,8 +850,9 @@ const smugmugConfig: RawWebsiteConfig = {
           }
           return website.db!.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1).then((eventRows: any[]) => {
             const event = eventRows[0]
-            const blob = (card.blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
-            const cells = Array.isArray(blob.cells) ? blob.cells : []
+            const blob = (card.blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string; isFreeSpace?: boolean }> }) ?? {}
+            const rawCells = Array.isArray(blob.cells) ? blob.cells : []
+            const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
             const gridSize = event?.gridSize === '5' ? 5 : 3
             const html = website.getContentHtml('bingo-card', 'wrapper')({
               title: 'Bingo card',

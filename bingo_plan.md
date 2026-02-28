@@ -7,7 +7,7 @@ Builds on the Mistral plan: events have prompts; players get a card with randomi
 ## Core flow
 
 - **Grid**: 3×3 by default; event organiser can choose 5×5.
-- **Prompts**: Stored per event (9 for 3×3, 25 for 5×5). When a card is generated, prompts are **randomised** and assigned to cells.
+- **Prompts**: Stored per event. **Minimum 8** for 3×3 (middle cell is a **free space**); **minimum 24** for 5×5 (center free). Organisers can add more; when generating a card we shuffle and use 8 or 24, with the center cell fixed as “Free space”.
 - **Images**: Players provide photos per cell. On `/bingo/<CARD_ID>` they see their grid of prompts; **clicking a prompt** opens camera or file upload. After upload, the photo is attached to that cell and **analysed** (Mistral describe); result is stored on the card.
 
 ---
@@ -16,14 +16,14 @@ Builds on the Mistral plan: events have prompts; players get a card with randomi
 
 ### Models (`models/bingo.ts`)
 
-- **events**: name, slug, ownerId, description, **gridSize** ('3' | '5'), **prompts** (JSON array of 9 or 25 strings), blob.
+- **events**: name, slug, ownerId, description, **gridSize** ('3' | '5'), **prompts** (JSON array, ≥8 for 3×3, ≥24 for 5×5), blob.
 - **bingo_cards**: eventId, ownerId (nullable for MVP), approved (default false), **blob** — cell data:  
-  `{ "cells": [ { "prompt": "...", "imageUrl": "...", "description": "..." }, ... ] }` (9 or 25 entries in cell order).
+  `{ "cells": [ { "prompt": "...", "imageUrl": "...", "description": "..." }, ... ] }` (9 or 25 entries; center cell is “Free space”).
 
 ### Admin
 
 1. **list-events** — List all events; link to create/edit.
-2. **create-event** — Create event: name, slug, grid size (3 or 5), description, prompts (9 or 25).
+2. **create-event** — Create event: name, slug, grid size (3 or 5), description, prompts (≥8 for 3×3, ≥24 for 5×5).
 3. **edit-event** — Edit event: same fields; add/edit/delete prompts.
 
 ### Public
@@ -50,3 +50,19 @@ Builds on the Mistral plan: events have prompts; players get a card with randomi
 - Mistral describe: `config/lib-mistral.ts`, `POST /api/mistral-describe`.
 - Upload: UploadThing (e.g. reuse or add bingo upload route), then server-side attach + describe.
 - Schema: `models/bingo.ts`; wire in `models/master-schema.ts` and `config/config.ts`.
+
+
+## Example prompts:
+
+```
+Team photo
+Photo of yourself
+Photo of your team lead
+Photo of your project board
+Photo with the judges
+Photo of lunch
+Photo with someone from UNSW Founders
+Photo of the event T-Shirt
+Photo with someone from Mistral
+Photo of your app
+```
