@@ -411,11 +411,13 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
   }
   readRequestBody(req)
     .then((buf) => {
-      const body = JSON.parse(buf.toString()) as { cardId?: number; cellIndex?: number; imageUrl?: string }
-      const cardId = typeof body?.cardId === 'number' ? body.cardId : parseInt(String(body?.cardId), 10)
-      const cellIndex = typeof body?.cellIndex === 'number' ? body.cellIndex : parseInt(String(body?.cellIndex), 10)
-      const imageUrl = typeof body?.imageUrl === 'string' ? body.imageUrl.trim() : ''
-      if (!Number.isFinite(cardId) || !Number.isFinite(cellIndex) || cellIndex < 0 || !imageUrl) {
+      const raw = buf.toString()
+      const body = JSON.parse(raw) as { cardId?: number | string; cellIndex?: number | string; imageUrl?: string }
+      const cardId = typeof body?.cardId === 'number' ? body.cardId : parseInt(String(body?.cardId ?? ''), 10)
+      const cellIndex = typeof body?.cellIndex === 'number' ? body.cellIndex : parseInt(String(body?.cellIndex ?? ''), 10)
+      const imageUrl = (typeof body?.imageUrl === 'string' ? body.imageUrl : '').trim()
+      if (!Number.isFinite(cardId) || cardId < 1 || !Number.isFinite(cellIndex) || cellIndex < 0 || !imageUrl) {
+        console.debug('[bingo-cell] validation failed', { cardId, cellIndex, hasImageUrl: !!imageUrl, keys: body ? Object.keys(body) : [] })
         res.statusCode = 400
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ error: 'cardId, cellIndex (non-negative), and imageUrl required' }))
@@ -850,8 +852,36 @@ const smugmugConfig: RawWebsiteConfig = {
           }
           return website.db!.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1).then((eventRows: any[]) => {
             const event = eventRows[0]
-            const blob = (card.blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string; isFreeSpace?: boolean }> }) ?? {}
-            const rawCells = Array.isArray(blob.cells) ? blob.cells : []
+            let blob = card.blob
+            if (typeof blob === 'string') {
+              try {
+                blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+              } catch {
+                blob = {}
+              }
+            }
+            blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
+            let rawCells = Array.isArray(blob.cells) ? blob.cells : []
+            if (rawCells.length === 0 && event?.prompts) {
+              const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
+              const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
+              const gridSizeNum = event.gridSize === '5' ? 5 : 3
+              const total = gridSizeNum * gridSizeNum
+              const centerIndex = total === 9 ? 4 : 12
+              const numPrompts = total - 1
+              const chosen = shuffled.slice(0, numPrompts)
+              rawCells = []
+              let p = 0
+              for (let i = 0; i < total; i++) {
+                if (i === centerIndex) {
+                  rawCells.push({ prompt: 'Free space', imageUrl: null, description: null })
+                } else {
+                  rawCells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null })
+                  p++
+                }
+              }
+              website.db!.drizzle.update(bingo_cards).set({ blob: { cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
+            }
             const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
             const gridSize = event?.gridSize === '5' ? 5 : 3
             const html = website.getContentHtml('bingo-card', 'wrapper')({
