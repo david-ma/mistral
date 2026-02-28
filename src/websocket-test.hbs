@@ -1,11 +1,28 @@
-{{#> wrapper }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO test – ping/pong</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    #status { margin: 0.5rem 0; padding: 0.5rem; background: #f0f0f0; border-radius: 6px; font-size: 14px; }
+    #status.connected { background: #e8f5e9; }
+    #status.disconnected { background: #ffebee; }
+    button { padding: 0.5rem 1rem; cursor: pointer; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    #pong { margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 6px; white-space: pre-wrap; word-break: break-word; font-size: 14px; min-height: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Socket.IO test</h1>
+  <p>Connect to the server, then click Ping to send a message. You should receive a pong back.</p>
+  <div id="status">Connecting…</div>
+  <button type="button" id="pingBtn" disabled>Ping</button>
+  <div id="pong">—</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="/js/websocket-test.js"></script>
-
-<div id="websocket-test">
-Hello, world!
-
-</div>
-
-{{/wrapper}}
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/websocket-test.js"></script>
+</body>
+</html>

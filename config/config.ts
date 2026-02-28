@@ -554,6 +554,7 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/api/uploadthing-cleanup', permissions: { admin: [...ALL_PERMISSIONS], user: [] } },
   { path: '/uploadthing-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/mistral-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'] } },
+  { path: '/websocket-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/list-events', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/create-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
   { path: '/edit-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['update'] } },
@@ -602,6 +603,11 @@ const smugmugConfig: RawWebsiteConfig = {
     },
     'mistral-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
       const html = website.getContentHtml('mistral-test', 'mistral-test')({})
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    'websocket-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
+      const html = website.getContentHtml('websocket-test', 'websocket-test')({})
       res.setHeader('Content-Type', 'text/html')
       res.end(html)
     },
@@ -1294,7 +1300,6 @@ const smugmugConfig: RawWebsiteConfig = {
 }
 
 const temp_config = recursiveObjectMerge(security.securityConfig(), smugmugConfig)
-import { websocket_config } from './lib-websocket.js'
 
-// @ts-ignore
+import { websocket_config } from './lib-websocket.js'
 export const config = recursiveObjectMerge(temp_config, websocket_config)

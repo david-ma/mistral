@@ -1,12 +1,19 @@
-// Start with a websocket test page
+/**
+ * Socket.IO (WebSocket) config for SmugMug.
+ * Used by config.ts via websocket_config. Listeners: client-ping → server-pong (test); bingo-subscribe / bingo-cell-updated later.
+ */
+import type { RawWebsiteConfig } from 'thalia/types'
 
-// import 
-import { RawWebsocketConfig } from '../node_modules/thalia/server/types'
-
-export const websocket_config: RawWebsocketConfig = {
-  listeners: {
-    'client-ping': (socket: any, data: any, clientInfo: any, website: any) => {
-      socket.emit('server-pong', { message: 'pong' });
+export const websocket_config: RawWebsiteConfig = {
+  websockets: {
+    listeners: {
+      'client-ping': (socket, data, _clientInfo, _website) => {
+        socket.emit('server-pong', {
+          message: 'pong',
+          at: new Date().toISOString(),
+          echo: data ?? null,
+        })
+      },
     },
-  },
+  }
 }

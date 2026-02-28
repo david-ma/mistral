@@ -1,14 +1,62 @@
-console.log("websocket-test.ts loaded");
+/**
+ * Socket.IO test client: connect, emit client-ping, show server-pong.
+ * Expects global io from /socket.io/socket.io.js.
+ */
 
+declare global {
+  interface Window {
+    io: (url?: string, opts?: object) => SocketLike
+  }
+}
 
+interface SocketLike {
+  on(event: string, cb: (...args: any[]) => void): void
+  emit(event: string, ...args: any[]): void
+  connected: boolean
+}
 
-// @ts-ignore
-const socket = io();
+function main(): void {
+  const statusEl = document.getElementById('status')
+  const pingBtn = document.getElementById('pingBtn')
+  const pongEl = document.getElementById('pong')
 
-console.log("socket", socket);
+  function setStatus(text: string, connected: boolean): void {
+    if (!statusEl) return
+    statusEl.textContent = text
+    statusEl.className = connected ? 'connected' : 'disconnected'
+  }
 
-socket.on('server-pong', (data: any) => {
-  console.log("server-pong", data);
-});
+  function setPong(text: string): void {
+    if (pongEl) pongEl.textContent = text
+  }
 
-socket.emit('client-ping', { message: 'ping' });
+  if (!window.io) {
+    setStatus('Socket.IO script not loaded.', false)
+    return
+  }
+
+  const socket = window.io()
+
+  socket.on('connect', () => {
+    setStatus('Connected', true)
+    if (pingBtn) (pingBtn as HTMLButtonElement).disabled = false
+  })
+
+  socket.on('disconnect', () => {
+    setStatus('Disconnected', false)
+    if (pingBtn) (pingBtn as HTMLButtonElement).disabled = true
+  })
+
+  socket.on('server-pong', (data: { message?: string; at?: string; echo?: unknown }) => {
+    setPong(JSON.stringify(data, null, 2))
+  })
+
+  if (pingBtn) {
+    pingBtn.addEventListener('click', () => {
+      setPong('Waiting for pong…')
+      socket.emit('client-ping', { ts: new Date().toISOString() })
+    })
+  }
+}
+
+main()
