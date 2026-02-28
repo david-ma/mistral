@@ -24,4 +24,5 @@ const mail: MySqlTableWithColumns<any> = mailTable as unknown as MySqlTableWithC
 
 import { fruit } from './fruit'
 import { image_notes } from './image_notes'
-export { users, sessions, audits, albums, images, fruit, mail, image_notes }
+import { events, bingo_cards } from './bingo'
+export { users, sessions, audits, albums, images, fruit, mail, image_notes, events, bingo_cards }

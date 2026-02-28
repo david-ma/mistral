@@ -1,0 +1,15 @@
+<link rel="stylesheet" href="/styles/main.css">
+<p><a href="/">&larr; Home</a></p>
+<h1>Bingo events</h1>
+<p><a href="/create-event" class="btn btn-primary">Create event</a></p>
+<ul>
+  {{#each events}}
+    <li>
+      <a href="/event/{{this.slug}}">{{this.name}}</a>
+      {{#if this.slug}}<span class="text-muted"> ({{this.slug}})</span>{{/if}}
+      — <a href="/edit-event/{{this.slug}}">Edit</a>
+    </li>
+  {{else}}
+    <li>No events yet.</li>
+  {{/each}}
+</ul>

@@ -13,7 +13,7 @@ import { recursiveObjectMerge } from 'thalia/website'
 
 const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
 import { eq, isNull, asc, or, and } from 'drizzle-orm'
-import { albums, images, image_notes } from '../models/master-schema.js'
+import { albums, images, image_notes, events, bingo_cards } from '../models/master-schema.js'
 import {
   listAlbums,
   getAlbumImages,
@@ -334,6 +334,10 @@ function apiController(
     imageNotesController(res, req, website)
     return
   }
+  if (pathname === '/api/bingo-cell') {
+    bingoCellController(res, req, website)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
@@ -382,6 +386,93 @@ function imageNotesController(res: ServerResponse, req: IncomingMessage, website
       if (!payload) return
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify({ ok: true, albumKey: payload.albumKey, imageKey: payload.imageKey }))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
+}
+
+/** POST /api/bingo-cell: body { cardId, cellIndex, imageUrl }. Updates cell, runs Mistral describe, saves to card blob. */
+function bingoCellController(res: ServerResponse, req: IncomingMessage, website: Website) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
+  }
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  readRequestBody(req)
+    .then((buf) => {
+      const body = JSON.parse(buf.toString()) as { cardId?: number; cellIndex?: number; imageUrl?: string }
+      const cardId = typeof body?.cardId === 'number' ? body.cardId : parseInt(String(body?.cardId), 10)
+      const cellIndex = typeof body?.cellIndex === 'number' ? body.cellIndex : parseInt(String(body?.cellIndex), 10)
+      const imageUrl = typeof body?.imageUrl === 'string' ? body.imageUrl.trim() : ''
+      if (!Number.isFinite(cardId) || !Number.isFinite(cellIndex) || cellIndex < 0 || !imageUrl) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'cardId, cellIndex (non-negative), and imageUrl required' }))
+        return null
+      }
+      return { cardId, cellIndex, imageUrl }
+    })
+    .then((payload) => {
+      if (!payload) return null
+      const db = website.db!.drizzle
+      return db.select().from(bingo_cards).where(eq(bingo_cards.id, payload.cardId)).limit(1).then((rows) => {
+        if (!rows[0]) return null
+        return { card: rows[0], payload }
+      })
+    })
+    .then((ctx) => {
+      if (!ctx) {
+        if (!res.headersSent) {
+          res.statusCode = 404
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Card not found' }))
+        }
+        return null
+      }
+      const { card, payload } = ctx
+      const blob = (card.blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
+      const cells = Array.isArray(blob.cells) ? blob.cells.slice() : []
+      if (payload.cellIndex >= cells.length) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'Invalid cellIndex' }))
+        return null
+      }
+      return loadMistralApiKey().then((key) => (key ? { key, cells, payload, card } : null))
+    })
+    .then((ctx) => {
+      if (!ctx) {
+        if (!res.headersSent) {
+          res.statusCode = 503
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Mistral API key not configured' }))
+        }
+        return null
+      }
+      const { cells, payload, card } = ctx
+      const updated = { ...cells[payload.cellIndex], imageUrl: payload.imageUrl }
+      cells[payload.cellIndex] = updated
+      const db = website.db!.drizzle
+      return describeImage(ctx.key, payload.imageUrl).then((result) => {
+        updated.description = result.description
+        return db.update(bingo_cards).set({ blob: { cells } }).where(eq(bingo_cards.id, card.id))
+      }).then(() => ({ cell: cells[payload.cellIndex], cells }))
+    })
+    .then((result) => {
+      if (!result) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(result))
     })
     .catch((err) => {
       if (res.headersSent) return
@@ -454,13 +545,18 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/list-smugmug-albums', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/album-json', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/uploadPhoto', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
-  { path: '/api', permissions: { admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
+  { path: '/api', permissions: { admin: [...ALL_PERMISSIONS], user: ['create', 'read'], guest: ['create', 'read'] } },
   /** UploadThing callbacks come from their servers (no session); guest must be allowed so the callback succeeds. */
   { path: '/api/uploadthing', permissions: { guest: ['create', 'read'], admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
   /** Longer path so it matches before /api/uploadthing; cleanup stays admin-only. */
   { path: '/api/uploadthing-cleanup', permissions: { admin: [...ALL_PERMISSIONS], user: [] } },
   { path: '/uploadthing-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/mistral-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'] } },
+  { path: '/list-events', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
+  { path: '/create-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
+  { path: '/edit-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['update'] } },
+  { path: '/event', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
+  { path: '/bingo', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'], guest: ['read', 'create'] } },
 ]
 
 const smugmugConfig: RawWebsiteConfig = {
@@ -471,6 +567,8 @@ const smugmugConfig: RawWebsiteConfig = {
       albums,
       images,
       image_notes,
+      events,
+      bingo_cards,
     },
     machines: {
       albums: AlbumMachine,
@@ -504,6 +602,262 @@ const smugmugConfig: RawWebsiteConfig = {
       const html = website.getContentHtml('mistral-test', 'mistral-test')({})
       res.setHeader('Content-Type', 'text/html')
       res.end(html)
+    },
+    'list-events': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      if (!website.db) {
+        res.statusCode = 503
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Service Unavailable</h1><p>Database not configured.</p>')
+        return
+      }
+      website.db.drizzle.select().from(events).where(isNull(events.deletedAt)).orderBy(asc(events.name))
+        .then((rows: any[]) => {
+          const html = website.getContentHtml('list-events', 'wrapper')({
+            title: 'Bingo events',
+            events: rows,
+            userAuth: requestInfo.userAuth ?? {},
+            siteName: 'SmugMug',
+            currentYear: new Date().getFullYear(),
+          })
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        })
+        .catch((err: Error) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${err.message}</p>`)
+        })
+    },
+    'create-event': (res: ServerResponse, req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      if (req.method === 'POST') {
+        parseForm(res, req).then((form: { fields: Record<string, string> }) => {
+          const name = (form.fields?.name ?? '').trim()
+          const slug = (form.fields?.slug ?? '').trim().toLowerCase().replace(/\s+/g, '-')
+          const gridSize = (form.fields?.gridSize ?? '3') === '5' ? '5' : '3'
+          const promptsText = (form.fields?.prompts ?? '').trim()
+          const description = (form.fields?.description ?? '').trim()
+          if (!name || !slug) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Bad Request</h1><p>Name and slug required.</p>')
+            return
+          }
+          let prompts: string[]
+          try {
+            prompts = JSON.parse(promptsText || '[]')
+          } catch {
+            prompts = promptsText.split(/\n/).map((s) => s.trim()).filter(Boolean)
+          }
+          const required = gridSize === '5' ? 25 : 9
+          if (prompts.length !== required) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'text/html')
+            res.end(`<h1>Bad Request</h1><p>Exactly ${required} prompts required for ${gridSize}×${gridSize} grid.</p>`)
+            return
+          }
+          if (!website.db) {
+            res.statusCode = 503
+            res.end('Database not configured.')
+            return
+          }
+          website.db.drizzle.insert(events).values({
+            name,
+            slug,
+            gridSize,
+            description: description || null,
+            prompts: JSON.stringify(prompts),
+          }).then(() => {
+            res.setHeader('Location', '/list-events')
+            res.statusCode = 302
+            res.end()
+          }).catch((err: Error) => {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'text/html')
+            res.end(`<h1>Error</h1><p>${err.message}</p>`)
+          })
+        })
+        return
+      }
+      const html = website.getContentHtml('create-event', 'wrapper')({
+        title: 'Create bingo event',
+        userAuth: requestInfo.userAuth ?? {},
+        siteName: 'SmugMug',
+        currentYear: new Date().getFullYear(),
+      })
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    'edit-event': (res: ServerResponse, req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const slug = requestInfo.action || ''
+      if (!slug || !website.db) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Bad Request</h1><p>Event slug required.</p>')
+        return
+      }
+      const db = website.db.drizzle
+      db.select().from(events).where(eq(events.slug, decodeURIComponent(slug))).limit(1)
+        .then((rows: any[]) => {
+          const event = rows[0]
+          if (!event) {
+            res.statusCode = 404
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Not Found</h1><p>Event not found.</p>')
+            return
+          }
+          if (req.method === 'POST') {
+            parseForm(res, req).then((form: { fields: Record<string, string> }) => {
+              const name = (form.fields?.name ?? '').trim()
+              const gridSize = (form.fields?.gridSize ?? '5') === '5' ? '5' : '3'
+              const promptsText = (form.fields?.prompts ?? '').trim()
+              const description = (form.fields?.description ?? '').trim()
+              let prompts: string[]
+              try {
+                prompts = JSON.parse(promptsText || '[]')
+              } catch {
+                prompts = promptsText.split(/\n/).map((s) => s.trim()).filter(Boolean)
+              }
+              const required = gridSize === '5' ? 25 : 9
+              if (prompts.length !== required) {
+                res.statusCode = 400
+                res.setHeader('Content-Type', 'text/html')
+                res.end(`<h1>Bad Request</h1><p>Exactly ${required} prompts required.</p>`)
+                return
+              }
+              db.update(events).set({ name: name || event.name, gridSize, description: description || null, prompts: JSON.stringify(prompts) }).where(eq(events.id, event.id))
+                .then(() => {
+                  res.setHeader('Location', '/list-events')
+                  res.statusCode = 302
+                  res.end()
+                })
+                .catch((err: Error) => {
+                  res.statusCode = 500
+                  res.end(`<h1>Error</h1><p>${err.message}</p>`)
+                })
+            })
+            return
+          }
+          let promptsList: string[] = []
+          try {
+            promptsList = JSON.parse(event.prompts || '[]')
+          } catch {
+            promptsList = (event.prompts || '').split(/\n/).map((s: string) => s.trim()).filter(Boolean)
+          }
+          const html = website.getContentHtml('edit-event', 'wrapper')({
+            title: 'Edit event',
+            event: { ...event, promptsList, promptsAsText: promptsList.join('\n'), isGrid3: event.gridSize === '3', isGrid5: event.gridSize === '5' },
+            userAuth: requestInfo.userAuth ?? {},
+            siteName: 'SmugMug',
+            currentYear: new Date().getFullYear(),
+          })
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        })
+        .catch((err: Error) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${err.message}</p>`)
+        })
+    },
+    event: (res: ServerResponse, req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const pathname = requestInfo.pathname ?? ''
+      const pathParts = pathname.split('/').filter(Boolean)
+      const isJoin = pathParts[pathParts.length - 1] === 'join' && pathParts[0] === 'event' && pathParts.length === 3
+      const slug = isJoin ? decodeURIComponent(pathParts[1]) : (requestInfo.action || '')
+      if (!slug || !website.db) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Bad Request</h1><p>Event slug required.</p>')
+        return
+      }
+      const db = website.db.drizzle
+      db.select().from(events).where(and(eq(events.slug, slug), isNull(events.deletedAt))).limit(1)
+        .then((rows: any[]) => {
+          const event = rows[0]
+          if (!event) {
+            res.statusCode = 404
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Not Found</h1><p>Event not found.</p>')
+            return
+          }
+          if (isJoin && req.method === 'GET') {
+            const prompts: string[] = JSON.parse(event.prompts || '[]')
+            const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
+            const cells = shuffled.map((prompt: string) => ({ prompt, imageUrl: null, description: null }))
+            return db.insert(bingo_cards).values({ eventId: event.id, ownerId: null, blob: { cells } })
+              .then((insertResult: any) => {
+                const cardId = insertResult?.insertId ?? insertResult?.[0]?.insertId
+                if (!cardId) throw new Error('No card id returned')
+                res.setHeader('Location', `/bingo/${cardId}`)
+                res.statusCode = 302
+                res.end()
+              })
+          }
+          let promptsList: string[] = []
+          try {
+            promptsList = JSON.parse(event.prompts || '[]')
+          } catch {
+            promptsList = []
+          }
+          const html = website.getContentHtml('event-show', 'wrapper')({
+            title: event.name,
+            event: { ...event, promptsList },
+            joinUrl: `/event/${encodeURIComponent(event.slug)}/join`,
+            userAuth: requestInfo.userAuth ?? {},
+            siteName: 'SmugMug',
+            currentYear: new Date().getFullYear(),
+          })
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        })
+        .catch((err: Error) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${err.message}</p>`)
+        })
+    },
+    bingo: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const cardIdRaw = requestInfo.action || ''
+      const cardId = parseInt(cardIdRaw, 10)
+      if (!Number.isFinite(cardId) || !website.db) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'text/html')
+        res.end('<h1>Bad Request</h1><p>Card ID required.</p>')
+        return
+      }
+      website.db.drizzle.select().from(bingo_cards).where(eq(bingo_cards.id, cardId)).limit(1)
+        .then((rows: any[]) => {
+          const card = rows[0]
+          if (!card) {
+            res.statusCode = 404
+            res.setHeader('Content-Type', 'text/html')
+            res.end('<h1>Not Found</h1><p>Card not found.</p>')
+            return
+          }
+          return website.db!.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1).then((eventRows: any[]) => {
+            const event = eventRows[0]
+            const blob = (card.blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
+            const cells = Array.isArray(blob.cells) ? blob.cells : []
+            const gridSize = event?.gridSize === '5' ? 5 : 3
+            const html = website.getContentHtml('bingo-card', 'wrapper')({
+              title: 'Bingo card',
+              cardId: card.id,
+              gridSize,
+              cells,
+              eventName: event?.name,
+              userAuth: requestInfo.userAuth ?? {},
+              siteName: 'SmugMug',
+              currentYear: new Date().getFullYear(),
+            })
+            res.setHeader('Content-Type', 'text/html')
+            res.end(html)
+          })
+        })
+        .catch((err: Error) => {
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'text/html')
+          res.end(`<h1>Error</h1><p>${err.message}</p>`)
+        })
     },
     'album-json': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
       const slug = requestInfo.action || ''

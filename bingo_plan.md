@@ -1,21 +1,52 @@
-Building off of the Mistral plan, we want to create a bingo card generator.
-Tidy up this file, break it down into steps. Especially "MVP" and "Future Features".
+# Bingo card generator
 
-We need a few new models for this.
-Let's keep them all in the same file, /usr/local/dev/Thalia/websites/smugmug/models/bingo.ts
+Builds on the Mistral plan: events have prompts; players get a card with randomised prompts and fill cells by taking/uploading photos, which are analysed (Mistral) and stored on the card.
 
-I've added two new models to the file, events and bingo_cards.
-Do we need any more?
+---
 
-I think we need to have an admin page (list-events) to list all the events, and allow an admin to create new events.
+## Core flow
 
-We'll use an admin page (edit-event) for admins to edit the event, on this page admins can add/edit/delete prompts.
-In future the admins will use this page to view all bingo cards for an event, and especially review images and descriptions, to see if they match the prompt. We will use the mistral-describe API to generate descriptions, and ask mistral if the description matches the prompt.
+- **Grid**: 3×3 by default; event organiser can choose 5×5.
+- **Prompts**: Stored per event (9 for 3×3, 25 for 5×5). When a card is generated, prompts are **randomised** and assigned to cells.
+- **Images**: Players provide photos per cell. On `/bingo/<CARD_ID>` they see their grid of prompts; **clicking a prompt** opens camera or file upload. After upload, the photo is attached to that cell and **analysed** (Mistral describe); result is stored on the card.
 
-Future feature: Admins should be able to ban users.
+---
 
-Then the (show-event) page should show the event details to anyone, and allow people to join the event.
-For the MVP, people don't need to be logged in to join an event. They can contribute to any bingo card.
+## MVP
 
-In future, people will need to be logged in to join an event, and will only be able to contribute to their own bingo card.
+### Models (`models/bingo.ts`)
 
+- **events**: name, slug, ownerId, description, **gridSize** ('3' | '5'), **prompts** (JSON array of 9 or 25 strings), blob.
+- **bingo_cards**: eventId, ownerId (nullable for MVP), approved (default false), **blob** — cell data:  
+  `{ "cells": [ { "prompt": "...", "imageUrl": "...", "description": "..." }, ... ] }` (9 or 25 entries in cell order).
+
+### Admin
+
+1. **list-events** — List all events; link to create/edit.
+2. **create-event** — Create event: name, slug, grid size (3 or 5), description, prompts (9 or 25).
+3. **edit-event** — Edit event: same fields; add/edit/delete prompts.
+
+### Public
+
+4. **show-event** (`/event/<slug>`) — Event details; **Join** creates a new bingo card (randomised prompts), redirects to `/bingo/<CARD_ID>`.
+5. **Bingo card** (`/bingo/<CARD_ID>`) — Grid of cells. Each cell shows prompt; if filled, show thumbnail + optional description. Click cell → file input (camera or upload) → upload (e.g. UploadThing) → POST to API with cell index + image URL → server stores image on cell and runs Mistral describe, saves description in blob; UI updates.
+
+### API
+
+6. **POST /api/bingo-cell** — Body: `{ cardId, cellIndex, imageUrl }`. Load card, update cell at index with imageUrl, call Mistral describe, save description into blob, return updated cell or card.
+
+---
+
+## Future features
+
+- Admins can **view all bingo cards** for an event and **review** images/descriptions; use Mistral to check “does description match prompt?”.
+- **Ban users** (admin).
+- **Auth**: Players must be logged in to join; they can only contribute to **their own** card.
+
+---
+
+## Reference
+
+- Mistral describe: `config/lib-mistral.ts`, `POST /api/mistral-describe`.
+- Upload: UploadThing (e.g. reuse or add bingo upload route), then server-side attach + describe.
+- Schema: `models/bingo.ts`; wire in `models/master-schema.ts` and `config/config.ts`.

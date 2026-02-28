@@ -15,6 +15,13 @@
       "when": 1772236883898,
       "tag": "0001_add-image-notes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772246045811,
+      "tag": "0002_add-bingo",
+      "breakpoints": true
     }
   ]
 }
