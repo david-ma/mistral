@@ -1293,4 +1293,8 @@ const smugmugConfig: RawWebsiteConfig = {
   },
 }
 
-export const config = recursiveObjectMerge(security.securityConfig(), smugmugConfig)
+const temp_config = recursiveObjectMerge(security.securityConfig(), smugmugConfig)
+import { websocket_config } from './lib-websocket.js'
+
+// @ts-ignore
+export const config = recursiveObjectMerge(temp_config, websocket_config)
