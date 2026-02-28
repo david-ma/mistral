@@ -1,0 +1,9 @@
+<div class="home-gate">
+  {{#if userAuth.userId}}
+  <p>You are logged in.</p>
+  <a href="/galleries" class="btn-galleries">Proceed to galleries</a>
+  {{else}}
+  <p class="home-gate-text">Private website, please login.</p>
+  {{> userLogin}}
+  {{/if}}
+</div>

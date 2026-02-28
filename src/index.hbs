@@ -1,9 +1,10 @@
-<div class="home-gate">
-  {{#if userAuth.userId}}
-  <p>You are logged in.</p>
-  <a href="/galleries" class="btn-galleries">Proceed to galleries</a>
-  {{else}}
-  <p class="home-gate-text">Private website, please login.</p>
-  {{> userLogin}}
-  {{/if}}
+{{#> wrapper }}
+
+<h1>Play bingo!</h1>
+<button>Play bingo</button>
+
+<div>
+  About this event: https://worldwide-hackathon.mistral.ai/
 </div>
+
+{{/wrapper}}

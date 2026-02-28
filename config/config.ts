@@ -730,10 +730,10 @@ const smugmugConfig: RawWebsiteConfig = {
     },
   },
   controllers: {
-    homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+    smugmug_homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
       console.log("running index controller")
       const userAuth = requestInfo.userAuth ?? {}
-      const html = website.getContentHtml('index', 'wrapper')({
+      const html = website.getContentHtml('smugmug_index', 'wrapper')({
         title: 'Galleries',
         siteName: 'SmugMug',
         currentYear: new Date().getFullYear(),
