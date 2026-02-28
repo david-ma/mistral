@@ -24,7 +24,9 @@ Builds on the Mistral plan: events have prompts; players get a card with randomi
 
 1. **list-events** — List all events; link to create/edit.
 2. **create-event** — Create event: name, slug, grid size (3 or 5), description, prompts (≥8 for 3×3, ≥24 for 5×5).
-3. **edit-event** — Edit event: same fields; add/edit/delete prompts.
+3. **edit-event** — Edit event: same fields; add/edit/delete prompts. Admin sections (client-driven via `bingo-event-admin.ts`):
+   - **View all cards**: List all bingo cards for this event (link to `/bingo/:cardId`, show filled count). Data from `GET /api/bingo-event/:eventId/admin-data`.
+   - **View all prompts**: Table of each prompt with photos uploaded across cards (thumbnail, description). Optional column: “Match” (TODO: use Mistral to score description vs prompt).
 
 ### Public
 
@@ -147,3 +149,12 @@ Thalia already uses **Socket.IO** (see `server/server.ts`, `websockets` in websi
 5. **Bingo page**: minimal Handlebars shell + client fetches JSON and renders with D3; no Handlebars grid.
 6. **Upload + POST**: keep current flow; on success, either refetch state or (once Socket.IO is wired) listen for `bingo-cell-updated` and update the D3 view; optional immediate preview with UploadThing URL.
 7. **Optional**: server-side “SmugMug path” in bingo-cell handler (download from UploadThing, push to SmugMug, save that URL).
+
+---
+
+## Edit event admin (`edit-event.hbs` + `bingo-event-admin.ts`)
+
+- **API**: `GET /api/bingo-event/:eventId/admin-data` — returns `{ eventId, eventName, gridSize, prompts: string[], cards: [{ id, createdAt, filledCount, cells }] }` so the client can render view-all-cards and view-all-prompts without extra requests.
+- **View all cards**: Container `#view-all-cards` with `#cards-list` (or similar). Script fetches admin-data, then renders a list of cards: each item links to `/bingo/:cardId`, shows filled count (e.g. “5/9”), optionally a mini D3 grid preview.
+- **View all prompts**: Container `#view-all-prompts` with `#prompts-table`. Script builds a table: one row per prompt (from event prompts), columns: #, Prompt, Photos (count or thumbnails + descriptions from all cards’ cells where `cell.prompt === prompt`), and a “Match” column (TODO: use magic AI wand to score description vs prompt).
+- **Pattern**: Same as bingo-game — page has `data-event-id`, script loads on DOMContentLoaded, fetches JSON, uses D3 (or DOM) to render sections. No Handlebars iteration for cards or prompt rows.

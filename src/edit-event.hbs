@@ -28,14 +28,17 @@
   <a href="/list-events" class="btn btn-secondary">Cancel</a>
 </form>
 
-<section id="view-all-cards">
-  <h2>View all cards</h2>
-  <div id="bingo-card-root" data-card-id="{{event.id}}"></div>
-</section>
+<div id="bingo-event-admin-root" data-event-id="{{event.id}}">
+  <section id="view-all-cards" class="mt-4">
+    <h2>View all cards</h2>
+    <div class="admin-cards-list"></div>
+  </section>
 
-<section id="view-all-prompts">
-  <h2>All prompts</h2>
-  <table id="prompts-table"></table>
-</section>
+  <section id="view-all-prompts" class="mt-4">
+    <h2>All prompts</h2>
+    <p class="text-muted">Photos uploaded for each prompt across all cards. Match column: TODO, use magic AI wand to score description vs prompt.</p>
+    <div class="admin-prompts-table"></div>
+  </section>
+</div>
 
 <script type="module" src="/js/bingo-event-admin.js"></script>

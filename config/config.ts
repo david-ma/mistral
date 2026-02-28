@@ -343,6 +343,11 @@ function apiController(
     getBingoGameStateController(res, parseInt(bingoGameMatch[1], 10), website)
     return
   }
+  const bingoEventAdminMatch = pathname.match(/^\/api\/bingo-event\/(\d+)\/admin-data$/)
+  if (bingoEventAdminMatch) {
+    getBingoEventAdminDataController(res, parseInt(bingoEventAdminMatch[1], 10), website)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
@@ -555,6 +560,71 @@ function getBingoGameStateController(res: ServerResponse, cardId: number, websit
       if (!state) return
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify(state))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
+}
+
+/** GET /api/bingo-event/:eventId/admin-data. Returns { eventId, eventName, gridSize, prompts, cards } for edit-event admin. */
+function getBingoEventAdminDataController(res: ServerResponse, eventId: number, website: Website) {
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  website.db.drizzle.select().from(events).where(eq(events.id, eventId)).limit(1)
+    .then((rows: any[]) => {
+      const event = rows[0]
+      if (!event) {
+        res.statusCode = 404
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'Event not found' }))
+        return null
+      }
+      let prompts: string[] = []
+      try {
+        prompts = JSON.parse(event.prompts || '[]')
+      } catch {
+        prompts = (event.prompts || '').split(/\n/).map((s: string) => s.trim()).filter(Boolean)
+      }
+      return website.db!.drizzle.select().from(bingo_cards).where(eq(bingo_cards.eventId, eventId)).orderBy(asc(bingo_cards.id))
+        .then((cardRows: any[]) => {
+          const cards = cardRows.map((row) => {
+            let blob = row.blob
+            if (typeof blob === 'string') {
+              try {
+                blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+              } catch {
+                blob = {}
+              }
+            }
+            const cells = Array.isArray((blob as any)?.cells) ? (blob as any).cells : []
+            const filledCount = cells.filter((c: any) => c?.imageUrl).length
+            return {
+              id: row.id,
+              createdAt: row.createdAt,
+              filledCount,
+              cells,
+            }
+          })
+          return {
+            eventId: event.id,
+            eventName: event.name,
+            gridSize: event.gridSize === '5' ? 5 : 3,
+            prompts,
+            cards,
+          }
+        })
+    })
+    .then((data) => {
+      if (!data) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(data))
     })
     .catch((err) => {
       if (res.headersSent) return
