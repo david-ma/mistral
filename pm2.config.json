@@ -6,7 +6,7 @@
       "script": "bun",
       "args": "server/cli.ts --project=mistral",
       "env": {
-        "NODE_ENV": "production",
+        "NODE_ENV": "development",
         "PORT": 3535
       },
       "error_file": "/usr/local/dev/Thalia/websites/mistral/tmp/pm2-error.log",
