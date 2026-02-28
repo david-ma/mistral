@@ -1,14 +1,17 @@
-<p><a href="/">&larr; Home</a></p>
-<h1>Bingo events</h1>
-<p><a href="/create-event" class="btn btn-primary">Create event</a></p>
-<ul>
-  {{#each events}}
-    <li>
-      <a href="/event/{{this.slug}}">{{this.name}}</a>
-      {{#if this.slug}}<span class="text-muted"> ({{this.slug}})</span>{{/if}}
-      — <a href="/edit-event/{{this.slug}}">Edit</a>
-    </li>
-  {{else}}
-    <li>No events yet.</li>
-  {{/each}}
-</ul>
+<div class="bingo-page">
+  <a href="/" class="bingo-page__back">&larr; Home</a>
+  <h1 class="bingo-page__title">Bingo events</h1>
+  <a href="/create-event" class="bingo-events-list__create">Create event</a>
+
+  <ul class="bingo-events-list">
+    {{#each events}}
+      <li class="bingo-events-list__item">
+        <a href="/event/{{this.slug}}" class="bingo-events-list__link">{{this.name}}</a>
+        {{#if this.slug}}<span class="bingo-events-list__meta">({{this.slug}})</span>{{/if}}
+        <a href="/edit-event/{{this.slug}}" class="bingo-events-list__edit">Edit</a>
+      </li>
+    {{else}}
+      <li class="bingo-events-list__empty">No events yet. Create one to get started.</li>
+    {{/each}}
+  </ul>
+</div>

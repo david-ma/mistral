@@ -1,18 +1,12 @@
-<style>
-  #bingo-card-root .bingo-cell { cursor: pointer; }
-  #bingo-card-root .bingo-cell.bingo-free-space { cursor: default; }
-  #bingo-card-root .bingo-cell:hover rect { stroke: #0d6efd; }
-  #bingo-card-root .bingo-cell.bingo-free-space:hover rect { stroke: #ccc; }
-  input[type="file"].bingo-file-input { display: none; }
-</style>
+<div class="bingo-page bingo-play">
+  <a href="/list-events" class="bingo-page__back">&larr; Events</a>
+  <h1 class="bingo-page__title" id="bingoTitle">Bingo{{#if eventName}}: {{eventName}}{{/if}}</h1>
+  <p class="bingo-page__lead bingo-play__instructions">Click a prompt to take or upload a photo. We’ll analyse it and add it to your card.</p>
 
-<p><a href="/list-events">&larr; Events</a></p>
-<h1 id="bingoTitle">Bingo{{#if eventName}}: {{eventName}}{{/if}}</h1>
-<p class="text-muted">Click a prompt to take or upload a photo. We’ll analyse it and add it to your card.</p>
+  <div id="bingo-card-root" data-card-id="{{cardId}}"></div>
 
-<div id="bingo-card-root" data-card-id="{{cardId}}"></div>
-
-<input type="file" id="bingoFileInput" class="bingo-file-input" accept="image/*" capture="environment" />
+  <input type="file" id="bingoFileInput" class="bingo-file-input" accept="image/*" capture="environment" />
+</div>
 
 <script type="module" src="/js/uploadthing-init.js"></script>
 <script type="module" src="/js/bingo-game.js"></script>

@@ -1,31 +1,34 @@
-<p><a href="/list-events">&larr; Back to events</a></p>
-<h1>Create bingo event</h1>
-<form method="post" action="/create-event" class="mb-3">
-  <div class="mb-2">
-    <label for="name" class="form-label">Event name <span class="text-danger">*</span></label>
-    <input type="text" class="form-control" id="name" name="name" required placeholder="e.g. Summer Bingo" />
-  </div>
-  <div class="mb-2">
-    <label for="slug" class="form-label">URL slug <span class="text-danger">*</span></label>
-    <input type="text" class="form-control" id="slug" name="slug" required placeholder="e.g. summer-bingo" />
-    <small class="text-muted">Lowercase, no spaces. Used in URLs.</small>
-  </div>
-  <div class="mb-2">
-    <label for="gridSize" class="form-label">Grid size</label>
-    <select class="form-control" id="gridSize" name="gridSize">
-      <option value="3" selected>3×3 (9 prompts)</option>
-      <option value="5">5×5 (25 prompts)</option>
-    </select>
-  </div>
-  <div class="mb-2">
-    <label for="description" class="form-label">Description</label>
-    <textarea class="form-control" id="description" name="description" rows="2" placeholder="Optional"></textarea>
-  </div>
-  <div class="mb-2">
-    <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
-    <textarea class="form-control" id="prompts" name="prompts" rows="12" required placeholder="A red car&#10;Something fluffy&#10;..."></textarea>
-    <small class="text-muted">At least 8 prompts for 3×3 (centre is a free space), or 24 for 5×5. One per line or a JSON array.</small>
-  </div>
-  <button type="submit" class="btn btn-primary">Create event</button>
-  <a href="/list-events" class="btn btn-secondary">Cancel</a>
-</form>
+<div class="bingo-page">
+  <a href="/list-events" class="bingo-page__back">&larr; Back to events</a>
+  <h1 class="bingo-page__title">Create bingo event</h1>
+
+  <form method="post" action="/create-event" class="bingo-form">
+    <div class="mb-2">
+      <label for="name" class="form-label">Event name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" id="name" name="name" required placeholder="e.g. Summer Bingo" />
+    </div>
+    <div class="mb-2">
+      <label for="slug" class="form-label">URL slug <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" id="slug" name="slug" required placeholder="e.g. summer-bingo" />
+      <small class="text-muted">Lowercase, no spaces. Used in URLs.</small>
+    </div>
+    <div class="mb-2">
+      <label for="gridSize" class="form-label">Grid size</label>
+      <select class="form-control" id="gridSize" name="gridSize">
+        <option value="3" selected>3×3 (9 prompts)</option>
+        <option value="5">5×5 (25 prompts)</option>
+      </select>
+    </div>
+    <div class="mb-2">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="2" placeholder="Optional"></textarea>
+    </div>
+    <div class="mb-2">
+      <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
+      <textarea class="form-control" id="prompts" name="prompts" rows="12" required placeholder="A red car&#10;Something fluffy&#10;..."></textarea>
+      <small class="text-muted">At least 8 prompts for 3×3 (centre is a free space), or 24 for 5×5. One per line or a JSON array.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Create event</button>
+    <a href="/list-events" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>

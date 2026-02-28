@@ -1,6 +1,10 @@
-<p><a href="/list-events">&larr; All events</a></p>
-<h1>{{event.name}}</h1>
-{{#if event.description}}<p>{{event.description}}</p>{{/if}}
-<p><strong>Grid:</strong> {{event.gridSize}}×{{event.gridSize}}</p>
-<p><a href="{{joinUrl}}" class="btn btn-primary">Join and get my card</a></p>
-<p class="text-muted">You’ll get a card with randomised prompts. Click each prompt to take or upload a photo; we’ll analyse it and add it to your card.</p>
+<div class="bingo-page bingo-join">
+  <a href="/list-events" class="bingo-page__back">&larr; All events</a>
+  <h1 class="bingo-page__title">{{event.name}}</h1>
+  {{#if event.description}}
+    <p class="bingo-page__lead bingo-join__description">{{event.description}}</p>
+  {{/if}}
+  <p class="bingo-join__grid-info"><strong>Grid:</strong> {{event.gridSize}}×{{event.gridSize}}</p>
+  <a href="{{joinUrl}}" class="bingo-join__cta">Join and get my card</a>
+  <p class="bingo-join__hint">You’ll get a card with randomised prompts. Click each prompt to take or upload a photo; we’ll analyse it and add it to your card.</p>
+</div>

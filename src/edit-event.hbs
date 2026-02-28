@@ -1,44 +1,47 @@
-<p><a href="/list-events">&larr; Back to events</a></p>
-<h1>Edit event: {{event.name}}</h1>
-<form method="post" action="/edit-event/{{event.slug}}" class="mb-3">
-  <div class="mb-2">
-    <label for="name" class="form-label">Event name</label>
-    <input type="text" class="form-control" id="name" name="name" value="{{event.name}}" />
-  </div>
-  <div class="mb-2">
-    <span class="form-label">Slug</span>
-    <p class="form-control-plaintext">{{event.slug}}</p>
-  </div>
-  <div class="mb-2">
-    <label for="gridSize" class="form-label">Grid size</label>
-    <select class="form-control" id="gridSize" name="gridSize">
-      <option value="3" {{#if event.isGrid3}}selected{{/if}}>3×3 (9 prompts)</option>
-      <option value="5" {{#if event.isGrid5}}selected{{/if}}>5×5 (25 prompts)</option>
-    </select>
-  </div>
-  <div class="mb-2">
-    <label for="description" class="form-label">Description</label>
-    <textarea class="form-control" id="description" name="description" rows="2">{{event.description}}</textarea>
-  </div>
-  <div class="mb-2">
-    <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
-    <textarea class="form-control" id="prompts" name="prompts" rows="12">{{event.promptsAsText}}</textarea>
-  </div>
-  <button type="submit" class="btn btn-primary">Save changes</button>
-  <a href="/list-events" class="btn btn-secondary">Cancel</a>
-</form>
+<div class="bingo-page">
+  <a href="/list-events" class="bingo-page__back">&larr; Back to events</a>
+  <h1 class="bingo-page__title">Edit event: {{event.name}}</h1>
 
-<div id="bingo-event-admin-root" data-event-id="{{event.id}}">
-  <section id="view-all-cards" class="mt-4">
-    <h2>View all cards</h2>
-    <div class="admin-cards-list"></div>
-  </section>
+  <form method="post" action="/edit-event/{{event.slug}}" class="bingo-form">
+    <div class="mb-2">
+      <label for="name" class="form-label">Event name</label>
+      <input type="text" class="form-control" id="name" name="name" value="{{event.name}}" />
+    </div>
+    <div class="mb-2">
+      <span class="form-label">Slug</span>
+      <p class="form-control-plaintext">{{event.slug}}</p>
+    </div>
+    <div class="mb-2">
+      <label for="gridSize" class="form-label">Grid size</label>
+      <select class="form-control" id="gridSize" name="gridSize">
+        <option value="3" {{#if event.isGrid3}}selected{{/if}}>3×3 (9 prompts)</option>
+        <option value="5" {{#if event.isGrid5}}selected{{/if}}>5×5 (25 prompts)</option>
+      </select>
+    </div>
+    <div class="mb-2">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="2">{{event.description}}</textarea>
+    </div>
+    <div class="mb-2">
+      <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
+      <textarea class="form-control" id="prompts" name="prompts" rows="12">{{event.promptsAsText}}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a href="/list-events" class="btn btn-secondary">Cancel</a>
+  </form>
 
-  <section id="view-all-prompts" class="mt-4">
-    <h2>All prompts</h2>
-    <p class="text-muted">Photos uploaded for each prompt across all cards. Match column: TODO, use magic AI wand to score description vs prompt.</p>
-    <div class="admin-prompts-table"></div>
-  </section>
+  <div id="bingo-event-admin-root" class="bingo-admin" data-event-id="{{event.id}}">
+    <section id="view-all-cards" class="bingo-admin__section">
+      <h2 class="bingo-admin__section-title">View all cards</h2>
+      <div class="admin-cards-list"></div>
+    </section>
+
+    <section id="view-all-prompts" class="bingo-admin__section">
+      <h2 class="bingo-admin__section-title">All prompts</h2>
+      <p class="bingo-admin__section-desc">Photos uploaded for each prompt across all cards. Match column: TODO, use magic AI wand to score description vs prompt.</p>
+      <div class="admin-prompts-table"></div>
+    </section>
+  </div>
 </div>
 
 <script type="module" src="/js/bingo-event-admin.js"></script>
