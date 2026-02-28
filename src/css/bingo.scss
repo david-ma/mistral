@@ -137,6 +137,20 @@ $bingo-text-muted: #94a3b8;
     &.filled rect {
       fill: $bingo-accent-dim;
     }
+
+    &.image-loading {
+      pointer-events: none;
+
+      .cell-hint,
+      .cell-image {
+        visibility: hidden;
+      }
+
+      .bingo-cell-loading-image {
+        transform-origin: center;
+        animation: bingo-spin 0.8s linear infinite;
+      }
+    }
   }
 
   .bingo-file-input {

@@ -162,8 +162,44 @@ function updateTitle(eventName: string): void {
   if (el) el.textContent = eventName ? `Bingo: ${eventName}` : 'Bingo'
 }
 
+const LOADING_SVG = '/images/loading.svg'
+
 let currentCellIndex: number | null = null
 let uploadChangeAttached = false
+
+function showCellLoading(
+  root: d3.Selection<HTMLDivElement, unknown, null, undefined>,
+  cellIndex: number,
+): void {
+  const cell = root.select<SVGGElement>(`g.bingo-cell[data-cell-index="${cellIndex}"]`)
+  if (cell.empty()) return
+  cell.classed('image-loading', true)
+  const rect = cell.select('rect').node()
+  if (rect) {
+    const bbox = rect.getBBox()
+    const size = Math.min(32, bbox.width * 0.4, bbox.height * 0.4)
+    const x = bbox.width / 2 - size / 2
+    const y = 28 + (bbox.height - 28 - 24) / 2 - size / 2
+    cell
+      .append('image')
+      .attr('class', 'bingo-cell-loading-image')
+      .attr('href', LOADING_SVG)
+      .attr('x', x)
+      .attr('y', y)
+      .attr('width', size)
+      .attr('height', size)
+  }
+}
+
+function clearCellLoading(
+  root: d3.Selection<HTMLDivElement, unknown, null, undefined>,
+  cellIndex: number,
+): void {
+  const cell = root.select<SVGGElement>(`g.bingo-cell[data-cell-index="${cellIndex}"]`)
+  if (cell.empty()) return
+  cell.classed('image-loading', false)
+  cell.selectAll('.bingo-cell-loading-image').remove()
+}
 
 function attachUpload(
   root: d3.Selection<HTMLDivElement, unknown, null, undefined>,
@@ -193,6 +229,8 @@ function attachUpload(
       currentCellIndex = null
       return
     }
+    const cellIndex = currentCellIndex
+    showCellLoading(root, cellIndex)
     uploadFiles('smugmugImage', { files: [file] })
       .then((results) => {
         const fileResult = results?.[0]
@@ -201,7 +239,7 @@ function attachUpload(
         return fetch('/api/bingo-cell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cardId, cellIndex: currentCellIndex, imageUrl: url }),
+          body: JSON.stringify({ cardId, cellIndex, imageUrl: url }),
         }).then((r) => r.json())
       })
       .then((data) => {
@@ -209,6 +247,7 @@ function attachUpload(
         run()
       })
       .catch((err) => {
+        clearCellLoading(root, cellIndex)
         alert(err?.message ?? 'Upload failed')
       })
       .finally(() => {
