@@ -41,14 +41,19 @@ function draw(
   const cellW = innerWidth / n
   const cellH = innerHeight / n
 
-  container.selectAll('svg').remove()
-  const svg = container
+  container.selectAll('*').remove()
+  const wrapper = container
+    .append('div')
+    .attr('class', 'bingo-svg-wrapper')
+    .style('aspect-ratio', '1')
+    .style('width', '100%')
+    .style('max-width', `${width}px`)
+    .style('background', 'rgba(0,0,0,0.02)')
+  const svg = wrapper
     .append('svg')
     .attr('viewBox', `0 0 ${width} ${height}`)
     .attr('width', '100%')
-    .attr('height', 'auto')
-    .style('max-width', `${width}px`)
-    .style('background', 'rgba(0,0,0,0.02)')
+    .attr('height', '100%')
 
   const plot = svg
     .append('g')
@@ -182,7 +187,8 @@ function attachUpload(
     }
     uploadFiles('smugmugImage', { files: [file] })
       .then((results) => {
-        const url = results?.[0]?.url
+        const fileResult = results?.[0]
+        const url = fileResult?.ufsUrl ?? fileResult?.url
         if (!url) throw new Error('No URL returned from upload')
         return fetch('/api/bingo-cell', {
           method: 'POST',
