@@ -58,6 +58,52 @@ $bingo-text-muted: #94a3b8;
   line-height: 1.5;
 }
 
+// Photo upload disclaimer blurb (event + bingo play pages)
+.bingo-disclaimer-blurb {
+  margin: 0 0 $bingo-spacing;
+  font-size: 0.88rem;
+  color: $bingo-text-muted;
+  line-height: 1.45;
+}
+.bingo-disclaimer-blurb__link {
+  color: #94a3b8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  &:hover { color: #e2e8f0; }
+}
+
+// Photo upload disclaimer page
+.bingo-page--disclaimer .bingo-disclaimer__content {
+  margin-top: $bingo-spacing-lg;
+  padding: $bingo-spacing-lg;
+  background: $bingo-card-bg;
+  border: 1px solid $bingo-border;
+  border-radius: $bingo-radius;
+}
+.bingo-disclaimer__lead {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+.bingo-disclaimer__body {
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  color: $bingo-text-muted;
+  line-height: 1.6;
+
+  ul {
+    margin: 0.75rem 0;
+    padding-left: 1.25rem;
+  }
+  li { margin-bottom: 0.5rem; }
+}
+.bingo-disclaimer__back {
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid $bingo-border;
+}
+
 // -----------------------------------------------------------------------------
 // Bingo card preview (reusable: homepage, admin, event pages)
 // -----------------------------------------------------------------------------
