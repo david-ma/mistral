@@ -32,7 +32,7 @@ import { RequestInfo } from 'thalia/server'
 import { createRouteHandler } from 'uploadthing/server'
 import { uploadthingRouter } from './uploadthing.js'
 import { addTempFile, runCleanupIfNeeded } from './uploadthing-cleanup.js'
-import { loadMistralApiKey, describeImageWithRetry } from './lib-mistral.js'
+import { loadMistralApiKey, describeImage, describeImageWithRetry } from './lib-mistral.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
