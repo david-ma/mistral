@@ -32,7 +32,7 @@ import { RequestInfo } from 'thalia/server'
 import { createRouteHandler } from 'uploadthing/server'
 import { uploadthingRouter } from './uploadthing.js'
 import { addTempFile, runCleanupIfNeeded } from './uploadthing-cleanup.js'
-import { loadMistralApiKey, describeImage } from './lib-mistral.js'
+import { loadMistralApiKey, describeImageWithRetry } from './lib-mistral.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -542,7 +542,7 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
               const imageUrlForCell = sizeUrls.url
               const thumbnailUrlForCell = sizeUrls.thumbnailUrl
               console.log('[bingo-cell] calling Mistral describeImage...')
-              return describeImage(mistralKey, imageUrlForCell).then((result) => {
+              return describeImageWithRetry(mistralKey, imageUrlForCell).then((result) => {
                 console.log('[bingo-cell] Mistral done, saving to DB...')
                 const updated = {
                   ...cells[payload.cellIndex],

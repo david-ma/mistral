@@ -36,6 +36,14 @@ export function loadMistralApiKey(): Promise<string | null> {
     })
 }
 
+/** Delays (ms) between retries when Mistral cannot fetch the image (e.g. SmugMug still processing). */
+const FETCH_RETRY_DELAYS_MS = [100, 500, 1000, 3000]
+
+function isImageFetchError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return msg.includes('could not be fetched') || msg.includes('"code":3310')
+}
+
 /**
  * Call Mistral chat completions with vision: send image URL and prompt for description.
  * Image URL must be publicly accessible (e.g. UploadThing URL).
@@ -83,4 +91,28 @@ export function describeImage(apiKey: string, imageUrl: string): Promise<Mistral
         raw: data,
       }
     })
+}
+
+/**
+ * Like describeImage but retries when Mistral returns "file could not be fetched" (e.g. image URL
+ * not yet available from SmugMug). Waits 100 ms, 500 ms, 1 s, 3 s between retries then fails.
+ */
+export function describeImageWithRetry(apiKey: string, imageUrl: string): Promise<MistralDescribeResult> {
+  let attempt = 0
+  function run(): Promise<MistralDescribeResult> {
+    attempt += 1
+    return describeImage(apiKey, imageUrl).catch((err) => {
+      if (!isImageFetchError(err) || attempt > FETCH_RETRY_DELAYS_MS.length) {
+        throw err
+      }
+      const delayMs = FETCH_RETRY_DELAYS_MS[attempt - 1]
+      console.log('[mistral] image fetch error, retry after', delayMs, 'ms (attempt', attempt, ')')
+      return new Promise<MistralDescribeResult>((resolve, reject) => {
+        setTimeout(() => {
+          run().then(resolve).catch(reject)
+        }, delayMs)
+      })
+    })
+  }
+  return run()
 }
