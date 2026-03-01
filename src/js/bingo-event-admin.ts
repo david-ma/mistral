@@ -133,15 +133,16 @@ function drawCardsList(
   })
   rows.append('td').text((d) => String(d.totalScore))
   rows.append('td').text((d) => d.note)
-  const toggleCell = rows.append('td').attr('class', 'admin-cards-approve-cell')
-  toggleCell.each(function (card) {
+  const actionsCell = rows.append('td').attr('class', 'admin-cards-actions-cell')
+  actionsCell.each(function (card) {
     const td = d3.select(this)
-    const btn = td.append('button').attr('type', 'button').attr('class', 'btn btn-sm admin-approve-toggle')
+    const wrap = td.append('div').attr('class', 'admin-cards-actions-wrap')
+    const approveBtn = wrap.append('button').attr('type', 'button').attr('class', 'btn btn-sm admin-approve-toggle')
       .attr('data-card-id', String(card.id)).attr('aria-pressed', card.approved ? 'true' : 'false')
-    btn.text(card.approved ? 'Approved' : 'Approve')
-    if (card.approved) btn.classed('btn-success', true)
-    else btn.classed('btn-outline-secondary', true)
-    btn.on('click', function () {
+    approveBtn.text(card.approved ? 'Approved' : 'Approve')
+    if (card.approved) approveBtn.classed('btn-success', true)
+    else approveBtn.classed('btn-outline-secondary', true)
+    approveBtn.on('click', function () {
       const nextApproved = !card.approved
       const currentIds = data.approvedCardIds ?? []
       const nextIds = nextApproved ? [...currentIds, card.id] : currentIds.filter((id) => id !== card.id)
@@ -155,11 +156,16 @@ function drawCardsList(
           if (body?.error) throw new Error(body.error)
           card.approved = nextApproved
           data.approvedCardIds = body.approvedCardIds ?? nextIds
-          btn.attr('aria-pressed', nextApproved ? 'true' : 'false').text(nextApproved ? 'Approved' : 'Approve')
+          approveBtn.attr('aria-pressed', nextApproved ? 'true' : 'false').text(nextApproved ? 'Approved' : 'Approve')
             .classed('btn-success', nextApproved).classed('btn-outline-secondary', !nextApproved)
         })
         .catch((err) => alert(err?.message ?? 'Failed to update'))
     })
+    const banBtn = wrap.append('button').attr('type', 'button').attr('class', 'btn btn-sm btn-outline-danger admin-ban-user').text('Ban user')
+    banBtn.on('click', () => {
+      alert('User is banned')
+    })
+    wrap.append('a').attr('href', `/bingo/${card.id}`).attr('class', 'btn btn-sm btn-outline-primary').attr('target', '_blank').attr('rel', 'noopener').text('Play card')
   })
 }
 

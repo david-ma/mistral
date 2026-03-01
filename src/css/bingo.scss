@@ -589,8 +589,15 @@ $bingo-text-muted: #94a3b8;
       }
     }
 
-    .admin-cards-approve-cell {
+    .admin-cards-actions-cell {
       white-space: nowrap;
+    }
+
+    .admin-cards-actions-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
     }
 
     .admin-approve-toggle {
