@@ -10,7 +10,7 @@
     <p class="bingo-section__body">Try a card — no login required. Click to play.</p>
     <div class="bingo-landing__approved-grid">
       {{#each featuredCards}}
-        {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
+          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
       {{else}}
         <p class="bingo-section__empty">No cards to show. Cards 1, 2, 3 will appear here.</p>
       {{/each}}
@@ -23,7 +23,7 @@
       <p class="bingo-section__body">Bingo cards from the community.</p>
       <div class="bingo-landing__approved-grid">
         {{#each approvedCards}}
-          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
+          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
         {{/each}}
       </div>
     </section>

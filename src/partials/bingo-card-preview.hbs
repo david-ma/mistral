@@ -3,12 +3,17 @@
   Data from server (e.g. homepage featuredCards) or from GET /api/bingo-card-preview/:cardId.
   Usage: {{> bingo-card-preview cells=card.cells gridSize=3 title="Card #8" cardUrl="/bingo/8" }}
   Required: cells (array of { prompt, imageUrl?, thumbnailUrl?, description?, isFreeSpace? }), gridSize (3 or 5).
-  Optional: title, cardUrl (link to view full card), cardId, filledCount.
+  Optional: title, playerName, cardUrl (link to view full card), cardId, filledCount.
 --}}
 <div class="bingo-card-preview">
   {{#if title}}
     <div class="bingo-card-preview__header">
-      <h3 class="bingo-card-preview__title">{{title}}</h3>
+      <div class="bingo-card-preview__title-wrap">
+        <h3 class="bingo-card-preview__title">{{title}}</h3>
+        {{#if playerName}}
+          <div class="bingo-card-preview__meta">Player: {{playerName}}</div>
+        {{/if}}
+      </div>
       {{#if cardUrl}}
         <a href="{{cardUrl}}" class="bingo-card-preview__link">View card</a>
       {{/if}}

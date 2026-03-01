@@ -106,17 +106,43 @@ function getApprovedCardIds(blob: unknown): number[] {
   return b.approvedCardIds.filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
 }
 
-/** Parse card blob to cells array for preview. Safe for missing or string blob. */
-function getCardCellsForPreview(card: { blob?: unknown }): Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> {
-  let blob = card.blob
+type BingoCardBlob = {
+  cells?: unknown[]
+  playerName?: unknown
+  [key: string]: unknown
+}
+
+/** Parse bingo card blob safely from JSON/string/object. */
+function parseBingoCardBlob(blob: unknown): BingoCardBlob {
+  if (blob == null) return {}
   if (typeof blob === 'string') {
     try {
-      blob = JSON.parse(blob) as { cells?: unknown[] }
+      const parsed = JSON.parse(blob) as unknown
+      return parsed != null && typeof parsed === 'object' ? (parsed as BingoCardBlob) : {}
     } catch {
-      return []
+      return {}
     }
   }
-  const b = (blob as { cells?: unknown[] }) ?? {}
+  return typeof blob === 'object' ? (blob as BingoCardBlob) : {}
+}
+
+/** Trim and normalize player name for storage/display. Empty => null. */
+function sanitizePlayerName(name: unknown): string | null {
+  if (typeof name !== 'string') return null
+  const trimmed = name.trim().replace(/\s+/g, ' ')
+  if (!trimmed) return null
+  return trimmed.slice(0, 60)
+}
+
+/** Read player name from card blob. */
+function getCardPlayerName(card: { blob?: unknown }): string | null {
+  const blob = parseBingoCardBlob(card.blob)
+  return sanitizePlayerName(blob.playerName)
+}
+
+/** Parse card blob to cells array for preview. Safe for missing or string blob. */
+function getCardCellsForPreview(card: { blob?: unknown }): Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> {
+  const b = parseBingoCardBlob(card.blob)
   const cells = Array.isArray(b.cells) ? b.cells : []
   return cells.map((c: any) => ({
     prompt: c?.prompt ?? '',
@@ -143,10 +169,11 @@ const PLACEHOLDER_CELLS_3X3: Array<{ prompt: string; imageUrl: null; thumbnailUr
 /** Hardcoded bingo card IDs shown on homepage; clicking opens /bingo/:id (play without logging in). */
 const FEATURED_CARD_IDS = [1, 2, 3]
 const HOMEPAGE_FEATURED_CARDS = FEATURED_CARD_IDS.map((id) => ({
-  cardId: `blah-${id}`,
+  cardId: id,
   title: `Card ${id}`,
   cardUrl: `/bingo/${id}`,
   gridSize: 3 as const,
+  playerName: null,
   cells: PLACEHOLDER_CELLS_3X3,
 }))
 
@@ -439,6 +466,10 @@ function apiController(
     bingoCellController(res, req, website)
     return
   }
+  if (pathname === '/api/bingo-player-name') {
+    bingoPlayerNameController(res, req, website)
+    return
+  }
   const bingoGameMatch = pathname.match(/^\/api\/bingo-game\/(\d+)$/)
   if (bingoGameMatch) {
     getBingoGameStateController(res, parseInt(bingoGameMatch[1], 10), website)
@@ -568,16 +599,8 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
       }
       const { card, payload } = ctx
       console.log('[bingo-cell] card loaded, loading creds and bingo album key')
-      let blob = card.blob
-      if (typeof blob === 'string') {
-        try {
-          blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
-        } catch {
-          blob = {}
-        }
-      }
-      blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
-      const cells = Array.isArray(blob.cells) ? blob.cells.slice() : []
+      const cardBlob = parseBingoCardBlob(card.blob)
+      const cells = Array.isArray(cardBlob.cells) ? cardBlob.cells.slice() : []
       if (payload.cellIndex >= cells.length) {
         res.statusCode = 400
         res.setHeader('Content-Type', 'application/json')
@@ -598,7 +621,7 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
           }
           return null
         }
-        return { mistralKey, creds, bingoAlbumKey, cells, payload, card }
+        return { mistralKey, creds, bingoAlbumKey, cells, payload, card, cardBlob }
       })
     })
     .then((ctx) => {
@@ -611,7 +634,7 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         console.log('[bingo-cell] no ctx (Mistral key or SmugMug/bingo album missing)')
         return null
       }
-      const { mistralKey, creds, bingoAlbumKey, cells, payload, card } = ctx
+      const { mistralKey, creds, bingoAlbumKey, cells, payload, card, cardBlob } = ctx
       const uploadThingUrl = payload.imageUrl
       console.log('[bingo-cell] fetching image from UploadThing...')
       return fetch(uploadThingUrl)
@@ -652,7 +675,7 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
                 }
                 cells[payload.cellIndex] = updated
                 const db = website.db!.drizzle
-                return db.update(bingo_cards).set({ blob: { cells } }).where(eq(bingo_cards.id, card.id))
+                return db.update(bingo_cards).set({ blob: { ...cardBlob, cells } }).where(eq(bingo_cards.id, card.id))
                   .then(() => ({ cell: cells[payload.cellIndex], cells }))
               })
             })
@@ -674,24 +697,72 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
     })
 }
 
+/** POST /api/bingo-player-name: body { cardId, playerName }. Sets/clears card player name stored in bingo_cards.blob.playerName. */
+function bingoPlayerNameController(res: ServerResponse, req: IncomingMessage, website: Website) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
+  }
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  readRequestBody(req)
+    .then((buf) => {
+      const body = JSON.parse(buf.toString()) as { cardId?: number | string; playerName?: string }
+      const cardId = typeof body?.cardId === 'number' ? body.cardId : parseInt(String(body?.cardId ?? ''), 10)
+      const playerName = sanitizePlayerName(body?.playerName)
+      if (!Number.isFinite(cardId) || cardId < 1) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'cardId required' }))
+        return null
+      }
+      return { cardId, playerName }
+    })
+    .then((payload) => {
+      if (!payload) return null
+      const db = website.db!.drizzle
+      return db.select().from(bingo_cards).where(eq(bingo_cards.id, payload.cardId)).limit(1).then((rows) => {
+        const card = rows[0]
+        if (!card) {
+          res.statusCode = 404
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Card not found' }))
+          return null
+        }
+        const cardBlob = parseBingoCardBlob(card.blob)
+        const nextBlob = { ...cardBlob, playerName: payload.playerName }
+        return db.update(bingo_cards).set({ blob: nextBlob }).where(eq(bingo_cards.id, card.id)).then(() => payload)
+      })
+    })
+    .then((payload) => {
+      if (!payload) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ ok: true, cardId: payload.cardId, playerName: payload.playerName }))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
+}
+
 /** Shared: load bingo card + event and return game state (or null if card not found). Used by bingo-game API and preview API/homepage. */
-async function getBingoGameState(cardId: number, website: Website): Promise<{ cardId: number; eventName: string; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> } | null> {
+async function getBingoGameState(cardId: number, website: Website): Promise<{ cardId: number; eventName: string; playerName: string | null; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> } | null> {
   if (!website.db) return null
   const rows = await website.db.drizzle.select().from(bingo_cards).where(eq(bingo_cards.id, cardId)).limit(1)
   const card = rows[0]
   if (!card) return null
   const eventRows = await website.db.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1)
   const event = eventRows[0]
-  let blob = card.blob
-  if (typeof blob === 'string') {
-    try {
-      blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
-    } catch {
-      blob = {}
-    }
-  }
-  blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
-  let rawCells = Array.isArray(blob.cells) ? blob.cells : []
+  const cardBlob = parseBingoCardBlob(card.blob)
+  let rawCells = Array.isArray(cardBlob.cells) ? cardBlob.cells : []
   if (rawCells.length === 0 && event?.prompts) {
     const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
     const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
@@ -710,14 +781,14 @@ async function getBingoGameState(cardId: number, website: Website): Promise<{ ca
         p++
       }
     }
-    await website.db.drizzle.update(bingo_cards).set({ blob: { cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
+    await website.db.drizzle.update(bingo_cards).set({ blob: { ...cardBlob, cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
   }
   const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
   const gridSize = event?.gridSize === '5' ? 5 : 3
-  return { cardId: card.id, eventName: event?.name ?? '', gridSize, cells }
+  return { cardId: card.id, eventName: event?.name ?? '', playerName: sanitizePlayerName(cardBlob.playerName), gridSize, cells }
 }
 
-/** GET /api/bingo-game/:cardId. Returns JSON { cardId, eventName, gridSize, cells } for client-side render. */
+/** GET /api/bingo-game/:cardId. Returns JSON { cardId, eventName, playerName, gridSize, cells } for client-side render. */
 function getBingoGameStateController(res: ServerResponse, cardId: number, website: Website) {
   if (!website.db) {
     res.statusCode = 503
@@ -745,7 +816,7 @@ function getBingoGameStateController(res: ServerResponse, cardId: number, websit
 }
 
 /** Preview shape for bingo-card-preview partial and GET /api/bingo-card-preview/:cardId. */
-type BingoCardPreview = { cardId: number; title: string; cardUrl: string; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> }
+type BingoCardPreview = { cardId: number; playerName: string | null; title: string; cardUrl: string; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> }
 
 /** Load preview data for one card. Returns null if card not found. Use for API or server-render. */
 async function getBingoCardPreview(cardId: number, website: Website): Promise<BingoCardPreview | null> {
@@ -756,9 +827,11 @@ async function getBingoCardPreview(cardId: number, website: Website): Promise<Bi
     thumbnailUrl: c.thumbnailUrl ?? c.imageUrl ?? null,
   }))
   const cells = rawCells.length > 0 ? rawCells : PLACEHOLDER_CELLS_3X3
+  const title = `${state.eventName} — Card #${state.cardId}`
   return {
     cardId: state.cardId,
-    title: `${state.eventName} — Card #${state.cardId}`,
+    playerName: state.playerName,
+    title,
     cardUrl: `/bingo/${state.cardId}`,
     gridSize: state.gridSize,
     cells,
@@ -797,6 +870,7 @@ async function loadFeaturedCardsPreview(website: Website, cardIds: number[]): Pr
   const results = await Promise.all(cardIds.map((id) => getBingoCardPreview(id, website)))
   return results.map((preview, i) => preview ?? {
     cardId: cardIds[i],
+    playerName: null,
     title: `Card ${cardIds[i]}`,
     cardUrl: `/bingo/${cardIds[i]}`,
     gridSize: 3 as const,
@@ -1106,8 +1180,10 @@ const smugmugConfig: RawWebsiteConfig = {
                     .map((card) => {
                       const meta = eventMap.get(card.eventId)
                       if (!meta || !meta.cardIds.includes(card.id)) return null
+                      const playerName = getCardPlayerName(card)
                       return {
                         id: card.id,
+                        playerName,
                         cells: getCardCellsForPreview(card),
                         gridSize: meta.gridSize,
                         eventName: meta.eventName,
@@ -1406,14 +1482,18 @@ const smugmugConfig: RawWebsiteConfig = {
             .where(and(inArray(bingo_cards.id, approvedIds), eq(bingo_cards.eventId, event.id)))
             .then((cardRows: any[]) => {
               const gridSizeNum = event.gridSize === '5' ? 5 : 3
-              const approvedCards = cardRows.map((card) => ({
-                id: card.id,
-                cells: getCardCellsForPreview(card),
-                gridSize: gridSizeNum,
-                eventName: event.name,
-                cardUrl: `/bingo/${card.id}`,
-                title: `Card #${card.id}`,
-              }))
+              const approvedCards = cardRows.map((card) => {
+                const playerName = getCardPlayerName(card)
+                return {
+                  id: card.id,
+                  playerName,
+                  cells: getCardCellsForPreview(card),
+                  gridSize: gridSizeNum,
+                  eventName: event.name,
+                  cardUrl: `/bingo/${card.id}`,
+                  title: `Card #${card.id}`,
+                }
+              })
               const html = website.getContentHtml('event-show', 'wrapper')({
                 title: event.name,
                 event: { ...event, promptsList },
@@ -1456,16 +1536,8 @@ const smugmugConfig: RawWebsiteConfig = {
           }
           return website.db!.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1).then((eventRows: any[]) => {
             const event = eventRows[0]
-            let blob = card.blob
-            if (typeof blob === 'string') {
-              try {
-                blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
-              } catch {
-                blob = {}
-              }
-            }
-            blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
-            let rawCells = Array.isArray(blob.cells) ? blob.cells : []
+            const cardBlob = parseBingoCardBlob(card.blob)
+            let rawCells = Array.isArray(cardBlob.cells) ? cardBlob.cells : []
             if (rawCells.length === 0 && event?.prompts) {
               const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
               const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
@@ -1484,7 +1556,7 @@ const smugmugConfig: RawWebsiteConfig = {
                   p++
                 }
               }
-              website.db!.drizzle.update(bingo_cards).set({ blob: { cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
+              website.db!.drizzle.update(bingo_cards).set({ blob: { ...cardBlob, cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
             }
             const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
             const gridSize = event?.gridSize === '5' ? 5 : 3
@@ -1494,6 +1566,7 @@ const smugmugConfig: RawWebsiteConfig = {
               gridSize,
               cells,
               eventName: event?.name,
+              playerName: sanitizePlayerName(cardBlob.playerName),
               userAuth: requestInfo.userAuth ?? {},
               siteName: 'SmugMug',
               currentYear: new Date().getFullYear(),

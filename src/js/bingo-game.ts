@@ -18,6 +18,7 @@ interface BingoCell {
 interface GameState {
   cardId: number
   eventName: string
+  playerName?: string | null
   gridSize: number
   cells: BingoCell[]
 }
@@ -164,6 +165,69 @@ function updateTitle(eventName: string): void {
   if (el) el.textContent = eventName ? `Bingo: ${eventName}` : 'Bingo'
 }
 
+let activeCardIdForName: number | null = null
+let playerNameEditorAttached = false
+
+function setPlayerNameStatus(message: string, tone: 'ok' | 'error' | 'neutral' = 'neutral'): void {
+  const status = document.getElementById('bingoPlayerNameStatus')
+  if (!status) return
+  status.textContent = message
+  status.classList.remove('is-ok', 'is-error')
+  if (tone === 'ok') status.classList.add('is-ok')
+  if (tone === 'error') status.classList.add('is-error')
+}
+
+function syncPlayerNameInput(playerName: string | null | undefined): void {
+  const input = document.getElementById('bingoPlayerName') as HTMLInputElement | null
+  if (!input) return
+  if (document.activeElement !== input) {
+    input.value = playerName ?? ''
+  }
+}
+
+function attachPlayerNameEditor(): void {
+  if (playerNameEditorAttached) return
+  const input = document.getElementById('bingoPlayerName') as HTMLInputElement | null
+  const saveButton = document.getElementById('bingoPlayerNameSave') as HTMLButtonElement | null
+  if (!input || !saveButton) return
+
+  const save = () => {
+    if (activeCardIdForName == null) {
+      setPlayerNameStatus('Card not loaded yet.', 'error')
+      return
+    }
+    saveButton.disabled = true
+    const playerName = input.value
+    setPlayerNameStatus('Saving…')
+    fetch('/api/bingo-player-name', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cardId: activeCardIdForName, playerName }),
+    })
+      .then((r) => r.json().then((body) => ({ ok: r.ok, body })))
+      .then(({ ok, body }) => {
+        if (!ok || body?.error) throw new Error(body?.error ?? 'Failed to save name')
+        syncPlayerNameInput(body?.playerName ?? null)
+        setPlayerNameStatus(body?.playerName ? 'Name saved.' : 'Name cleared.', 'ok')
+      })
+      .catch((err) => {
+        setPlayerNameStatus(err?.message ?? 'Failed to save name.', 'error')
+      })
+      .finally(() => {
+        saveButton.disabled = false
+      })
+  }
+
+  saveButton.addEventListener('click', save)
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      save()
+    }
+  })
+  playerNameEditorAttached = true
+}
+
 const LOADING_SVG = '/images/loading.svg'
 
 let currentCellIndex: number | null = null
@@ -272,12 +336,14 @@ function attachUpload(
 function run(): void {
   const cardId = getCardId()
   const root = d3.select<HTMLDivElement, unknown>('#bingo-card-root')
+  attachPlayerNameEditor()
   if (root.empty()) return
   if (cardId == null) {
     console.error('[bingo] missing card ID')
     showError(root, 'Missing card ID.')
     return
   }
+  activeCardIdForName = cardId
 
   console.log('[bingo] loading card', cardId)
   showLoading(root)
@@ -288,6 +354,9 @@ function run(): void {
     })
     .then((state) => {
       console.log('[bingo] JSON payload received from Thalia', { cardId: state.cardId, eventName: state.eventName, gridSize: state.gridSize, cellsCount: state.cells?.length })
+      activeCardIdForName = state.cardId
+      syncPlayerNameInput(state.playerName ?? null)
+      setPlayerNameStatus('')
       root.selectAll('*').remove()
       draw(root, state)
       updateTitle(state.eventName)

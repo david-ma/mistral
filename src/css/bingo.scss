@@ -96,11 +96,28 @@ $bingo-text-muted: #94a3b8;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
   }
 
+  &__title-wrap {
+    min-width: 0;
+    flex: 1;
+  }
+
   &__title {
     margin: 0;
     font-size: 0.98rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    color: rgba($bingo-text-muted, 0.95);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__link {
@@ -227,6 +244,82 @@ $bingo-text-muted: #94a3b8;
 .bingo-play {
   .bingo-play__instructions {
     margin-bottom: $bingo-spacing-lg;
+  }
+
+  .bingo-play__player {
+    margin-bottom: $bingo-spacing;
+    padding: 0.75rem;
+    border: 1px solid rgba($bingo-border, 0.8);
+    border-radius: $bingo-radius;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.92) 100%);
+  }
+
+  .bingo-play__player-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $bingo-text-muted;
+  }
+
+  .bingo-play__player-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .bingo-play__player-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.95rem;
+    border-radius: $bingo-radius-sm;
+    border: 1px solid rgba($bingo-border, 0.9);
+    background: rgba(15, 23, 42, 0.8);
+    color: #e2e8f0;
+
+    &::placeholder {
+      color: $bingo-text-muted;
+    }
+  }
+
+  .bingo-play__player-save {
+    padding: 0.5rem 0.75rem;
+    border-radius: $bingo-radius-sm;
+    border: 1px solid rgba($bingo-cta, 0.45);
+    background: rgba($bingo-cta, 0.15);
+    color: $bingo-cta;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+    &:hover:enabled {
+      color: #fff;
+      border-color: rgba($bingo-cta, 0.75);
+      background: rgba($bingo-cta, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+  }
+
+  .bingo-play__player-status {
+    margin: 0.45rem 0 0;
+    min-height: 1rem;
+    font-size: 0.8rem;
+    color: $bingo-text-muted;
+
+    &.is-ok {
+      color: #86efac;
+    }
+
+    &.is-error {
+      color: #fca5a5;
+    }
   }
 
   #bingo-card-root {

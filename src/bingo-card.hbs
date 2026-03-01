@@ -3,6 +3,22 @@
   <h1 class="bingo-page__title" id="bingoTitle">Bingo{{#if eventName}}: {{eventName}}{{/if}}</h1>
   <p class="bingo-page__lead bingo-play__instructions">Click a prompt to take or upload a photo. We’ll analyse it and add it to your card.</p>
 
+  <div class="bingo-play__player">
+    <label for="bingoPlayerName" class="bingo-play__player-label">Your name (shown on card previews)</label>
+    <div class="bingo-play__player-row">
+      <input
+        id="bingoPlayerName"
+        class="bingo-play__player-input"
+        type="text"
+        maxlength="60"
+        placeholder="Add your name"
+        value="{{playerName}}"
+      />
+      <button id="bingoPlayerNameSave" class="bingo-play__player-save" type="button">Save</button>
+    </div>
+    <p id="bingoPlayerNameStatus" class="bingo-play__player-status" aria-live="polite"></p>
+  </div>
+
   <div id="bingo-card-root" data-card-id="{{cardId}}"></div>
 
   <input type="file" id="bingoFileInput" class="bingo-file-input" accept="image/*" capture="environment" />
