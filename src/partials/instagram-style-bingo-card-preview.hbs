@@ -1,0 +1,202 @@
+{{!--
+  Instagram-style bingo card preview — 3×3 only. Drop-in replacement for bingo-card-preview.
+  Same usage: {{> instagram-style-bingo-card-preview cells=this.cells gridSize=this.gridSize is3x3=this.is3x3 title=this.title playerName=this.playerName cardUrl=this.cardUrl }}
+  For non-3×3 we render a minimal fallback.
+--}}
+<style>
+.ig-bingo {
+  --ig-bg: #fff;
+  --ig-border: #dbdbdb;
+  --ig-text: #262626;
+  --ig-text-secondary: #8e8e8e;
+  --ig-link: #00376b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--ig-bg);
+  border: 1px solid var(--ig-border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 468px;
+  margin: 0 auto;
+  color: var(--ig-text);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.ig-bingo__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ig-border);
+}
+.ig-bingo__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.ig-bingo__username {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+.ig-bingo__more {
+  color: var(--ig-text);
+  padding: 4px;
+  cursor: default;
+  font-size: 18px;
+  line-height: 1;
+}
+.ig-bingo__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  aspect-ratio: 1;
+  background: #000;
+}
+.ig-bingo__cell {
+  position: relative;
+  aspect-ratio: 1;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ig-bingo__cell-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ig-bingo__cell-placeholder {
+  padding: 6px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+}
+.ig-bingo__cell-prompt {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 6px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.85);
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  word-break: break-word;
+  line-height: 1.15;
+}
+.ig-bingo__footer {
+  padding: 10px 14px 14px;
+}
+.ig-bingo__actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  font-size: 22px;
+  line-height: 1;
+}
+.ig-bingo__actions span { cursor: default; }
+.ig-bingo__caption { margin-bottom: 4px; }
+.ig-bingo__caption-username { font-weight: 600; }
+.ig-bingo__caption-game { color: var(--ig-text); }
+.ig-bingo__view-link {
+  font-size: 12px;
+  color: var(--ig-text-secondary);
+  margin-top: 6px;
+  display: inline-block;
+  text-decoration: none;
+}
+.ig-bingo__view-link:hover { color: var(--ig-link); text-decoration: underline; }
+.ig-bingo-fallback {
+  background: var(--ig-bg);
+  border: 1px solid var(--ig-border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ig-text-secondary);
+  max-width: 468px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.ig-bingo-fallback a { color: var(--ig-link); text-decoration: none; }
+.ig-bingo-fallback a:hover { text-decoration: underline; }
+</style>
+
+{{#if is3x3}}
+<div class="ig-bingo" data-grid-size="3">
+  <div class="ig-bingo__header">
+    <div class="ig-bingo__avatar" data-ig-username="{{#if playerName}}{{playerName}}{{else}}bingo_player{{/if}}" aria-hidden="true">B</div>
+    <span class="ig-bingo__username">{{#if playerName}}{{playerName}}{{else}}bingo_player{{/if}}</span>
+    <span class="ig-bingo__more" aria-hidden="true">⋯</span>
+  </div>
+  <div class="ig-bingo__grid" role="list">
+    {{#each cells}}
+    <div class="ig-bingo__cell" role="listitem">
+      {{#if this.imageUrl}}
+        <img
+          class="ig-bingo__cell-img"
+          src="{{#if this.thumbnailUrl}}{{this.thumbnailUrl}}{{else}}{{this.imageUrl}}{{/if}}"
+          alt=""
+          loading="lazy"
+        />
+      {{else}}
+        <div class="ig-bingo__cell-placeholder">{{this.prompt}}</div>
+      {{/if}}
+      {{#if this.prompt}}
+        <div class="ig-bingo__cell-prompt">{{this.prompt}}</div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+  <div class="ig-bingo__footer">
+    <div class="ig-bingo__actions">
+      <span aria-hidden="true">♥</span>
+      <span aria-hidden="true">💬</span>
+      <span aria-hidden="true">↗</span>
+    </div>
+    <div class="ig-bingo__caption">
+      <span class="ig-bingo__caption-username">{{#if playerName}}{{playerName}}{{else}}bingo_player{{/if}}</span>
+      <span class="ig-bingo__caption-game"> {{#if title}}{{title}}{{else}}Photo Bingo{{/if}}</span>
+    </div>
+    {{#if cardUrl}}
+      <a href="{{cardUrl}}" class="ig-bingo__view-link">View full card</a>
+    {{/if}}
+  </div>
+</div>
+{{else}}
+<div class="ig-bingo-fallback">
+  Preview only for 3×3 cards.
+  {{#if cardUrl}}<a href="{{cardUrl}}">View card</a>{{/if}}
+</div>
+{{/if}}
+
+<script>
+(function() {
+  "use strict";
+  var script = document.currentScript;
+  if (!script || !script.previousElementSibling) return;
+  var root = script.previousElementSibling;
+  if (!root.classList || !root.classList.contains("ig-bingo")) return;
+  var avatar = root.querySelector(".ig-bingo__avatar[data-ig-username]");
+  if (avatar) {
+    var u = avatar.getAttribute("data-ig-username") || "";
+    avatar.textContent = (u && u.charAt(0)) ? u.charAt(0).toUpperCase() : "B";
+  }
+  var grid = root.querySelector(".ig-bingo__grid");
+  if (grid) {
+    var cells = grid.querySelectorAll(".ig-bingo__cell");
+    for (var i = 9; i < cells.length; i++) if (cells[i]) cells[i].remove();
+  }
+})();
+</script>

@@ -173,6 +173,7 @@ const HOMEPAGE_FEATURED_CARDS = FEATURED_CARD_IDS.map((id) => ({
   title: `Card ${id}`,
   cardUrl: `/bingo/${id}`,
   gridSize: 3 as const,
+  is3x3: true,
   playerName: null,
   cells: PLACEHOLDER_CELLS_3X3,
 }))
@@ -816,7 +817,7 @@ function getBingoGameStateController(res: ServerResponse, cardId: number, websit
 }
 
 /** Preview shape for bingo-card-preview partial and GET /api/bingo-card-preview/:cardId. */
-type BingoCardPreview = { cardId: number; playerName: string | null; title: string; cardUrl: string; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> }
+type BingoCardPreview = { cardId: number; playerName: string | null; title: string; cardUrl: string; gridSize: number; is3x3: boolean; cells: Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> }
 
 /** Load preview data for one card. Returns null if card not found. Use for API or server-render. */
 async function getBingoCardPreview(cardId: number, website: Website): Promise<BingoCardPreview | null> {
@@ -834,6 +835,7 @@ async function getBingoCardPreview(cardId: number, website: Website): Promise<Bi
     title,
     cardUrl: `/bingo/${state.cardId}`,
     gridSize: state.gridSize,
+    is3x3: state.gridSize === 3,
     cells,
   }
 }
@@ -874,6 +876,7 @@ async function loadFeaturedCardsPreview(website: Website, cardIds: number[]): Pr
     title: `Card ${cardIds[i]}`,
     cardUrl: `/bingo/${cardIds[i]}`,
     gridSize: 3 as const,
+    is3x3: true,
     cells: PLACEHOLDER_CELLS_3X3,
   })
 }
@@ -1093,6 +1096,7 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/uploadthing-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/mistral-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'] } },
   { path: '/websocket-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
+  { path: '/pricing', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
   { path: '/list-events', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/create-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
   { path: '/edit-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['update'] } },
@@ -1186,6 +1190,7 @@ const smugmugConfig: RawWebsiteConfig = {
                         playerName,
                         cells: getCardCellsForPreview(card),
                         gridSize: meta.gridSize,
+                        is3x3: meta.gridSize === 3,
                         eventName: meta.eventName,
                         cardUrl: `/bingo/${card.id}`,
                         title: `${meta.eventName} — Card #${card.id}`,
@@ -1248,6 +1253,14 @@ const smugmugConfig: RawWebsiteConfig = {
     },
     'websocket-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
       const html = website.getContentHtml('websocket-test', 'websocket-test')({})
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    'pricing': (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const html = website.getContentHtml('pricing', 'wrapper')({
+        title: 'Pricing',
+        userAuth: requestInfo.userAuth,
+      })
       res.setHeader('Content-Type', 'text/html')
       res.end(html)
     },
@@ -1489,6 +1502,7 @@ const smugmugConfig: RawWebsiteConfig = {
                   playerName,
                   cells: getCardCellsForPreview(card),
                   gridSize: gridSizeNum,
+                  is3x3: gridSizeNum === 3,
                   eventName: event.name,
                   cardUrl: `/bingo/${card.id}`,
                   title: `Card #${card.id}`,

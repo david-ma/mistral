@@ -10,7 +10,7 @@
     <p class="bingo-section__body">Try a card — no login required. Click to play.</p>
     <div class="bingo-landing__approved-grid">
       {{#each featuredCards}}
-          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
+          {{> instagram-style-bingo-card-preview cells=this.cells gridSize=this.gridSize is3x3=this.is3x3 title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
       {{else}}
         <p class="bingo-section__empty">No cards to show. Cards 1, 2, 3 will appear here.</p>
       {{/each}}
@@ -23,7 +23,7 @@
       <p class="bingo-section__body">Bingo cards from the community.</p>
       <div class="bingo-landing__approved-grid">
         {{#each approvedCards}}
-          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
+          {{> instagram-style-bingo-card-preview cells=this.cells gridSize=this.gridSize is3x3=this.is3x3 title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
         {{/each}}
       </div>
     </section>
@@ -42,6 +42,68 @@
       </ul>
       <p>Organisers create events with a list of prompts (e.g. “Team photo”, “Photo of lunch”). Players join an event, get a randomised bingo card, then tap each prompt to take or upload a photo. We run the image through Mistral, store the description on the card, and you can review everything on the admin “View all prompts” page.</p>
     </div>
+  </section>
+
+  <section class="bingo-section bingo-section--pricing">
+    <h2 class="bingo-section__title">Run your own event</h2>
+    <p class="bingo-section__body">Free to start. Pay only when your event grows.</p>
+
+    <div class="pricing-grid">
+
+      <div class="pricing-card pricing-card--featured">
+        <div class="pricing-card__header">
+          <span class="pricing-card__badge pricing-card__badge--free">Free</span>
+          <div class="pricing-card__price">$0</div>
+          <div class="pricing-card__period">forever</div>
+        </div>
+        <p class="pricing-card__tagline">Perfect for small gatherings and trials.</p>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature pricing-card__feature--yes">Unlimited events</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">Up to 50 players</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">AI photo descriptions</li>
+          <li class="pricing-card__feature pricing-card__feature--no">More than 50 players</li>
+          <li class="pricing-card__feature pricing-card__feature--no">Feedback forms &amp; contact list</li>
+        </ul>
+        <a href="/create-event" class="pricing-card__cta pricing-card__cta--primary">Create a free event</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-card__header">
+          <span class="pricing-card__badge pricing-card__badge--standard">Standard</span>
+          <div class="pricing-card__price">$50</div>
+          <div class="pricing-card__period">per event</div>
+        </div>
+        <p class="pricing-card__tagline">Meetups, conferences, and team days.</p>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature pricing-card__feature--yes">Everything in Free</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">Up to 200 players</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">AI photo descriptions</li>
+          <li class="pricing-card__feature pricing-card__feature--no">Feedback forms &amp; contact list</li>
+          <li class="pricing-card__feature pricing-card__feature--no">Sponsor shoutouts</li>
+        </ul>
+        <a href="/pricing" class="pricing-card__cta pricing-card__cta--secondary">Get started</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-card__header">
+          <span class="pricing-card__badge pricing-card__badge--corporate">Corporate</span>
+          <div class="pricing-card__price">$200</div>
+          <div class="pricing-card__period">per event</div>
+        </div>
+        <p class="pricing-card__tagline">Large-scale events with the full package.</p>
+        <ul class="pricing-card__features">
+          <li class="pricing-card__feature pricing-card__feature--yes">Everything in Standard</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">Unlimited players</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">AI photo descriptions</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">Feedback forms &amp; contact list</li>
+          <li class="pricing-card__feature pricing-card__feature--yes">Sponsor shoutouts</li>
+        </ul>
+        <a href="/pricing" class="pricing-card__cta pricing-card__cta--secondary">Talk to us</a>
+      </div>
+
+    </div>
+
+    <p class="bingo-pricing-more"><a href="/pricing">Full pricing details →</a></p>
   </section>
 
   <section class="bingo-section bingo-section--hackathon">
