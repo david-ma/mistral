@@ -32,7 +32,7 @@ import { RequestInfo } from 'thalia/server'
 import { createRouteHandler } from 'uploadthing/server'
 import { uploadthingRouter } from './uploadthing.js'
 import { addTempFile, runCleanupIfNeeded } from './uploadthing-cleanup.js'
-import { loadMistralApiKey, describeImage, describeImageWithRetry } from './lib-mistral.js'
+import { loadMistralApiKey, describeImage, describeImageWithRetry, scoreAndCheckSafety } from './lib-mistral.js'
 
 const mailAuthPath = path.join(import.meta.dirname, 'mailAuth.js')
 const security = new ThaliaSecurity({ mailAuthPath })
@@ -667,14 +667,43 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
               const thumbnailUrlForCell = sizeUrls.thumbnailUrl
               console.log('[bingo-cell] calling Mistral describeImage...')
               return describeImageWithRetry(mistralKey, imageUrlForCell).then((result) => {
-                console.log('[bingo-cell] Mistral done, saving to DB...')
+                console.log('[bingo-cell] Mistral describe done, running score/safety check...')
+                const cellPrompt = cells[payload.cellIndex]?.prompt ?? ''
+                const isFreeSpace = cellPrompt === 'Free space' || cells[payload.cellIndex]?.isFreeSpace === true
+                if (!isFreeSpace && cellPrompt) {
+                  return scoreAndCheckSafety(mistralKey, cellPrompt, result.description)
+                    .then((scoring) => {
+                      console.log('[bingo-cell] scoring done', { score: scoring.score, safe: scoring.safe, reason: scoring.reason })
+                      return { score: scoring.score, safe: scoring.safe }
+                    })
+                    .catch((err) => {
+                      console.warn('[bingo-cell] scoring failed, saving without score', err?.message ?? err)
+                      return { score: undefined, safe: true }
+                    })
+                    .then(({ score: s, safe: sf }) => {
+                      const updated = {
+                        ...cells[payload.cellIndex],
+                        imageUrl: imageUrlForCell,
+                        thumbnailUrl: thumbnailUrlForCell,
+                        description: result.description,
+                        ...(s != null && { score: s }),
+                        safe: sf,
+                      }
+                      cells[payload.cellIndex] = updated
+                      const db = website.db!.drizzle
+                      return db.update(bingo_cards).set({ blob: { ...cardBlob, cells } }).where(eq(bingo_cards.id, card.id))
+                        .then(() => ({ cell: cells[payload.cellIndex], cells }))
+                    })
+                }
                 const updated = {
                   ...cells[payload.cellIndex],
                   imageUrl: imageUrlForCell,
                   thumbnailUrl: thumbnailUrlForCell,
                   description: result.description,
+                  safe: true,
                 }
                 cells[payload.cellIndex] = updated
+                console.log('[bingo-cell] saving to DB (no scoring for free space)...')
                 const db = website.db!.drizzle
                 return db.update(bingo_cards).set({ blob: { ...cardBlob, cells } }).where(eq(bingo_cards.id, card.id))
                   .then(() => ({ cell: cells[payload.cellIndex], cells }))
@@ -920,16 +949,16 @@ function getBingoEventAdminDataController(res: ServerResponse, eventId: number, 
               let blob = row.blob
               if (typeof blob === 'string') {
                 try {
-                  blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+                  blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string; score?: number; safe?: boolean }> }
                 } catch {
                   blob = {}
                 }
               }
               const cells = Array.isArray((blob as any)?.cells) ? (blob as any).cells : []
               const filledCount = cells.filter((c: any) => c?.imageUrl).length
-              const totalScore = Math.floor(Math.random() * 100) + 1
-              const notes = ['high quality', 'flagged for inappropriate content', 'high quality', 'high quality']
-              const note = notes[Math.floor(Math.random() * notes.length)]
+              const totalScore = cells.reduce((sum: number, c: any) => sum + (typeof c?.score === 'number' ? c.score : 0), 0)
+              const hasFlagged = cells.some((c: any) => c?.safe === false)
+              const note = hasFlagged ? 'Flagged' : (filledCount > 0 ? 'OK' : '—')
               const owner = row.ownerId != null ? ownerMap.get(row.ownerId) ?? null : null
               return {
                 id: row.id,
@@ -942,7 +971,20 @@ function getBingoEventAdminDataController(res: ServerResponse, eventId: number, 
                 owner,
               }
             })
-            const promptScores = prompts.map(() => Math.floor(Math.random() * 10) + 1)
+            // Per-prompt average score: for each prompt, average score of all submitted cells (across cards) with that prompt
+            const promptScores = prompts.map((prompt) => {
+              let sum = 0
+              let count = 0
+              cards.forEach((card) => {
+                card.cells.forEach((c: any) => {
+                  if (c?.prompt === prompt && c?.imageUrl && typeof c.score === 'number') {
+                    sum += c.score
+                    count += 1
+                  }
+                })
+              })
+              return count > 0 ? Math.round((sum / count) * 10) / 10 : 0
+            })
             return {
               eventId: event.id,
               eventName: event.name,

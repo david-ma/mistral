@@ -94,6 +94,73 @@ export function describeImage(apiKey: string, imageUrl: string): Promise<Mistral
 }
 
 /**
+ * Score a photo against its bingo prompt and check for inappropriate content.
+ * Uses Mistral chat completions (text-only) with the existing image description.
+ * See https://docs.mistral.ai/api/ — response_format json_object.
+ *
+ * Returns: { score: 1–10 (relevance to prompt), safe: boolean (no nudity/explicit), reason?: string }
+ */
+export type ScoreAndSafetyResult = {
+  score: number
+  safe: boolean
+  reason?: string
+}
+
+export function scoreAndCheckSafety(
+  apiKey: string,
+  prompt: string,
+  description: string
+): Promise<ScoreAndSafetyResult> {
+  const systemPrompt = `You are a judge for a photo bingo game. Given a bingo prompt and an AI-generated description of a photo, you must:
+1. Score how well the photo matches the prompt from 1 (irrelevant) to 10 (perfect match). Use the description only; do not assume anything not stated.
+2. Decide if the content is SAFE for a family-friendly event: safe=true means no nudity, no sexually explicit content, no graphic violence, no illegal content. safe=false if the description suggests inappropriate content (e.g. adult content, "dick pic", etc.).
+Respond with a single JSON object only, no other text: { "score": <number 1-10>, "safe": <boolean>, "reason": "<optional one sentence>" }`
+
+  const userPrompt = `Bingo prompt: "${prompt}"\n\nImage description: "${description}"\n\nRespond with JSON: { "score": <1-10>, "safe": <true|false>, "reason": "<optional>" }`
+
+  const body = {
+    model: VISION_MODEL,
+    messages: [
+      { role: 'system' as const, content: systemPrompt },
+      { role: 'user' as const, content: userPrompt },
+    ],
+    max_tokens: 150,
+    temperature: 0.2,
+    response_format: { type: 'json_object' as const },
+  }
+
+  return fetch(MISTRAL_CHAT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        return res.text().then((t) => {
+          throw new Error(`Mistral scoring API ${res.status}: ${t}`)
+        })
+      }
+      return res.json()
+    })
+    .then((data: { choices?: Array<{ message?: { content?: string } }> }) => {
+      const raw = data.choices?.[0]?.message?.content ?? ''
+      const parsed = JSON.parse(raw || '{}') as { score?: number; safe?: boolean; reason?: string }
+      let score = typeof parsed.score === 'number' ? Math.round(parsed.score) : 5
+      if (score < 1) score = 1
+      if (score > 10) score = 10
+      const safe = typeof parsed.safe === 'boolean' ? parsed.safe : true
+      return {
+        score,
+        safe,
+        reason: typeof parsed.reason === 'string' ? parsed.reason : undefined,
+      }
+    })
+}
+
+/**
  * Like describeImage but retries when Mistral returns "file could not be fetched" (e.g. image URL
  * not yet available from SmugMug). Waits 100 ms, 500 ms, 1 s, 3 s between retries then fails.
  */
