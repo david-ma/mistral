@@ -11,7 +11,7 @@
       <p class="bingo-section__body">Bingo cards from the community.</p>
       <div class="bingo-landing__approved-grid">
         {{#each approvedCards}}
-          {{> bing-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
+          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
         {{/each}}
       </div>
     </section>

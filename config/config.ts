@@ -365,6 +365,37 @@ function apiController(
   requestInfo: RequestInfo
 ) {
   const pathname = requestInfo.pathname ?? ''
+  const host = requestInfo.host ?? 'unknown'
+  console.log('[api] request host=%s pathname=%s method=%s', host, pathname, requestInfo.method ?? 'GET')
+  // Diagnostic for nginx/proxy debugging: see docs/nginx-proxy-debug.md
+  if (pathname === '/api/diagnose') {
+    const pathnameVal = requestInfo.pathname ?? ''
+    const domains = smugmugDomains
+    const hostInDomains = domains.includes(host)
+    const rawHeaders: Record<string, string> = {}
+    const pick = ['host', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-for', 'x-host']
+    for (const key of pick) {
+      const val = req.headers[key]
+      if (val != null) rawHeaders[key] = Array.isArray(val) ? val.join(', ') : String(val)
+    }
+    const payload = {
+      ok: true,
+      message: 'Diagnostic: request reached api controller',
+      request: { host, pathname: pathnameVal, method: requestInfo.method },
+      rawHeaders,
+      routeGuard: {
+        configuredDomains: domains,
+        hostInDomains,
+        note: hostInDomains
+          ? 'Host matches a configured domain; route guard should find a route.'
+          : 'Host NOT in configured domains; route guard will not match, guest gets no permissions and may receive 401.',
+      },
+    }
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify(payload, null, 2))
+    return
+  }
   if (pathname === '/api/uploadthing') {
     uploadThingRouteController(res, req, website, requestInfo)
     return
@@ -1304,6 +1335,9 @@ const smugmugConfig: RawWebsiteConfig = {
         })
     },
     bingo: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const host = requestInfo.host ?? 'unknown'
+      const pathname = requestInfo.pathname ?? ''
+      console.log('[bingo] request host=%s pathname=%s action=%s', host, pathname, requestInfo.action ?? '')
       const cardIdRaw = requestInfo.action || ''
       const cardId = parseInt(cardIdRaw, 10)
       if (!Number.isFinite(cardId) || !website.db) {
