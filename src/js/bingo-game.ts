@@ -34,6 +34,8 @@ function draw(
   container: d3.Selection<HTMLDivElement, unknown, null, undefined>,
   state: GameState,
 ): void {
+  const filledCount = state.cells.filter((c) => c.imageUrl || c.thumbnailUrl).length
+  console.log('[bingo] draw: grid', state.gridSize, '×', state.gridSize, ', cells', state.cells.length, ', photos loaded', filledCount)
   const width = Math.min(600, container.node()?.clientWidth ?? 600)
   const height = width
   const innerWidth = width - MARGIN.left - MARGIN.right
@@ -216,6 +218,7 @@ function attachUpload(
     const g = d3.select(this)
     g.on('click', () => {
       currentCellIndex = i
+      console.log('[bingo] cell clicked, opening file picker', { cellIndex: i, prompt: d.prompt })
       fileInput.click()
     })
   })
@@ -226,19 +229,24 @@ function attachUpload(
     const file = fileInput.files?.[0]
     fileInput.value = ''
     if (!file || currentCellIndex == null) return
+    console.log('[bingo] photo selected from user', { cellIndex: currentCellIndex, name: file.name, size: file.size, type: file.type })
     const uploadFiles = (window as unknown as { uploadFilesToUploadThing?: (key: string, opts: { files: File[] }) => Promise<{ url: string }[]> }).uploadFilesToUploadThing
     if (!uploadFiles) {
+      console.error('[bingo] UploadThing not available')
       alert('Upload not available. Check that UploadThing is loaded.')
       currentCellIndex = null
       return
     }
     const cellIndex = currentCellIndex
     showCellLoading(root, cellIndex)
+    console.log('[bingo] uploading photo to UploadThing...')
     uploadFiles('smugmugImage', { files: [file] })
       .then((results) => {
         const fileResult = results?.[0]
         const url = fileResult?.ufsUrl ?? fileResult?.url
         if (!url) throw new Error('No URL returned from upload')
+        console.log('[bingo] photo uploaded to UploadThing, got URL', url.slice(0, 60) + (url.length > 60 ? '...' : ''))
+        console.log('[bingo] sending to Thalia /api/bingo-cell (photo will be described by Mistral)...')
         return fetch('/api/bingo-cell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -247,9 +255,11 @@ function attachUpload(
       })
       .then((data) => {
         if (data?.error) throw new Error(data.error)
+        console.log('[bingo] bingo-cell response ok, photo described; refreshing card state')
         run()
       })
       .catch((err) => {
+        console.error('[bingo] upload or describe failed', err?.message ?? err)
         clearCellLoading(root, cellIndex)
         alert(err?.message ?? 'Upload failed')
       })
@@ -264,10 +274,12 @@ function run(): void {
   const root = d3.select<HTMLDivElement, unknown>('#bingo-card-root')
   if (root.empty()) return
   if (cardId == null) {
+    console.error('[bingo] missing card ID')
     showError(root, 'Missing card ID.')
     return
   }
 
+  console.log('[bingo] loading card', cardId)
   showLoading(root)
   fetch(`/api/bingo-game/${cardId}`)
     .then((r) => {
@@ -275,12 +287,15 @@ function run(): void {
       return r.json() as Promise<GameState>
     })
     .then((state) => {
+      console.log('[bingo] JSON payload received from Thalia', { cardId: state.cardId, eventName: state.eventName, gridSize: state.gridSize, cellsCount: state.cells?.length })
       root.selectAll('*').remove()
       draw(root, state)
       updateTitle(state.eventName)
       attachUpload(root, state.cardId)
+      console.log('[bingo] card ready, click a cell to add a photo')
     })
     .catch((err) => {
+      console.error('[bingo] failed to load card', err?.message ?? err)
       showError(root, err?.message ?? 'Failed to load card.')
     })
 }
