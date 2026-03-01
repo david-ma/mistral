@@ -19,6 +19,7 @@ interface AdminCard {
   totalScore: number
   note: string
   approved: boolean
+  owner?: { name: string; email: string } | null
 }
 
 interface AdminData {
@@ -80,6 +81,7 @@ function drawCardsList(
   const table = container.append('table').attr('class', 'table table-sm table-bordered').attr('id', 'admin-cards-table')
   const thead = table.append('thead').append('tr')
   thead.append('th').attr('scope', 'col').text('Preview')
+  thead.append('th').attr('scope', 'col').text('Owner')
   thead.append('th').attr('scope', 'col').text('Total score')
   thead.append('th').attr('scope', 'col').text('Notes')
   thead.append('th').attr('scope', 'col').text('Public')
@@ -87,6 +89,15 @@ function drawCardsList(
   const rows = tbody.selectAll('tr').data(cards).join('tr')
   rows.append('td').attr('class', 'admin-cards-preview-cell').each(function (card) {
     drawCardPreview(d3.select(this), card, data.gridSize)
+  })
+  rows.append('td').each(function (d) {
+    const td = d3.select(this)
+    if (d.owner && (d.owner.name || d.owner.email)) {
+      td.append('span').style('display', 'block').text(d.owner.name)
+      if (d.owner.email) td.append('span').attr('class', 'small text-muted').style('display', 'block').text(d.owner.email)
+    } else {
+      td.append('span').attr('class', 'text-muted').text('—')
+    }
   })
   rows.append('td').text((d) => String(d.totalScore))
   rows.append('td').text((d) => d.note)

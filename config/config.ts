@@ -13,7 +13,7 @@ import { recursiveObjectMerge } from 'thalia/website'
 
 const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
 import { eq, isNull, asc, or, and, inArray } from 'drizzle-orm'
-import { albums, images, image_notes, events, bingo_cards } from '../models/master-schema.js'
+import { albums, images, image_notes, events, bingo_cards, users } from '../models/master-schema.js'
 import {
   listAlbums,
   getAlbumImages,
@@ -665,40 +665,52 @@ function getBingoEventAdminDataController(res: ServerResponse, eventId: number, 
       const approvedCardIds = getApprovedCardIds(event.blob)
       return website.db!.drizzle.select().from(bingo_cards).where(eq(bingo_cards.eventId, eventId)).orderBy(asc(bingo_cards.id))
         .then((cardRows: any[]) => {
-          const cards = cardRows.map((row) => {
-            let blob = row.blob
-            if (typeof blob === 'string') {
-              try {
-                blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
-              } catch {
-                blob = {}
+          const ownerIds = [...new Set((cardRows.map((r) => r.ownerId).filter((id) => id != null) as number[]))]
+          return (ownerIds.length > 0
+            ? website.db!.drizzle.select().from(users).where(inArray(users.id, ownerIds))
+            : Promise.resolve([])
+          ).then((userRows: any[]) => {
+            const ownerMap = new Map<number, { name: string; email: string }>()
+            userRows.forEach((u) => {
+              if (u?.id != null) ownerMap.set(u.id, { name: u.name ?? '', email: u.email ?? '' })
+            })
+            const cards = cardRows.map((row) => {
+              let blob = row.blob
+              if (typeof blob === 'string') {
+                try {
+                  blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+                } catch {
+                  blob = {}
+                }
               }
-            }
-            const cells = Array.isArray((blob as any)?.cells) ? (blob as any).cells : []
-            const filledCount = cells.filter((c: any) => c?.imageUrl).length
-            const totalScore = Math.floor(Math.random() * 100) + 1
-            const notes = ['high quality', 'flagged for inappropriate content', 'high quality', 'high quality']
-            const note = notes[Math.floor(Math.random() * notes.length)]
+              const cells = Array.isArray((blob as any)?.cells) ? (blob as any).cells : []
+              const filledCount = cells.filter((c: any) => c?.imageUrl).length
+              const totalScore = Math.floor(Math.random() * 100) + 1
+              const notes = ['high quality', 'flagged for inappropriate content', 'high quality', 'high quality']
+              const note = notes[Math.floor(Math.random() * notes.length)]
+              const owner = row.ownerId != null ? ownerMap.get(row.ownerId) ?? null : null
+              return {
+                id: row.id,
+                createdAt: row.createdAt,
+                filledCount,
+                cells,
+                totalScore,
+                note,
+                approved: approvedCardIds.includes(row.id),
+                owner,
+              }
+            })
+            const promptScores = prompts.map(() => Math.floor(Math.random() * 10) + 1)
             return {
-              id: row.id,
-              createdAt: row.createdAt,
-              filledCount,
-              cells,
-              totalScore,
-              note,
-              approved: approvedCardIds.includes(row.id),
+              eventId: event.id,
+              eventName: event.name,
+              gridSize: event.gridSize === '5' ? 5 : 3,
+              prompts,
+              promptScores,
+              cards,
+              approvedCardIds,
             }
           })
-          const promptScores = prompts.map(() => Math.floor(Math.random() * 10) + 1)
-          return {
-            eventId: event.id,
-            eventName: event.name,
-            gridSize: event.gridSize === '5' ? 5 : 3,
-            prompts,
-            promptScores,
-            cards,
-            approvedCardIds,
-          }
         })
     })
     .then((data) => {
