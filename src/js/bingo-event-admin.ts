@@ -40,6 +40,38 @@ function getEventId(): number | null {
   return Number.isFinite(id) ? id : null
 }
 
+// Demo only: remove fake_data() and fake_name() when replacing with real scores/owners.
+const FAKE_NAMES = [
+  'Leonardo',
+  'Michaelangelo',
+  'Donatello',
+  'Raphael',
+  'John',
+  'George',
+  'Ringo',
+  'Paul',
+  'Alice',
+  'Bob',
+  'Charlie',
+  'Diana',
+]
+
+function fake_name(): string {
+  return FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)]
+}
+
+function fake_data(data: AdminData): AdminData {
+  const promptScores = data.prompts.map(() => Math.floor(Math.random() * 10) + 1)
+  const notes = ['high quality', 'flagged for inappropriate content', 'high quality', 'high quality']
+  const cards = data.cards.map((card) => ({
+    ...card,
+    totalScore: Math.floor(Math.random() * 100) + 1,
+    note: notes[Math.floor(Math.random() * notes.length)],
+    owner: card.owner && (card.owner.name || card.owner.email) ? card.owner : { name: fake_name(), email: '' },
+  }))
+  return { ...data, promptScores, cards }
+}
+
 const PREVIEW_CELL_SIZE = 32
 
 function drawCardPreview(
@@ -208,8 +240,9 @@ function run(): void {
       return r.json() as Promise<AdminData>
     })
     .then((data) => {
-      drawCardsList(cardsSection, data.cards, data)
-      drawPromptsTable(promptsSection, data)
+      const demoData = fake_data(data)
+      drawCardsList(cardsSection, demoData.cards, demoData)
+      drawPromptsTable(promptsSection, demoData)
     })
     .catch((err) => {
       showError(cardsSection, err?.message ?? 'Failed to load admin data.')
