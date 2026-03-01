@@ -135,6 +135,7 @@ function uploadPhotoController(
   website: Website,
   requestInfo: RequestInfo
 ) {
+  console.debug("Running uploadPhotoController")
   if (req.method !== 'POST') {
     res.statusCode = 405
     res.setHeader('Content-Type', 'application/json')
@@ -145,6 +146,7 @@ function uploadPhotoController(
   if (contentType.includes('application/json')) {
     readRequestBody(req)
       .then((buf) => {
+        console.debug("Running readRequestBody")
         let body: { uploadThingUrl?: string; fileKey?: string; albumKey?: string; filename?: string; url?: string }
         try {
           body = JSON.parse(buf.toString('utf8'))
@@ -159,12 +161,14 @@ function uploadPhotoController(
         const fileKey = body.fileKey ?? null
         const fileSize = typeof body.size === 'number' ? body.size : null
         if ((!url && !body.fileKey) || !albumKey) {
+          console.debug("No url or fileKey and albumKey, which are required")
           res.statusCode = 400
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ error: 'uploadThingUrl (or url) and albumKey required' }))
           return null
         }
         return loadSmugMugCreds().then((creds) => {
+          console.debug("We got our smugmug credentials, now doing the smugmug upload")
           if (!creds) {
             res.statusCode = 503
             res.setHeader('Content-Type', 'application/json')
@@ -172,15 +176,18 @@ function uploadPhotoController(
             return null
           }
           if (!url) {
+            console.debug("No url, which is required")
             res.statusCode = 400
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ error: 'uploadThingUrl or url required (client must send URL from upload response)' }))
             return null
           }
+          console.debug("Fetching the image from UploadThing")
           return fetch(url)
             .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`Fetch ${r.status}`))))
             .then((ab) => Buffer.from(ab))
             .then((buffer) => {
+              console.debug("We got the image from UploadThing, now doing the SmugMug upload")
               const filename = body.filename ?? 'image.jpg'
               const mime = filename.match(/\.(jpe?g|png|gif|webp)$/i)
                 ? (filename.endsWith('.png') ? 'image/png' : filename.endsWith('.gif') ? 'image/gif' : filename.endsWith('.webp') ? 'image/webp' : 'image/jpeg')
