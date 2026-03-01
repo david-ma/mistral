@@ -556,6 +556,46 @@ $bingo-text-muted: #94a3b8;
 
   .admin-cards-list {
     min-height: 2rem;
+    overflow-x: auto;
+
+    #admin-cards-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+
+      th,
+      td {
+        padding: 0.5rem 0.75rem;
+        vertical-align: middle;
+        border: 1px solid $bingo-border;
+      }
+
+      th { font-weight: 600; }
+    }
+
+    .admin-cards-preview-cell {
+      padding: 0.5rem !important;
+    }
+
+    .admin-card-preview {
+      &__cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      img {
+        border-radius: 2px;
+      }
+    }
+
+    .admin-cards-approve-cell {
+      white-space: nowrap;
+    }
+
+    .admin-approve-toggle {
+      min-width: 6rem;
+    }
 
     ul {
       margin: 0;

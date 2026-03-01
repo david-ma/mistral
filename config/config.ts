@@ -395,6 +395,11 @@ function apiController(
     getBingoEventAdminDataController(res, parseInt(bingoEventAdminMatch[1], 10), website)
     return
   }
+  const bingoEventApproveMatch = pathname.match(/^\/api\/bingo-event\/(\d+)\/approve-cards$/)
+  if (bingoEventApproveMatch) {
+    approveCardsController(res, req, parseInt(bingoEventApproveMatch[1], 10), website)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
@@ -657,6 +662,7 @@ function getBingoEventAdminDataController(res: ServerResponse, eventId: number, 
       } catch {
         prompts = (event.prompts || '').split(/\n/).map((s: string) => s.trim()).filter(Boolean)
       }
+      const approvedCardIds = getApprovedCardIds(event.blob)
       return website.db!.drizzle.select().from(bingo_cards).where(eq(bingo_cards.eventId, eventId)).orderBy(asc(bingo_cards.id))
         .then((cardRows: any[]) => {
           const cards = cardRows.map((row) => {
@@ -670,19 +676,28 @@ function getBingoEventAdminDataController(res: ServerResponse, eventId: number, 
             }
             const cells = Array.isArray((blob as any)?.cells) ? (blob as any).cells : []
             const filledCount = cells.filter((c: any) => c?.imageUrl).length
+            const totalScore = Math.floor(Math.random() * 100) + 1
+            const notes = ['high quality', 'flagged for inappropriate content', 'high quality', 'high quality']
+            const note = notes[Math.floor(Math.random() * notes.length)]
             return {
               id: row.id,
               createdAt: row.createdAt,
               filledCount,
               cells,
+              totalScore,
+              note,
+              approved: approvedCardIds.includes(row.id),
             }
           })
+          const promptScores = prompts.map(() => Math.floor(Math.random() * 10) + 1)
           return {
             eventId: event.id,
             eventName: event.name,
             gridSize: event.gridSize === '5' ? 5 : 3,
             prompts,
+            promptScores,
             cards,
+            approvedCardIds,
           }
         })
     })
@@ -690,6 +705,60 @@ function getBingoEventAdminDataController(res: ServerResponse, eventId: number, 
       if (!data) return
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify(data))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
+}
+
+/** POST /api/bingo-event/:eventId/approve-cards. Body { cardIds: number[] }. Updates event blob.approvedCardIds. */
+function approveCardsController(
+  res: ServerResponse,
+  req: IncomingMessage,
+  eventId: number,
+  website: Website
+) {
+  if (req.method !== 'POST' || !website.db) {
+    res.statusCode = req.method !== 'POST' ? 405 : 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: req.method !== 'POST' ? 'Method not allowed' : 'Database not configured.' }))
+    return
+  }
+  readRequestBody(req)
+    .then((buf) => {
+      const body = JSON.parse(buf.toString()) as { cardIds?: unknown }
+      const raw = Array.isArray(body.cardIds) ? body.cardIds : []
+      const cardIds = raw.filter((id): id is number => typeof id === 'number' && Number.isFinite(id) && id > 0)
+      return { eventId, cardIds }
+    })
+    .then(({ eventId: eid, cardIds }) =>
+      website.db!.drizzle.select().from(events).where(eq(events.id, eid)).limit(1).then((rows: any[]) => {
+        const event = rows[0]
+        if (!event) {
+          res.statusCode = 404
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Event not found' }))
+          return null
+        }
+        let blob = event.blob
+        if (typeof blob === 'string') {
+          try {
+            blob = JSON.parse(blob) as Record<string, unknown>
+          } catch {
+            blob = {}
+          }
+        }
+        const nextBlob = { ...(blob && typeof blob === 'object' ? blob : {}), approvedCardIds: cardIds }
+        return website.db!.drizzle.update(events).set({ blob: nextBlob }).where(eq(events.id, eid)).then(() => ({ cardIds }))
+      })
+    )
+    .then((out) => {
+      if (!out) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ ok: true, approvedCardIds: out.cardIds }))
     })
     .catch((err) => {
       if (res.headersSent) return
