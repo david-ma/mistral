@@ -474,7 +474,7 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         return null
       }
       const { card, payload } = ctx
-      console.log('[bingo-cell] card loaded, loading creds and bingo album key')
+      console.log('[bingo-cell] card loaded, loading Mistral key')
       let blob = card.blob
       if (typeof blob === 'string') {
         try {
@@ -491,21 +491,9 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         res.end(JSON.stringify({ error: cells.length === 0 ? 'Card has no cells; please refresh the page.' : 'Invalid cellIndex' }))
         return null
       }
-      return Promise.all([
-        loadMistralApiKey(),
-        loadSmugMugCreds(),
-        loadBingoAlbumKey(),
-      ]).then(([mistralKey, creds, bingoAlbumKey]) => {
+      return loadMistralApiKey().then((mistralKey) => {
         if (!mistralKey) return null
-        if (!creds || !bingoAlbumKey) {
-          if (!res.headersSent) {
-            res.statusCode = 503
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ error: 'SmugMug or BINGO_ALBUM_KEY not configured (config/secrets.js)' }))
-          }
-          return null
-        }
-        return { mistralKey, creds, bingoAlbumKey, cells, payload, card }
+        return { mistralKey, cells, payload, card }
       })
     })
     .then((ctx) => {
@@ -513,58 +501,27 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
         if (!res.headersSent) {
           res.statusCode = 503
           res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify({ error: 'Mistral API key not configured' }))
+          res.end(JSON.stringify({ error: 'Mistral API key not configured (config/secrets.js)' }))
         }
-        console.log('[bingo-cell] no ctx (Mistral key or SmugMug/bingo album missing)')
+        console.log('[bingo-cell] Mistral API key not configured')
         return null
       }
-      const { mistralKey, creds, bingoAlbumKey, cells, payload, card } = ctx
-      const uploadThingUrl = payload.imageUrl
-      console.log('[bingo-cell] fetching image from UploadThing...')
-      return fetch(uploadThingUrl)
-        .then((r) => {
-          if (!r.ok) throw new Error(`Fetch UploadThing image: ${r.status}`)
-          console.log('[bingo-cell] UploadThing fetch ok, status', r.status)
-          const ct = (r.headers.get('content-type') || '').split(';')[0].trim().toLowerCase()
-          const mime = /^image\/(jpeg|png|gif|webp)$/.test(ct) ? ct : 'image/jpeg'
-          return r.arrayBuffer().then((ab) => ({ buffer: Buffer.from(ab), mime }))
-        })
-        .then(({ buffer, mime }) => {
-          console.log('[bingo-cell] buffer size', buffer.length, 'mime', mime)
-          const ext = mime === 'image/png' ? 'png' : mime === 'image/gif' ? 'gif' : mime === 'image/webp' ? 'webp' : 'jpg'
-          const filename = `bingo-${payload.cardId}-${payload.cellIndex}.${ext}`
-          console.log('[bingo-cell] uploading to SmugMug album', bingoAlbumKey, '...')
-          return uploadToAlbum(creds, bingoAlbumKey, buffer, mime, {
-            filename,
-            title: filename,
-            caption: '',
-            keywords: '',
-          }).then((uploadResp: SmugMugUploadResponse) => {
-            const imageUri = uploadResp?.Image?.ImageUri
-            console.log('[bingo-cell] SmugMug upload done, ImageUri', imageUri ? `${imageUri.slice(0, 50)}...` : 'missing')
-            if (!imageUri) throw new Error('SmugMug upload response missing ImageUri')
-            console.log('[bingo-cell] getting ImageSizeDetails...')
-            return getImageSizeDetails(creds, imageUri).then((sizeUrls) => {
-              console.log('[bingo-cell] ImageSizeDetails done, url len', sizeUrls.url?.length)
-              const imageUrlForCell = sizeUrls.url
-              const thumbnailUrlForCell = sizeUrls.thumbnailUrl
-              console.log('[bingo-cell] calling Mistral describeImage...')
-              return describeImageWithRetry(mistralKey, imageUrlForCell).then((result) => {
-                console.log('[bingo-cell] Mistral done, saving to DB...')
-                const updated = {
-                  ...cells[payload.cellIndex],
-                  imageUrl: imageUrlForCell,
-                  thumbnailUrl: thumbnailUrlForCell,
-                  description: result.description,
-                }
-                cells[payload.cellIndex] = updated
-                const db = website.db!.drizzle
-                return db.update(bingo_cards).set({ blob: { cells } }).where(eq(bingo_cards.id, card.id))
-                  .then(() => ({ cell: cells[payload.cellIndex], cells }))
-              })
-            })
-          })
-        })
+      const { mistralKey, cells, payload, card } = ctx
+      const imageUrlForCell = payload.imageUrl
+      console.log('[bingo-cell] using UploadThing URL directly, calling Mistral describeImage...')
+      return describeImageWithRetry(mistralKey, imageUrlForCell).then((result) => {
+        console.log('[bingo-cell] Mistral done, saving to DB...')
+        const updated = {
+          ...cells[payload.cellIndex],
+          imageUrl: imageUrlForCell,
+          thumbnailUrl: imageUrlForCell,
+          description: result.description,
+        }
+        cells[payload.cellIndex] = updated
+        const db = website.db!.drizzle
+        return db.update(bingo_cards).set({ blob: { cells } }).where(eq(bingo_cards.id, card.id))
+          .then(() => ({ cell: cells[payload.cellIndex], cells }))
+      })
     })
     .then((result) => {
       if (!result) return
