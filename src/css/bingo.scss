@@ -62,12 +62,28 @@ $bingo-text-muted: #94a3b8;
 // Bingo card preview (reusable: homepage, admin, event pages)
 // -----------------------------------------------------------------------------
 .bingo-card-preview {
-  background: $bingo-card-bg;
-  border-radius: $bingo-radius;
-  border: 1px solid $bingo-border;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.96) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba($bingo-border, 0.85);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  max-width: 360px;
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba($bingo-cta, 0.55);
+    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.55);
+  }
+
+  &:hover .bingo-card-preview__image {
+    transform: scale(1.04);
+  }
 
   &__header {
     display: flex;
@@ -75,43 +91,60 @@ $bingo-text-muted: #94a3b8;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.5rem;
-    padding: $bingo-spacing;
-    border-bottom: 1px solid $bingo-border;
+    padding: 0.8rem 0.9rem;
+    border-bottom: 1px solid rgba($bingo-border, 0.85);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
   }
 
   &__title {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   &__link {
-    font-size: 0.9rem;
+    font-size: 0.78rem;
+    line-height: 1;
     color: $bingo-cta;
     text-decoration: none;
-    &:hover { color: $bingo-cta-hover; }
+    padding: 0.38rem 0.52rem;
+    border-radius: 999px;
+    border: 1px solid rgba($bingo-cta, 0.35);
+    background: rgba($bingo-cta, 0.12);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+
+    &:hover {
+      color: #fff;
+      border-color: rgba($bingo-cta, 0.75);
+      background: rgba($bingo-cta, 0.35);
+    }
   }
 
   &__grid {
     display: grid;
     aspect-ratio: 1;
-    gap: 2px;
-    padding: 4px;
-    background: $bingo-border;
+    gap: 3px;
+    padding: 5px;
+    background: rgba($bingo-border, 0.85);
+    flex: 1;
 
     &--3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
     &--5 { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); }
   }
 
   &__cell {
-    background: $bingo-cell-empty;
+    background: rgba($bingo-cell-empty, 0.95);
     border-radius: $bingo-radius-sm;
-    padding: 4px;
+    padding: 0.35rem;
     display: flex;
     flex-direction: column;
     min-height: 0;
     font-size: 0.65rem;
     line-height: 1.2;
+    overflow: hidden;
+    color: #dbe4f0;
 
     &--free {
       background: rgba($bingo-free, 0.25);
@@ -130,8 +163,11 @@ $bingo-text-muted: #94a3b8;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-bottom: 2px;
+    white-space: normal;
+    margin-bottom: 0.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__image-wrap {
@@ -152,6 +188,7 @@ $bingo-text-muted: #94a3b8;
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 0.2s ease;
   }
 
   &__desc {
@@ -160,16 +197,28 @@ $bingo-text-muted: #94a3b8;
     color: $bingo-text-muted;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
     max-width: 100%;
-    margin-top: 2px;
+    margin-top: 0.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__footer {
-    padding: 0.5rem $bingo-spacing;
-    border-top: 1px solid $bingo-border;
+    padding: 0.6rem $bingo-spacing;
+    border-top: 1px solid rgba($bingo-border, 0.85);
     text-align: center;
   }
+}
+
+.bingo-card-preview__grid--5 .bingo-card-preview__prompt {
+  font-size: 0.56rem;
+  -webkit-line-clamp: 1;
+}
+
+.bingo-card-preview__grid--5 .bingo-card-preview__desc {
+  display: none;
 }
 
 // -----------------------------------------------------------------------------
@@ -437,9 +486,14 @@ $bingo-text-muted: #94a3b8;
 // -----------------------------------------------------------------------------
 .bingo-landing__approved-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: $bingo-spacing-lg;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
   margin-top: $bingo-spacing;
+  align-items: stretch;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -685,73 +739,124 @@ $bingo-text-muted: #94a3b8;
 // Landing / welcome page (index)
 // -----------------------------------------------------------------------------
 .bingo-landing {
-  max-width: 720px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: $bingo-spacing 0 3rem;
+  padding: 0.75rem 0 4rem;
 
   @media (min-width: 768px) {
-    padding: 2rem 0 4rem;
+    padding: 1.5rem 0 4.5rem;
   }
 }
 
 .bingo-hero {
   text-align: center;
-  padding: $bingo-spacing-lg 0 2rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid $bingo-border;
+  padding: clamp(1.5rem, 3vw, 2.5rem) 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba($bingo-border, 0.85);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba($bingo-accent, 0.22) 0%, rgba($bingo-accent, 0) 55%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba($bingo-cta, 0.1) 0%, rgba($bingo-cta, 0) 60%);
+    pointer-events: none;
+  }
 
   &__title {
     margin: 0 0 0.5rem;
-    font-size: 2rem;
+    font-size: clamp(2rem, 3.4vw, 2.9rem);
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.02em;
-
-    @media (min-width: 768px) {
-      font-size: 2.5rem;
-    }
+    position: relative;
+    z-index: 1;
   }
 
   &__tagline {
-    margin: 0 0 $bingo-spacing-lg;
-    font-size: 1.1rem;
+    margin: 0 auto $bingo-spacing-lg;
+    max-width: 56ch;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
     color: $bingo-text-muted;
     line-height: 1.5;
+    position: relative;
+    z-index: 1;
   }
 
   &__cta {
     display: inline-block;
-    padding: 0.85rem 1.75rem;
-    font-size: 1.1rem;
+    padding: 0.8rem 1.35rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #0f172a;
     background: $bingo-cta;
     border: none;
-    border-radius: $bingo-radius-sm;
+    border-radius: 999px;
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 8px 22px rgba($bingo-cta, 0.35);
+    transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.2s ease;
+    position: relative;
+    z-index: 1;
 
     &:hover {
       background: $bingo-cta-hover;
       color: #fff;
-      transform: translateY(-1px);
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 10px 24px rgba($bingo-cta-hover, 0.35);
     }
   }
 }
 
 .bingo-section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
+
+  &--featured,
+  &--cards,
+  &--about {
+    padding: 1rem;
+    border: 1px solid rgba($bingo-border, 0.78);
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.93) 0%, rgba(15, 23, 42, 0.94) 100%);
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.35);
+
+    @media (min-width: 768px) {
+      padding: 1.25rem;
+    }
+  }
+
+  &--featured {
+    border-color: rgba($bingo-cta, 0.42);
+  }
+
+  &--featured .bingo-section__title {
+    color: #fbbf24;
+  }
+
+  &--cards .bingo-section__title {
+    color: #e2e8f0;
+  }
+
+  &--about .bingo-section__body {
+    font-size: 0.98rem;
+  }
 
   &__title {
     margin: 0 0 0.75rem;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   &__body {
     color: $bingo-text-muted;
-    font-size: 0.95rem;
+    font-size: 0.96rem;
     line-height: 1.6;
 
     p {
@@ -777,21 +882,33 @@ $bingo-text-muted: #94a3b8;
     }
 
     li {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.4rem;
     }
+  }
+
+  &__empty {
+    margin: 0;
+    padding: 0.8rem 0.9rem;
+    border: 1px dashed rgba($bingo-border, 0.8);
+    border-radius: $bingo-radius-sm;
+    color: $bingo-text-muted;
+    font-size: 0.9rem;
+    background: rgba(15, 23, 42, 0.35);
   }
 }
 
 .bingo-hackathon {
-  padding: $bingo-spacing-lg;
-  background: $bingo-card-bg;
-  border-radius: $bingo-radius;
-  border: 1px solid $bingo-border;
+  padding: clamp(1rem, 2vw, 1.6rem);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.96) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba($bingo-border, 0.9);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
 
   &__title {
     margin: 0 0 0.5rem;
-    font-size: 1.2rem;
+    font-size: 1.22rem;
     font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   &__link {
@@ -810,21 +927,24 @@ $bingo-text-muted: #94a3b8;
     margin: 0 0 1rem;
     font-size: 0.9rem;
     color: $bingo-text-muted;
+    line-height: 1.45;
   }
 
   &__stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.65rem;
     margin-bottom: 1rem;
   }
 
   &__stat {
-    padding: 0.5rem 0.75rem;
+    padding: 0.55rem 0.7rem;
     background: rgba(0, 0, 0, 0.2);
     border-radius: $bingo-radius-sm;
     font-size: 0.85rem;
     font-weight: 600;
+    border: 1px solid rgba($bingo-border, 0.65);
+    text-align: center;
   }
 
   &__subtitle {
