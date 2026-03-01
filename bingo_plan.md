@@ -35,7 +35,7 @@ Builds on the Mistral plan: events have prompts; players get a card with randomi
 
 ### API
 
-6. **POST /api/bingo-cell** — Body: `{ cardId, cellIndex, imageUrl }`. Load card, update cell at index with imageUrl (UploadThing URL; we use UploadThing only for the demo—no SmugMug forwarding on live), call Mistral describe, save description into blob, return updated cell or card.
+6. **POST /api/bingo-cell** — Body: `{ cardId, cellIndex, imageUrl }`. Load card, update cell at index with imageUrl, call Mistral describe, save description into blob, return updated cell or card.
 
 ---
 
@@ -132,9 +132,8 @@ Thalia already uses **Socket.IO** (see `server/server.ts`, `websockets` in websi
 ### 5. Upload flow and image preview
 
 - **Upload**: Keep using **UploadThing**. Client opens file picker → uploads file to UploadThing → gets back a URL.
-- **Demo: UploadThing only.** For the demo (and to avoid live-server issues with SmugMug), bingo uses **UploadThing URLs only**: the client POSTs the UploadThing URL to `/api/bingo-cell`, and the server stores that URL in the cell and runs Mistral describe on it. No forwarding to SmugMug. We can add the “SmugMug path” (or another durable storage) later and make it configurable.
-- **Optional “SmugMug path” (later)**: After UploadThing returns a URL, the server could, when configured, download the image and push it to SmugMug (or other storage), then store that URL in the cell. That keeps the client unchanged; the server does the extra step when configured. For now we just use UploadThing for the demo and worry about making it perfect later.
-- **Preview**: As soon as the client has the UploadThing URL (before or in parallel with POST), it can set a temporary image in the cell for instant feedback. When the server responds (or when the Socket.IO `bingo-cell-updated` fires with the final cell), swap in the final image and description so the UI stays consistent.
+- **Optional “SmugMug path” on your server**: After UploadThing returns a URL, the client still POSTs to `/api/bingo-cell` with that URL. If you want a “SmugMug path,” the server can, inside the bingo-cell handler, download the image from UploadThing and push it to SmugMug (or your storage), then store the SmugMug (or your) URL in the cell instead. That keeps the client unchanged; the server does the extra step when configured.
+- **Preview**: As soon as the client has the UploadThing URL (before or in parallel with POST), it can set a temporary image in the cell for instant feedback. When the server responds (or when the Socket.IO `bingo-cell-updated` fires with the final cell, possibly with a different URL if you switched to SmugMug), swap in the final image and description so the UI stays consistent.
 
 ### 6. Build and deployment
 
