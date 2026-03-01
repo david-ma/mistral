@@ -1,41 +1,48 @@
-<div class="bingo-page">
+<div class="bingo-page bingo-page--edit-event">
   <a href="/list-events" class="bingo-page__back">&larr; Back to events</a>
   <h1 class="bingo-page__title">Edit event: {{event.name}}</h1>
 
-  <form method="post" action="/edit-event/{{event.slug}}" class="bingo-form">
-    <div class="mb-2">
-      <label for="name" class="form-label">Event name</label>
-      <input type="text" class="form-control" id="name" name="name" value="{{event.name}}" />
-    </div>
-    <div class="mb-2">
-      <span class="form-label">Slug</span>
-      <p class="form-control-plaintext">{{event.slug}}</p>
-    </div>
-    <div class="mb-2">
-      <label for="gridSize" class="form-label">Grid size</label>
-      <select class="form-control" id="gridSize" name="gridSize">
-        <option value="3" {{#if event.isGrid3}}selected{{/if}}>3×3 (9 prompts)</option>
-        <option value="5" {{#if event.isGrid5}}selected{{/if}}>5×5 (25 prompts)</option>
-      </select>
-    </div>
-    <div class="mb-2">
-      <label for="description" class="form-label">Description</label>
-      <textarea class="form-control" id="description" name="description" rows="2">{{event.description}}</textarea>
-    </div>
-    <div class="mb-2">
-      <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
-<textarea class="form-control" id="prompts" name="prompts" rows="12">{{event.promptsAsText}}</textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="/list-events" class="btn btn-secondary">Cancel</a>
-  </form>
+  <section class="bingo-edit-event__form-section">
+    <h2 class="bingo-edit-event__heading">Event details</h2>
+    <form method="post" action="/edit-event/{{event.slug}}" class="bingo-form">
+      <div class="mb-2">
+        <label for="name" class="form-label">Event name</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{event.name}}" />
+      </div>
+      <div class="mb-2">
+        <span class="form-label">Slug</span>
+        <p class="form-control-plaintext">{{event.slug}}</p>
+      </div>
+      <div class="mb-2">
+        <label for="gridSize" class="form-label">Grid size</label>
+        <select class="form-control" id="gridSize" name="gridSize">
+          <option value="3" {{#if event.isGrid3}}selected{{/if}}>3×3 (9 prompts)</option>
+          <option value="5" {{#if event.isGrid5}}selected{{/if}}>5×5 (25 prompts)</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="2">{{event.description}}</textarea>
+      </div>
+      <div class="mb-2">
+        <label for="prompts" class="form-label">Prompts (one per line, or JSON array)</label>
+        <textarea class="form-control" id="prompts" name="prompts" rows="12">{{event.promptsAsText}}</textarea>
+      </div>
+      <div class="bingo-form__actions">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a href="/list-events" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </section>
 
-  <div>
-    <h2>Admin</h2>
-    {{!-- Fake buttons, for the demo --}}
-    <button>Download all images</button>
-    <button>Publish event</button>
-  </div>
+  <section class="bingo-edit-event__demo-actions">
+    <h2 class="bingo-edit-event__heading">Admin actions <span class="bingo-edit-event__demo-badge">Demo</span></h2>
+    <p class="bingo-edit-event__demo-desc">Placeholder buttons for the hackathon demo. Not wired to real behaviour yet.</p>
+    <div class="bingo-edit-event__demo-buttons">
+      <button type="button" class="bingo-admin__demo-btn" onclick="confirm('Placeholder — for demo only.')">Download all images</button>
+      <button type="button" class="bingo-admin__demo-btn" onclick="confirm('Placeholder — for demo only.')">Publish event</button>
+    </div>
+  </section>
 
   <div id="bingo-event-admin-root" class="bingo-admin" data-event-id="{{event.id}}">
     <section id="view-all-cards" class="bingo-admin__section">

@@ -672,6 +672,85 @@ $bingo-text-muted: #94a3b8;
     font-size: 0.8rem;
     color: $bingo-text-muted;
   }
+
+  .bingo-form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Edit event page – layout and demo placeholders
+// -----------------------------------------------------------------------------
+.bingo-page--edit-event {
+  .bingo-edit-event__form-section {
+    margin-bottom: 2rem;
+  }
+
+  .bingo-edit-event__demo-actions {
+    margin-bottom: 2rem;
+    padding: $bingo-spacing-lg;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.7) 100%);
+    border: 1px dashed rgba($bingo-border, 0.7);
+    border-radius: $bingo-radius;
+  }
+
+  .bingo-edit-event__heading {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .bingo-edit-event__demo-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #0f172a;
+    background: #fbbf24;
+    border-radius: 4px;
+  }
+
+  .bingo-edit-event__demo-desc {
+    margin: 0 0 0.75rem;
+    font-size: 0.88rem;
+    color: $bingo-text-muted;
+    line-height: 1.4;
+  }
+
+  .bingo-edit-event__demo-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.bingo-admin__demo-btn {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: $bingo-text-muted;
+  background: transparent;
+  border: 1px dashed rgba($bingo-border, 0.9);
+  border-radius: $bingo-radius-sm;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    color: #cbd5e1;
+    border-color: $bingo-text-muted;
+  }
 }
 
 // -----------------------------------------------------------------------------

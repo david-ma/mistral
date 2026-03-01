@@ -194,7 +194,7 @@ function drawPromptsTable(container: d3.Selection<HTMLDivElement, unknown, null,
   const thead = table.append('thead').append('tr')
   thead.append('th').attr('scope', 'col').text('#')
   thead.append('th').attr('scope', 'col').text('Prompt')
-  thead.append('th').attr('scope', 'col').text('Photos')
+  thead.append('th').attr('scope', 'col').text('Photos').attr('class', 'photos-column')
   thead.append('th').attr('scope', 'col').text('Scores')
   const tbody = table.append('tbody')
 
