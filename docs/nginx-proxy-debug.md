@@ -45,18 +45,19 @@ So the app “doesn’t work” because the server thinks the request is for a h
   If you get **401**, the request never reaches the API (route guard rejects it); that strongly suggests the server is seeing the wrong host (e.g. `127.0.0.1:1337`).
 - Check **server logs**: we log each request as `host` + URL. Look for the host value when you open `https://mistral.david-ma.net/bingo/14`.
 
-### 2. Fix nginx: send the original host
+### 2. Fix nginx: send the original host and forwarded headers
 
-In the `location` block that proxies to Thalia, set the host to the original request host:
+In the `location` block that proxies to Thalia, set the host and forwarded headers so the app sees the correct host and scheme:
 
 ```nginx
 proxy_set_header Host $host;
-# Optional but recommended for apps that care about proto or host:
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-Host $host;
 ```
 
-Then **restart or reload nginx**. After this, the backend should see `Host: mistral.david-ma.net` and the route guard should match.
+Then **restart or reload nginx**. After this, the backend should see the correct host (e.g. `mistral.david-ma.net`) and the route guard should match.
+
+**Resolved (2026-03):** For `mistral.david-ma.net`, adding `X-Forwarded-Proto` and `X-Forwarded-Host` in addition to `Host $host` fixed the issue; the app then worked when reached via https through nginx.
 
 ### 3. Fix in Thalia: trust X-Forwarded-Host when present
 
