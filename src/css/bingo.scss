@@ -143,6 +143,8 @@ $bingo-text-muted: #94a3b8;
     border-radius: 4px;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.2);
+    aspect-ratio: 1;
+    width: 100%;
   }
 
   &__image {

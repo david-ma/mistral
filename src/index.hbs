@@ -5,6 +5,18 @@
     <a href="/list-events" class="bingo-hero__cta">Play bingo</a>
   </header>
 
+  <section class="bingo-section bingo-section--featured">
+    <h2 class="bingo-section__title">Play a card</h2>
+    <p class="bingo-section__body">Try a card — no login required. Click to play.</p>
+    <div class="bingo-landing__approved-grid">
+      {{#each featuredCards}}
+        {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
+      {{else}}
+        <p class="bingo-section__empty">No cards to show. Cards 1, 2, 3 will appear here.</p>
+      {{/each}}
+    </div>
+  </section>
+
   {{#if approvedCards.length}}
     <section class="bingo-section">
       <h2 class="bingo-section__title">Completed cards</h2>

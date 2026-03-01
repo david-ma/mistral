@@ -1,5 +1,6 @@
 {{!--
   Bingo card preview – reusable on homepage, admin, event pages.
+  Data from server (e.g. homepage featuredCards) or from GET /api/bingo-card-preview/:cardId.
   Usage: {{> bingo-card-preview cells=card.cells gridSize=3 title="Card #8" cardUrl="/bingo/8" }}
   Required: cells (array of { prompt, imageUrl?, thumbnailUrl?, description?, isFreeSpace? }), gridSize (3 or 5).
   Optional: title, cardUrl (link to view full card), cardId, filledCount.

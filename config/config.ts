@@ -127,6 +127,29 @@ function getCardCellsForPreview(card: { blob?: unknown }): Array<{ prompt?: stri
   }))
 }
 
+/** Placeholder cells for 3×3 bingo card preview (no images). Used for hardcoded featured cards on homepage. */
+const PLACEHOLDER_CELLS_3X3: Array<{ prompt: string; imageUrl: null; thumbnailUrl: null; description: null; isFreeSpace: boolean }> = [
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: 'Free space', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: true },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
+]
+
+/** Hardcoded bingo card IDs shown on homepage; clicking opens /bingo/:id (play without logging in). */
+const FEATURED_CARD_IDS = [1, 2, 3]
+const HOMEPAGE_FEATURED_CARDS = FEATURED_CARD_IDS.map((id) => ({
+  cardId: `blah-${id}`,
+  title: `Card ${id}`,
+  cardUrl: `/bingo/${id}`,
+  gridSize: 3 as const,
+  cells: PLACEHOLDER_CELLS_3X3,
+}))
+
 /** Read request body as Buffer (for Node IncomingMessage). */
 function readRequestBody(req: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -421,6 +444,11 @@ function apiController(
     getBingoGameStateController(res, parseInt(bingoGameMatch[1], 10), website)
     return
   }
+  const bingoCardPreviewMatch = pathname.match(/^\/api\/bingo-card-preview\/(\d+)$/)
+  if (bingoCardPreviewMatch) {
+    getBingoCardPreviewController(res, parseInt(bingoCardPreviewMatch[1], 10), website)
+    return
+  }
   const bingoEventAdminMatch = pathname.match(/^\/api\/bingo-event\/(\d+)\/admin-data$/)
   if (bingoEventAdminMatch) {
     getBingoEventAdminDataController(res, parseInt(bingoEventAdminMatch[1], 10), website)
@@ -646,6 +674,49 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
     })
 }
 
+/** Shared: load bingo card + event and return game state (or null if card not found). Used by bingo-game API and preview API/homepage. */
+async function getBingoGameState(cardId: number, website: Website): Promise<{ cardId: number; eventName: string; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> } | null> {
+  if (!website.db) return null
+  const rows = await website.db.drizzle.select().from(bingo_cards).where(eq(bingo_cards.id, cardId)).limit(1)
+  const card = rows[0]
+  if (!card) return null
+  const eventRows = await website.db.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1)
+  const event = eventRows[0]
+  let blob = card.blob
+  if (typeof blob === 'string') {
+    try {
+      blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
+    } catch {
+      blob = {}
+    }
+  }
+  blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
+  let rawCells = Array.isArray(blob.cells) ? blob.cells : []
+  if (rawCells.length === 0 && event?.prompts) {
+    const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
+    const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
+    const gridSizeNum = event.gridSize === '5' ? 5 : 3
+    const total = gridSizeNum * gridSizeNum
+    const centerIndex = total === 9 ? 4 : 12
+    const numPrompts = total - 1
+    const chosen = shuffled.slice(0, numPrompts)
+    rawCells = []
+    let p = 0
+    for (let i = 0; i < total; i++) {
+      if (i === centerIndex) {
+        rawCells.push({ prompt: 'Free space', imageUrl: null, description: null, isFreeSpace: true })
+      } else {
+        rawCells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null, isFreeSpace: false })
+        p++
+      }
+    }
+    await website.db.drizzle.update(bingo_cards).set({ blob: { cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
+  }
+  const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
+  const gridSize = event?.gridSize === '5' ? 5 : 3
+  return { cardId: card.id, eventName: event?.name ?? '', gridSize, cells }
+}
+
 /** GET /api/bingo-game/:cardId. Returns JSON { cardId, eventName, gridSize, cells } for client-side render. */
 function getBingoGameStateController(res: ServerResponse, cardId: number, website: Website) {
   if (!website.db) {
@@ -654,54 +725,14 @@ function getBingoGameStateController(res: ServerResponse, cardId: number, websit
     res.end(JSON.stringify({ error: 'Database not configured.' }))
     return
   }
-  website.db.drizzle.select().from(bingo_cards).where(eq(bingo_cards.id, cardId)).limit(1)
-    .then((rows: any[]) => {
-      const card = rows[0]
-      if (!card) {
+  getBingoGameState(cardId, website)
+    .then((state) => {
+      if (!state) {
         res.statusCode = 404
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ error: 'Card not found' }))
-        return null
+        return
       }
-      return website.db!.drizzle.select().from(events).where(eq(events.id, card.eventId)).limit(1).then((eventRows: any[]) => {
-        const event = eventRows[0]
-        let blob = card.blob
-        if (typeof blob === 'string') {
-          try {
-            blob = JSON.parse(blob) as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }
-          } catch {
-            blob = {}
-          }
-        }
-        blob = (blob as { cells?: Array<{ prompt?: string; imageUrl?: string; description?: string }> }) ?? {}
-        let rawCells = Array.isArray(blob.cells) ? blob.cells : []
-        if (rawCells.length === 0 && event?.prompts) {
-          const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
-          const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
-          const gridSizeNum = event.gridSize === '5' ? 5 : 3
-          const total = gridSizeNum * gridSizeNum
-          const centerIndex = total === 9 ? 4 : 12
-          const numPrompts = total - 1
-          const chosen = shuffled.slice(0, numPrompts)
-          rawCells = []
-          let p = 0
-          for (let i = 0; i < total; i++) {
-            if (i === centerIndex) {
-              rawCells.push({ prompt: 'Free space', imageUrl: null, description: null, isFreeSpace: true })
-            } else {
-              rawCells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null, isFreeSpace: false })
-              p++
-            }
-          }
-          website.db!.drizzle.update(bingo_cards).set({ blob: { cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
-        }
-        const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
-        const gridSize = event?.gridSize === '5' ? 5 : 3
-        return { cardId: card.id, eventName: event?.name ?? '', gridSize, cells }
-      })
-    })
-    .then((state) => {
-      if (!state) return
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify(state))
     })
@@ -711,6 +742,66 @@ function getBingoGameStateController(res: ServerResponse, cardId: number, websit
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify({ error: err?.message ?? String(err) }))
     })
+}
+
+/** Preview shape for bingo-card-preview partial and GET /api/bingo-card-preview/:cardId. */
+type BingoCardPreview = { cardId: number; title: string; cardUrl: string; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> }
+
+/** Load preview data for one card. Returns null if card not found. Use for API or server-render. */
+async function getBingoCardPreview(cardId: number, website: Website): Promise<BingoCardPreview | null> {
+  const state = await getBingoGameState(cardId, website)
+  if (!state) return null
+  const rawCells = state.cells.map((c: any) => ({
+    ...c,
+    thumbnailUrl: c.thumbnailUrl ?? c.imageUrl ?? null,
+  }))
+  const cells = rawCells.length > 0 ? rawCells : PLACEHOLDER_CELLS_3X3
+  return {
+    cardId: state.cardId,
+    title: `${state.eventName} — Card #${state.cardId}`,
+    cardUrl: `/bingo/${state.cardId}`,
+    gridSize: state.gridSize,
+    cells,
+  }
+}
+
+/** GET /api/bingo-card-preview/:cardId. Returns JSON { cardId, title, cardUrl, gridSize, cells } for previews (e.g. homepage). */
+function getBingoCardPreviewController(res: ServerResponse, cardId: number, website: Website) {
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  getBingoCardPreview(cardId, website)
+    .then((preview) => {
+      if (!preview) {
+        res.statusCode = 404
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'Card not found' }))
+        return
+      }
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(preview))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: err?.message ?? String(err) }))
+    })
+}
+
+/** Load preview data for featured card IDs. Returns array (placeholder for missing cards). */
+async function loadFeaturedCardsPreview(website: Website, cardIds: number[]): Promise<BingoCardPreview[]> {
+  const results = await Promise.all(cardIds.map((id) => getBingoCardPreview(id, website)))
+  return results.map((preview, i) => preview ?? {
+    cardId: cardIds[i],
+    title: `Card ${cardIds[i]}`,
+    cardUrl: `/bingo/${cardIds[i]}`,
+    gridSize: 3 as const,
+    cells: PLACEHOLDER_CELLS_3X3,
+  })
 }
 
 /** GET /api/bingo-event/:eventId/admin-data. Returns { eventId, eventName, gridSize, prompts, cards } for edit-event admin. */
@@ -965,71 +1056,78 @@ const smugmugConfig: RawWebsiteConfig = {
           currentYear: new Date().getFullYear(),
           userAuth: requestInfo.userAuth ?? {},
           approvedCards: [],
+          featuredCards: HOMEPAGE_FEATURED_CARDS,
         })
         res.setHeader('Content-Type', 'text/html')
         res.end(html)
         return
       }
-      website.db.drizzle
-        .select()
-        .from(events)
-        .where(isNull(events.deletedAt))
-        .then((eventRows: any[]) => {
-          const approvedByEvent: Array<{ eventId: number; eventName: string; gridSize: number; cardIds: number[] }> = []
-          for (const ev of eventRows) {
-            const ids = getApprovedCardIds(ev.blob)
-            if (ids.length > 0) {
-              approvedByEvent.push({
-                eventId: ev.id,
-                eventName: ev.name ?? '',
-                gridSize: ev.gridSize === '5' ? 5 : 3,
-                cardIds: ids,
-              })
-            }
-          }
-          const allCardIds = approvedByEvent.flatMap((x) => x.cardIds).slice(0, 24)
-          if (allCardIds.length === 0) {
-            const html = website.getContentHtml('index', 'wrapper')({
-              title: 'Photo Bingo',
-              siteName: 'SmugMug',
-              currentYear: new Date().getFullYear(),
-              userAuth: requestInfo.userAuth ?? {},
-              approvedCards: [],
-            })
-            res.setHeader('Content-Type', 'text/html')
-            res.end(html)
-            return
-          }
-          return website.db.drizzle
+      loadFeaturedCardsPreview(website, FEATURED_CARD_IDS)
+        .then((featuredCards) => {
+          const safeFeaturedCards = Array.isArray(featuredCards) && featuredCards.length > 0 ? featuredCards : HOMEPAGE_FEATURED_CARDS
+          return website.db!.drizzle
             .select()
-            .from(bingo_cards)
-            .where(inArray(bingo_cards.id, allCardIds))
-            .then((cardRows: any[]) => {
-              const eventMap = new Map(approvedByEvent.map((x) => [x.eventId, x]))
-              const approvedCards = cardRows
-                .map((card) => {
-                  const meta = eventMap.get(card.eventId)
-                  if (!meta || !meta.cardIds.includes(card.id)) return null
-                  return {
-                    id: card.id,
-                    cells: getCardCellsForPreview(card),
-                    gridSize: meta.gridSize,
-                    eventName: meta.eventName,
-                    cardUrl: `/bingo/${card.id}`,
-                    title: `${meta.eventName} — Card #${card.id}`,
-                  }
+            .from(events)
+            .where(isNull(events.deletedAt))
+            .then((eventRows: any[]) => {
+              const approvedByEvent: Array<{ eventId: number; eventName: string; gridSize: number; cardIds: number[] }> = []
+              for (const ev of eventRows) {
+                const ids = getApprovedCardIds(ev.blob)
+                if (ids.length > 0) {
+                  approvedByEvent.push({
+                    eventId: ev.id,
+                    eventName: ev.name ?? '',
+                    gridSize: ev.gridSize === '5' ? 5 : 3,
+                    cardIds: ids,
+                  })
+                }
+              }
+              const allCardIds = approvedByEvent.flatMap((x) => x.cardIds).slice(0, 24)
+              if (allCardIds.length === 0) {
+                const html = website.getContentHtml('index', 'wrapper')({
+                  title: 'Photo Bingo',
+                  siteName: 'SmugMug',
+                  currentYear: new Date().getFullYear(),
+                  userAuth: requestInfo.userAuth ?? {},
+                  approvedCards: [],
+                  featuredCards: safeFeaturedCards,
                 })
-                .filter(Boolean)
-                .slice(0, 12)
-              const html = website.getContentHtml('index', 'wrapper')({
-                title: 'Photo Bingo',
-                siteName: 'SmugMug',
-                currentYear: new Date().getFullYear(),
-                userAuth: requestInfo.userAuth ?? {},
-                approvedCards,
-              })
-              res.setHeader('Content-Type', 'text/html')
-              res.end(html)
+                res.setHeader('Content-Type', 'text/html')
+                res.end(html)
+                return
+              }
+              return website.db!.drizzle
+                .select()
+                .from(bingo_cards)
+                .where(inArray(bingo_cards.id, allCardIds))
+                .then((cardRows: any[]) => {
+                  const eventMap = new Map(approvedByEvent.map((x) => [x.eventId, x]))
+                  const approvedCards = cardRows
+                    .map((card) => {
+                      const meta = eventMap.get(card.eventId)
+                      if (!meta || !meta.cardIds.includes(card.id)) return null
+                      return {
+                        id: card.id,
+                        cells: getCardCellsForPreview(card),
+                        gridSize: meta.gridSize,
+                        eventName: meta.eventName,
+                        cardUrl: `/bingo/${card.id}`,
+                        title: `${meta.eventName} — Card #${card.id}`,
+                      }
+                    })
+                    .filter(Boolean)
+                    .slice(0, 12)
+                  const html = website.getContentHtml('index', 'wrapper')({
+                    title: 'Photo Bingo',
+                    siteName: 'SmugMug',
+                    currentYear: new Date().getFullYear(),
+                    userAuth: requestInfo.userAuth ?? {},
+                    approvedCards,
+                    featuredCards: safeFeaturedCards,
+                  })
+                  res.setHeader('Content-Type', 'text/html')
+                  res.end(html)
+                })
             })
         })
         .catch((err) => {
@@ -1040,6 +1138,7 @@ const smugmugConfig: RawWebsiteConfig = {
             currentYear: new Date().getFullYear(),
             userAuth: requestInfo.userAuth ?? {},
             approvedCards: [],
+            featuredCards: HOMEPAGE_FEATURED_CARDS,
           })
           res.setHeader('Content-Type', 'text/html')
           res.end(html)
