@@ -1,0 +1,43 @@
+{{!--
+  Bingo card preview – reusable on homepage, admin, event pages.
+  Usage: {{> bing-card-preview cells=card.cells gridSize=3 title="Card #8" cardUrl="/bingo/8" }}
+  Required: cells (array of { prompt, imageUrl?, thumbnailUrl?, description?, isFreeSpace? }), gridSize (3 or 5).
+  Optional: title, cardUrl (link to view full card), cardId, filledCount.
+--}}
+<div class="bingo-card-preview">
+  {{#if title}}
+    <div class="bingo-card-preview__header">
+      <h3 class="bingo-card-preview__title">{{title}}</h3>
+      {{#if cardUrl}}
+        <a href="{{cardUrl}}" class="bingo-card-preview__link">View card</a>
+      {{/if}}
+    </div>
+  {{/if}}
+  <div class="bingo-card-preview__grid bingo-card-preview__grid--{{gridSize}}">
+    {{#each cells}}
+      <div class="bingo-card-preview__cell{{#if this.isFreeSpace}} bingo-card-preview__cell--free{{/if}}{{#if this.imageUrl}} bingo-card-preview__cell--filled{{/if}}">
+        <div class="bingo-card-preview__prompt">{{this.prompt}}</div>
+        {{#if this.imageUrl}}
+          <div class="bingo-card-preview__image-wrap">
+            <img
+              class="bingo-card-preview__image"
+              src="{{#if this.thumbnailUrl}}{{this.thumbnailUrl}}{{else}}{{this.imageUrl}}{{/if}}"
+              alt=""
+              loading="lazy"
+            />
+          </div>
+        {{/if}}
+        {{#if this.description}}
+          <div class="bingo-card-preview__desc">{{this.description}}</div>
+        {{/if}}
+      </div>
+    {{/each}}
+  </div>
+  {{#if cardUrl}}
+    {{#unless title}}
+      <div class="bingo-card-preview__footer">
+        <a href="{{cardUrl}}" class="bingo-card-preview__link">View full card</a>
+      </div>
+    {{/unless}}
+  {{/if}}
+</div>

@@ -16,6 +16,7 @@ export const events: MySqlTableWithColumns<any> = mysqlTable('events', {
   gridSize: vc('grid_size').notNull().default('3'),
   /** JSON array of prompt strings: length 9 for 3×3, 25 for 5×5 */
   prompts: text('prompts').notNull(),
+  /** Optional JSON: { approvedCardIds?: number[] } — bingo card IDs to show publicly on event page and homepage. Old events without this are safe (treat as []). */
   blob: json('blob'),
 })
 

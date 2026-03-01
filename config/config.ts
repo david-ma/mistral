@@ -12,7 +12,7 @@ import { ThaliaSecurity, type RoleRouteRule } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
 
 const ALL_PERMISSIONS = ['create', 'read', 'update', 'delete'] as const
-import { eq, isNull, asc, or, and } from 'drizzle-orm'
+import { eq, isNull, asc, or, and, inArray } from 'drizzle-orm'
 import { albums, images, image_notes, events, bingo_cards } from '../models/master-schema.js'
 import {
   listAlbums,
@@ -96,6 +96,35 @@ function loadBingoAlbumKey(): Promise<string | null> {
   return import(url)
     .then((m: any) => (typeof m.BINGO_ALBUM_KEY === 'string' ? m.BINGO_ALBUM_KEY.trim() : null))
     .catch(() => null)
+}
+
+/** Get approved bingo card IDs from event blob. Optional field; old events without it get []. */
+function getApprovedCardIds(blob: unknown): number[] {
+  if (blob == null || typeof blob !== 'object') return []
+  const b = blob as { approvedCardIds?: unknown }
+  if (!Array.isArray(b.approvedCardIds)) return []
+  return b.approvedCardIds.filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
+}
+
+/** Parse card blob to cells array for preview. Safe for missing or string blob. */
+function getCardCellsForPreview(card: { blob?: unknown }): Array<{ prompt?: string; imageUrl?: string | null; thumbnailUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> {
+  let blob = card.blob
+  if (typeof blob === 'string') {
+    try {
+      blob = JSON.parse(blob) as { cells?: unknown[] }
+    } catch {
+      return []
+    }
+  }
+  const b = (blob as { cells?: unknown[] }) ?? {}
+  const cells = Array.isArray(b.cells) ? b.cells : []
+  return cells.map((c: any) => ({
+    prompt: c?.prompt ?? '',
+    imageUrl: c?.imageUrl ?? null,
+    thumbnailUrl: c?.thumbnailUrl ?? null,
+    description: c?.description ?? null,
+    isFreeSpace: c?.prompt === 'Free space' || c?.isFreeSpace === true,
+  }))
 }
 
 /** Read request body as Buffer (for Node IncomingMessage). */
@@ -774,14 +803,92 @@ const smugmugConfig: RawWebsiteConfig = {
   controllers: {
     /** Serves / (root): bingo welcome page for Mistral hackathon. */
     homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
-      const html = website.getContentHtml('index', 'wrapper')({
-        title: 'Photo Bingo',
-        siteName: 'SmugMug',
-        currentYear: new Date().getFullYear(),
-        userAuth: requestInfo.userAuth ?? {},
-      })
-      res.setHeader('Content-Type', 'text/html')
-      res.end(html)
+      if (!website.db) {
+        const html = website.getContentHtml('index', 'wrapper')({
+          title: 'Photo Bingo',
+          siteName: 'SmugMug',
+          currentYear: new Date().getFullYear(),
+          userAuth: requestInfo.userAuth ?? {},
+          approvedCards: [],
+        })
+        res.setHeader('Content-Type', 'text/html')
+        res.end(html)
+        return
+      }
+      website.db.drizzle
+        .select()
+        .from(events)
+        .where(isNull(events.deletedAt))
+        .then((eventRows: any[]) => {
+          const approvedByEvent: Array<{ eventId: number; eventName: string; gridSize: number; cardIds: number[] }> = []
+          for (const ev of eventRows) {
+            const ids = getApprovedCardIds(ev.blob)
+            if (ids.length > 0) {
+              approvedByEvent.push({
+                eventId: ev.id,
+                eventName: ev.name ?? '',
+                gridSize: ev.gridSize === '5' ? 5 : 3,
+                cardIds: ids,
+              })
+            }
+          }
+          const allCardIds = approvedByEvent.flatMap((x) => x.cardIds).slice(0, 24)
+          if (allCardIds.length === 0) {
+            const html = website.getContentHtml('index', 'wrapper')({
+              title: 'Photo Bingo',
+              siteName: 'SmugMug',
+              currentYear: new Date().getFullYear(),
+              userAuth: requestInfo.userAuth ?? {},
+              approvedCards: [],
+            })
+            res.setHeader('Content-Type', 'text/html')
+            res.end(html)
+            return
+          }
+          return website.db.drizzle
+            .select()
+            .from(bingo_cards)
+            .where(inArray(bingo_cards.id, allCardIds))
+            .then((cardRows: any[]) => {
+              const eventMap = new Map(approvedByEvent.map((x) => [x.eventId, x]))
+              const approvedCards = cardRows
+                .map((card) => {
+                  const meta = eventMap.get(card.eventId)
+                  if (!meta || !meta.cardIds.includes(card.id)) return null
+                  return {
+                    id: card.id,
+                    cells: getCardCellsForPreview(card),
+                    gridSize: meta.gridSize,
+                    eventName: meta.eventName,
+                    cardUrl: `/bingo/${card.id}`,
+                    title: `${meta.eventName} — Card #${card.id}`,
+                  }
+                })
+                .filter(Boolean)
+                .slice(0, 12)
+              const html = website.getContentHtml('index', 'wrapper')({
+                title: 'Photo Bingo',
+                siteName: 'SmugMug',
+                currentYear: new Date().getFullYear(),
+                userAuth: requestInfo.userAuth ?? {},
+                approvedCards,
+              })
+              res.setHeader('Content-Type', 'text/html')
+              res.end(html)
+            })
+        })
+        .catch((err) => {
+          console.error('[homepage] approved cards load failed', err)
+          const html = website.getContentHtml('index', 'wrapper')({
+            title: 'Photo Bingo',
+            siteName: 'SmugMug',
+            currentYear: new Date().getFullYear(),
+            userAuth: requestInfo.userAuth ?? {},
+            approvedCards: [],
+          })
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        })
     },
     /** Old SmugMug galleries gate; use /smugmug_homepage or link from nav if needed. */
     smugmug_homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
@@ -1024,16 +1131,47 @@ const smugmugConfig: RawWebsiteConfig = {
           } catch {
             promptsList = []
           }
-          const html = website.getContentHtml('event-show', 'wrapper')({
-            title: event.name,
-            event: { ...event, promptsList },
-            joinUrl: `/event/${encodeURIComponent(event.slug)}/join`,
-            userAuth: requestInfo.userAuth ?? {},
-            siteName: 'SmugMug',
-            currentYear: new Date().getFullYear(),
-          })
-          res.setHeader('Content-Type', 'text/html')
-          res.end(html)
+          const approvedIds = getApprovedCardIds(event.blob)
+          if (approvedIds.length === 0) {
+            const html = website.getContentHtml('event-show', 'wrapper')({
+              title: event.name,
+              event: { ...event, promptsList },
+              joinUrl: `/event/${encodeURIComponent(event.slug)}/join`,
+              approvedCards: [],
+              userAuth: requestInfo.userAuth ?? {},
+              siteName: 'SmugMug',
+              currentYear: new Date().getFullYear(),
+            })
+            res.setHeader('Content-Type', 'text/html')
+            res.end(html)
+            return
+          }
+          return db
+            .select()
+            .from(bingo_cards)
+            .where(and(inArray(bingo_cards.id, approvedIds), eq(bingo_cards.eventId, event.id)))
+            .then((cardRows: any[]) => {
+              const gridSizeNum = event.gridSize === '5' ? 5 : 3
+              const approvedCards = cardRows.map((card) => ({
+                id: card.id,
+                cells: getCardCellsForPreview(card),
+                gridSize: gridSizeNum,
+                eventName: event.name,
+                cardUrl: `/bingo/${card.id}`,
+                title: `Card #${card.id}`,
+              }))
+              const html = website.getContentHtml('event-show', 'wrapper')({
+                title: event.name,
+                event: { ...event, promptsList },
+                joinUrl: `/event/${encodeURIComponent(event.slug)}/join`,
+                approvedCards,
+                userAuth: requestInfo.userAuth ?? {},
+                siteName: 'SmugMug',
+                currentYear: new Date().getFullYear(),
+              })
+              res.setHeader('Content-Type', 'text/html')
+              res.end(html)
+            })
         })
         .catch((err: Error) => {
           res.statusCode = 500

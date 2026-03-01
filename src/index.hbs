@@ -5,6 +5,18 @@
     <a href="/list-events" class="bingo-hero__cta">Play bingo</a>
   </header>
 
+  {{#if approvedCards.length}}
+    <section class="bingo-section">
+      <h2 class="bingo-section__title">Completed cards</h2>
+      <p class="bingo-section__body">Bingo cards from the community.</p>
+      <div class="bingo-landing__approved-grid">
+        {{#each approvedCards}}
+          {{> bing-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
+        {{/each}}
+      </div>
+    </section>
+  {{/if}}
+
   <section class="bingo-section">
     <h2 class="bingo-section__title">How it works</h2>
     <div class="bingo-section__body">

@@ -7,4 +7,16 @@
   <p class="bingo-join__grid-info"><strong>Grid:</strong> {{event.gridSize}}×{{event.gridSize}}</p>
   <a href="{{joinUrl}}" class="bingo-join__cta">Join and get my card</a>
   <p class="bingo-join__hint">You’ll get a card with randomised prompts. Click each prompt to take or upload a photo; we’ll analyse it and add it to your card.</p>
+
+  {{#if approvedCards.length}}
+    <section class="bingo-join__approved">
+      <h2 class="bingo-page__title bingo-join__approved-title">Approved cards</h2>
+      <p class="bingo-page__lead">Completed bingo cards from this event.</p>
+      <div class="bingo-join__approved-grid">
+        {{#each approvedCards}}
+          {{> bing-card-preview cells=this.cells gridSize=this.gridSize title=this.title cardUrl=this.cardUrl}}
+        {{/each}}
+      </div>
+    </section>
+  {{/if}}
 </div>
