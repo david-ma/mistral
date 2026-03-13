@@ -1120,6 +1120,10 @@ function mistralDescribeController(res: ServerResponse, req: IncomingMessage) {
 /** Role-based route rules: SmugMug paths require user or admin (concatenated with Thalia default routes). */
 const smugmugRoutes: RoleRouteRule[] = [
   { path: '/', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
+  /** Password reset flow: guest must access these without being logged in. */
+  { path: '/forgotPassword', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'], guest: ['read', 'create'] } },
+  { path: '/resetPassword', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'], guest: ['read', 'create'] } },
+  { path: '/logon', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'], guest: ['read', 'create'] } },
   { path: '/js', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
   { path: '/css', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
   { path: '/galleries', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
