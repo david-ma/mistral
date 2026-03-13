@@ -153,30 +153,39 @@ function getCardCellsForPreview(card: { blob?: unknown }): Array<{ prompt?: stri
   }))
 }
 
-/** Placeholder cells for 3×3 bingo card preview (no images). Used for hardcoded featured cards on homepage. */
+/** Placeholder cells for 3×3 photo hunt card preview (no images). No free space — all 9 are prompts. */
 const PLACEHOLDER_CELLS_3X3: Array<{ prompt: string; imageUrl: null; thumbnailUrl: null; description: null; isFreeSpace: boolean }> = [
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
-  { prompt: 'Free space', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: true },
+  { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
   { prompt: '—', imageUrl: null, thumbnailUrl: null, description: null, isFreeSpace: false },
 ]
 
-/** Hardcoded bingo card IDs shown on homepage; clicking opens /bingo/:id (play without logging in). */
-const FEATURED_CARD_IDS = [1, 2, 3]
-const HOMEPAGE_FEATURED_CARDS = FEATURED_CARD_IDS.map((id) => ({
-  cardId: id,
-  title: `Card ${id}`,
-  cardUrl: `/bingo/${id}`,
-  gridSize: 3 as const,
-  is3x3: true,
-  playerName: null,
-  cells: PLACEHOLDER_CELLS_3X3,
-}))
+/** Unihack Photo Hunt: event slug and id for the default game. */
+const UNIHACK_SLUG = 'unihack'
+const UNIHACK_EVENT_ID = 4
+
+/**
+ * Build cells for a photo hunt card: no free space. For 3×3 use 9 prompts, for 5×5 use 25.
+ * Shuffles and takes the first total from the event's prompts.
+ */
+function buildPhotoHuntCells(
+  prompts: string[],
+  gridSize: 3 | 5
+): Array<{ prompt: string; imageUrl: null; description: null; isFreeSpace: false }> {
+  const total = gridSize * gridSize
+  const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
+  const chosen = shuffled.slice(0, total)
+  return chosen.map((prompt) => ({ prompt, imageUrl: null, description: null, isFreeSpace: false as const }))
+}
+
+/** Join URL for the default Unihack Photo Hunt — new visitors get a fresh card here. */
+const UNIHACK_JOIN_URL = `/event/${UNIHACK_SLUG}/join`
 
 /** Read request body as Buffer (for Node IncomingMessage). */
 function readRequestBody(req: IncomingMessage): Promise<Buffer> {
@@ -491,6 +500,10 @@ function apiController(
     approveCardsController(res, req, parseInt(bingoEventApproveMatch[1], 10), website)
     return
   }
+  if (pathname === '/api/claim-card') {
+    claimCardController(res, req, website, requestInfo)
+    return
+  }
   res.statusCode = 404
   res.setHeader('Content-Type', 'application/json')
   res.end(JSON.stringify({ error: 'Not found' }))
@@ -783,6 +796,62 @@ function bingoPlayerNameController(res: ServerResponse, req: IncomingMessage, we
     })
 }
 
+/** POST /api/claim-card: body { cardId }. Requires auth. Sets bingo_cards.ownerId to current user so they can save their card. */
+function claimCardController(
+  res: ServerResponse,
+  req: IncomingMessage,
+  website: Website,
+  requestInfo: RequestInfo
+) {
+  if (req.method !== 'POST') {
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
+  }
+  const userId = requestInfo.userAuth?.userId
+  if (!userId) {
+    res.statusCode = 401
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'You must be logged in to save your card.' }))
+    return
+  }
+  if (!website.db) {
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Database not configured.' }))
+    return
+  }
+  readRequestBody(req)
+    .then((buf) => {
+      const body = JSON.parse(buf.toString()) as { cardId?: number | string }
+      const cardId = typeof body?.cardId === 'number' ? body.cardId : parseInt(String(body?.cardId ?? ''), 10)
+      if (!Number.isFinite(cardId) || cardId < 1) {
+        res.statusCode = 400
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'cardId required' }))
+        return null
+      }
+      return { cardId, userId }
+    })
+    .then((payload) => {
+      if (!payload) return null
+      const db = website.db!.drizzle
+      return db.update(bingo_cards).set({ ownerId: payload.userId }).where(eq(bingo_cards.id, payload.cardId)).then(() => payload)
+    })
+    .then((payload) => {
+      if (!payload) return
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ ok: true, cardId: payload.cardId }))
+    })
+    .catch((err) => {
+      if (res.headersSent) return
+      res.statusCode = 500
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: (err as Error).message ?? String(err) }))
+    })
+}
+
 /** Shared: load bingo card + event and return game state (or null if card not found). Used by bingo-game API and preview API/homepage. */
 async function getBingoGameState(cardId: number, website: Website): Promise<{ cardId: number; eventName: string; playerName: string | null; gridSize: number; cells: Array<{ prompt?: string; imageUrl?: string | null; description?: string | null; isFreeSpace?: boolean }> } | null> {
   if (!website.db) return null
@@ -795,25 +864,11 @@ async function getBingoGameState(cardId: number, website: Website): Promise<{ ca
   let rawCells = Array.isArray(cardBlob.cells) ? cardBlob.cells : []
   if (rawCells.length === 0 && event?.prompts) {
     const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
-    const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
     const gridSizeNum = event.gridSize === '5' ? 5 : 3
-    const total = gridSizeNum * gridSizeNum
-    const centerIndex = total === 9 ? 4 : 12
-    const numPrompts = total - 1
-    const chosen = shuffled.slice(0, numPrompts)
-    rawCells = []
-    let p = 0
-    for (let i = 0; i < total; i++) {
-      if (i === centerIndex) {
-        rawCells.push({ prompt: 'Free space', imageUrl: null, description: null, isFreeSpace: true })
-      } else {
-        rawCells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null, isFreeSpace: false })
-        p++
-      }
-    }
+    rawCells = buildPhotoHuntCells(prompts, gridSizeNum)
     await website.db.drizzle.update(bingo_cards).set({ blob: { ...cardBlob, cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
   }
-  const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
+  const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: false }))
   const gridSize = event?.gridSize === '5' ? 5 : 3
   return { cardId: card.id, eventName: event?.name ?? '', playerName: sanitizePlayerName(cardBlob.playerName), gridSize, cells }
 }
@@ -1172,105 +1227,18 @@ const smugmugConfig: RawWebsiteConfig = {
     },
   },
   controllers: {
-    /** Serves / (root): bingo welcome page for Mistral hackathon. */
+    /** Serves / (root): Unihack Photo Hunt landing. New visitors start via joinUrl; repeat visitors use localStorage to continue. */
     homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
-      if (!website.db) {
-        const html = website.getContentHtml('index', 'wrapper')({
-          title: 'Photo Bingo',
-          siteName: 'SmugMug',
-          currentYear: new Date().getFullYear(),
-          userAuth: requestInfo.userAuth ?? {},
-          approvedCards: [],
-          featuredCards: HOMEPAGE_FEATURED_CARDS,
-        })
-        res.setHeader('Content-Type', 'text/html')
-        res.end(html)
-        return
-      }
-      loadFeaturedCardsPreview(website, FEATURED_CARD_IDS)
-        .then((featuredCards) => {
-          const safeFeaturedCards = Array.isArray(featuredCards) && featuredCards.length > 0 ? featuredCards : HOMEPAGE_FEATURED_CARDS
-          return website.db!.drizzle
-            .select()
-            .from(events)
-            .where(isNull(events.deletedAt))
-            .then((eventRows: any[]) => {
-              const approvedByEvent: Array<{ eventId: number; eventName: string; gridSize: number; cardIds: number[] }> = []
-              for (const ev of eventRows) {
-                const ids = getApprovedCardIds(ev.blob)
-                if (ids.length > 0) {
-                  approvedByEvent.push({
-                    eventId: ev.id,
-                    eventName: ev.name ?? '',
-                    gridSize: ev.gridSize === '5' ? 5 : 3,
-                    cardIds: ids,
-                  })
-                }
-              }
-              const allCardIds = approvedByEvent.flatMap((x) => x.cardIds).slice(0, 24)
-              if (allCardIds.length === 0) {
-                const html = website.getContentHtml('index', 'wrapper')({
-                  title: 'Photo Bingo',
-                  siteName: 'SmugMug',
-                  currentYear: new Date().getFullYear(),
-                  userAuth: requestInfo.userAuth ?? {},
-                  approvedCards: [],
-                  featuredCards: safeFeaturedCards,
-                })
-                res.setHeader('Content-Type', 'text/html')
-                res.end(html)
-                return
-              }
-              return website.db!.drizzle
-                .select()
-                .from(bingo_cards)
-                .where(inArray(bingo_cards.id, allCardIds))
-                .then((cardRows: any[]) => {
-                  const eventMap = new Map(approvedByEvent.map((x) => [x.eventId, x]))
-                  const approvedCards = cardRows
-                    .map((card) => {
-                      const meta = eventMap.get(card.eventId)
-                      if (!meta || !meta.cardIds.includes(card.id)) return null
-                      const playerName = getCardPlayerName(card)
-                      return {
-                        id: card.id,
-                        playerName,
-                        cells: getCardCellsForPreview(card),
-                        gridSize: meta.gridSize,
-                        is3x3: meta.gridSize === 3,
-                        eventName: meta.eventName,
-                        cardUrl: `/bingo/${card.id}`,
-                        title: `${meta.eventName} — Card #${card.id}`,
-                      }
-                    })
-                    .filter(Boolean)
-                    .slice(0, 12)
-                  const html = website.getContentHtml('index', 'wrapper')({
-                    title: 'Photo Bingo',
-                    siteName: 'SmugMug',
-                    currentYear: new Date().getFullYear(),
-                    userAuth: requestInfo.userAuth ?? {},
-                    approvedCards,
-                    featuredCards: safeFeaturedCards,
-                  })
-                  res.setHeader('Content-Type', 'text/html')
-                  res.end(html)
-                })
-            })
-        })
-        .catch((err) => {
-          console.error('[homepage] approved cards load failed', err)
-          const html = website.getContentHtml('index', 'wrapper')({
-            title: 'Photo Bingo',
-            siteName: 'SmugMug',
-            currentYear: new Date().getFullYear(),
-            userAuth: requestInfo.userAuth ?? {},
-            approvedCards: [],
-            featuredCards: HOMEPAGE_FEATURED_CARDS,
-          })
-          res.setHeader('Content-Type', 'text/html')
-          res.end(html)
-        })
+      const html = website.getContentHtml('index', 'wrapper')({
+        title: 'Unihack Photo Hunt',
+        siteName: 'Unihack Photo Hunt',
+        joinUrl: UNIHACK_JOIN_URL,
+        unihackUrl: 'https://www.unihack.net/',
+        currentYear: new Date().getFullYear(),
+        userAuth: requestInfo.userAuth ?? {},
+      })
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
     },
     /** Old SmugMug galleries gate; use /smugmug_homepage or link from nav if needed. */
     smugmug_homepage: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
@@ -1366,11 +1334,11 @@ const smugmugConfig: RawWebsiteConfig = {
           } catch {
             prompts = promptsText.split(/\n/).map((s) => s.trim()).filter(Boolean)
           }
-          const minPrompts = gridSize === '5' ? 24 : 8
+          const minPrompts = gridSize === '5' ? 25 : 9
           if (prompts.length < minPrompts) {
             res.statusCode = 400
             res.setHeader('Content-Type', 'text/html')
-            res.end(`<h1>Bad Request</h1><p>At least ${minPrompts} prompts required for ${gridSize}×${gridSize} grid (centre is a free space).</p>`)
+            res.end(`<h1>Bad Request</h1><p>At least ${minPrompts} prompts required for ${gridSize}×${gridSize} photo hunt grid.</p>`)
             return
           }
           if (!website.db) {
@@ -1435,11 +1403,11 @@ const smugmugConfig: RawWebsiteConfig = {
               } catch {
                 prompts = promptsText.split(/\n/).map((s) => s.trim()).filter(Boolean)
               }
-              const minPrompts = gridSize === '5' ? 24 : 8
+              const minPrompts = gridSize === '5' ? 25 : 9
               if (prompts.length < minPrompts) {
                 res.statusCode = 400
                 res.setHeader('Content-Type', 'text/html')
-                res.end(`<h1>Bad Request</h1><p>At least ${minPrompts} prompts required (centre is a free space).</p>`)
+                res.end(`<h1>Bad Request</h1><p>At least ${minPrompts} prompts required for photo hunt grid.</p>`)
                 return
               }
               db.update(events).set({ name: name || event.name, gridSize, description: description || null, prompts: JSON.stringify(prompts) }).where(eq(events.id, event.id))
@@ -1500,22 +1468,8 @@ const smugmugConfig: RawWebsiteConfig = {
           }
           if (isJoin && req.method === 'GET') {
             const prompts: string[] = JSON.parse(event.prompts || '[]')
-            const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
             const gridSize = event.gridSize === '5' ? 5 : 3
-            const total = gridSize * gridSize
-            const centerIndex = total === 9 ? 4 : 12 // 3×3 → 4, 5×5 → 12
-            const numPrompts = total - 1 // one free space
-            const chosen = shuffled.slice(0, numPrompts)
-            const cells: Array<{ prompt: string; imageUrl: null; description: null }> = []
-            let p = 0
-            for (let i = 0; i < total; i++) {
-              if (i === centerIndex) {
-                cells.push({ prompt: 'Free space', imageUrl: null, description: null, isFreeSpace: true })
-              } else {
-                cells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null, isFreeSpace: false })
-                p++
-              }
-            }
+            const cells = buildPhotoHuntCells(prompts, gridSize)
             return db.insert(bingo_cards).values({ eventId: event.id, ownerId: null, blob: { cells } })
               .then((insertResult: any) => {
                 const cardId = insertResult?.insertId ?? insertResult?.[0]?.insertId
@@ -1611,35 +1565,22 @@ const smugmugConfig: RawWebsiteConfig = {
             let rawCells = Array.isArray(cardBlob.cells) ? cardBlob.cells : []
             if (rawCells.length === 0 && event?.prompts) {
               const prompts: string[] = typeof event.prompts === 'string' ? (() => { try { return JSON.parse(event.prompts) } catch { return [] } })() : (event.prompts ?? [])
-              const shuffled = prompts.slice().sort(() => Math.random() - 0.5)
               const gridSizeNum = event.gridSize === '5' ? 5 : 3
-              const total = gridSizeNum * gridSizeNum
-              const centerIndex = total === 9 ? 4 : 12
-              const numPrompts = total - 1
-              const chosen = shuffled.slice(0, numPrompts)
-              rawCells = []
-              let p = 0
-              for (let i = 0; i < total; i++) {
-                if (i === centerIndex) {
-                  rawCells.push({ prompt: 'Free space', imageUrl: null, description: null })
-                } else {
-                  rawCells.push({ prompt: chosen[p] ?? '', imageUrl: null, description: null })
-                  p++
-                }
-              }
+              rawCells = buildPhotoHuntCells(prompts, gridSizeNum)
               website.db!.drizzle.update(bingo_cards).set({ blob: { ...cardBlob, cells: rawCells } }).where(eq(bingo_cards.id, card.id)).catch((err) => console.error('[bingo] Failed to persist rebuilt cells:', err))
             }
-            const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: c.prompt === 'Free space' }))
+            const cells = rawCells.map((c: any) => ({ ...c, isFreeSpace: false }))
             const gridSize = event?.gridSize === '5' ? 5 : 3
             const html = website.getContentHtml('bingo-card', 'wrapper')({
-              title: 'Bingo card',
+              title: 'Photo Hunt',
               cardId: card.id,
               gridSize,
               cells,
               eventName: event?.name,
               playerName: sanitizePlayerName(cardBlob.playerName),
+              cardOwnerId: card.ownerId ?? null,
               userAuth: requestInfo.userAuth ?? {},
-              siteName: 'SmugMug',
+              siteName: 'Unihack Photo Hunt',
               currentYear: new Date().getFullYear(),
             })
             res.setHeader('Content-Type', 'text/html')
@@ -2045,3 +1986,4 @@ const temp_config = recursiveObjectMerge(security.securityConfig(), smugmugConfi
 
 import { websocket_config } from './lib-websocket.js'
 export const config = recursiveObjectMerge(temp_config, websocket_config)
+export { buildPhotoHuntCells }
