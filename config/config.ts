@@ -1199,6 +1199,7 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/websocket-test', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/pricing', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
   { path: '/photo-upload-disclaimer', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
+  { path: '/unihack', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'], guest: ['read'] } },
   { path: '/list-events', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/create-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
   { path: '/edit-event', permissions: { admin: [...ALL_PERMISSIONS], user: ['update'] } },
@@ -1283,6 +1284,18 @@ const smugmugConfig: RawWebsiteConfig = {
       const html = website.getContentHtml('photo-upload-disclaimer', 'wrapper')({
         title: 'Photo upload disclaimer',
         siteName: 'SmugMug',
+        currentYear: new Date().getFullYear(),
+        userAuth: requestInfo.userAuth ?? {},
+      })
+      res.setHeader('Content-Type', 'text/html')
+      res.end(html)
+    },
+    unihack: (res: ServerResponse, _req: IncomingMessage, website: Website, requestInfo: RequestInfo) => {
+      const html = website.getContentHtml('unihack', 'wrapper')({
+        title: 'Unihack Photo Hunt',
+        siteName: 'Unihack Photo Hunt',
+        joinUrl: UNIHACK_JOIN_URL,
+        unihackUrl: 'https://www.unihack.net/',
         currentYear: new Date().getFullYear(),
         userAuth: requestInfo.userAuth ?? {},
       })

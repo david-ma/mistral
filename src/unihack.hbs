@@ -1,0 +1,99 @@
+{{#> wrapper title="Unihack Photo Hunt" }}
+  <div class="bingo-page">
+    <a href="/" class="bingo-page__back">&larr; Home</a>
+    <h1 class="bingo-page__title">Unihack Photo Hunt</h1>
+    <p class="bingo-page__lead">
+      Play the photo hunt game at Unihack: get a 3&times;3 grid of prompts, capture photos around the venue, and let AI describe what you found.
+    </p>
+
+    <section class="bingo-section bingo-section--about">
+      <h2 class="bingo-section__title">How the game works</h2>
+      <div class="bingo-section__body">
+        <p>This page is a simple reference for how the Unihack Photo Hunt behaves.</p>
+        <ul>
+          <li><strong>Card size:</strong> 3&times;3 grid (no free space), built from the Unihack event prompts.</li>
+          <li><strong>New card:</strong> clicking the button below creates a new card for the Unihack event and sends you to the play page.</li>
+          <li><strong>Continue card:</strong> we use local storage on this device to remember your latest card and send you back to it.</li>
+          <li><strong>Saving:</strong> when you are happy with your card, you can save it to an account so you can view it on other devices.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="bingo-section bingo-section--hackathon">
+      <h2 class="bingo-section__title">Play at Unihack</h2>
+      <p class="bingo-section__body">
+        The Unihack event uses a dedicated bingo event with slug <code>unihack</code>. Use the actions below during the hackathon.
+      </p>
+      <div class="bingo-hackathon">
+        <p class="bingo-hackathon__meta">
+          Start fresh for a new teammate or use the same browser to continue from an existing card.
+        </p>
+        <div class="bingo-hero__cta-row">
+          <button id="uph-unihack-start" class="bingo-hero__cta bingo-hero__cta--primary">Start a new Unihack card</button>
+          <button id="uph-unihack-continue" class="bingo-hero__cta bingo-hero__cta--secondary" hidden>Continue saved card</button>
+        </div>
+        <p id="uph-unihack-status" class="bingo-hero__status" aria-live="polite"></p>
+        <p class="bingo-hackathon__sponsors">
+          Event site: <a href="{{unihackUrl}}" target="_blank" rel="noopener">unihack.net</a>
+        </p>
+      </div>
+    </section>
+  </div>
+{{/wrapper}}
+
+<script>
+  (function () {
+    var STORAGE_KEY = 'uph_card_id';
+    var JOIN_URL = '{{joinUrl}}';
+
+    function getStoredCardId() {
+      try {
+        var raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var n = parseInt(raw, 10);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function init() {
+      var startBtn = document.getElementById('uph-unihack-start');
+      var continueBtn = document.getElementById('uph-unihack-continue');
+      var statusEl = document.getElementById('uph-unihack-status');
+      if (!startBtn || !continueBtn || !statusEl) return;
+
+      var existing = getStoredCardId();
+      if (existing) {
+        continueBtn.hidden = false;
+        statusEl.textContent = 'Found a saved card on this device.';
+      }
+
+      startBtn.addEventListener('click', function () {
+        statusEl.textContent = 'Creating a new Unihack card…';
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        window.location.href = JOIN_URL;
+      });
+
+      continueBtn.addEventListener('click', function () {
+        var id = getStoredCardId();
+        if (!id) {
+          statusEl.textContent = 'No saved card found. Creating a new one instead.';
+          window.location.href = JOIN_URL;
+          return;
+        }
+        window.location.href = '/bingo/' + id;
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
