@@ -136,7 +136,8 @@ This PRD describes the **next product generation**: same technical spine, **new 
 ## 10. Technical requirements & architecture (high level)
 
 - **Stack:** Thalia, Bun, Handlebars, Drizzle, MariaDB/MySQL, UploadThing, Mistral API, optional SmugMug (`thalia`, `thalia-smugmug` skills).
-- **Schema evolution:** Prefer additive columns / JSON fields: e.g. `users.isSuperuser`, `events` flag or blob field for **approvedForPublicListing** + timestamp; **per-submission** `approvedForPublicGallery` (or new table). Migrations via **drizzle-kit**. Deprecate card-level-only showcase (`approvedCardIds`) once per-photo approval ships.
+- **Current ER (PoC):** [`src/models.md`](../src/models.md) — documents **`events`**, **`bingo_cards`**, Thalia **`users`**, SmugMug cache tables, etc. Treat it as the **as-built** picture; the Photo Hunt programme should **extend it** with new tables/columns (see that file’s *Photo Hunt target model* section) and keep the diagram updated after migrations.
+- **Schema evolution:** Prefer **normalized submission rows** for moderation and bulk approve, plus explicit listing flags — e.g. `users.isSuperuser`, `events` columns for **approved for public listing** + timestamp, **`hunt_submissions`** (or equivalent) with `approved_for_public_gallery`, `moderated_by`. Migrations via **drizzle-kit**. Deprecate card-level-only showcase (`approvedCardIds`) and heavy reliance on **`blob` cells** once the new model is live.
 - **APIs:** REST-style JSON endpoints consistent with existing `/api/bingo-*` patterns; consider renaming **public** routes to `/api/hunt-*` in a phased way to avoid breaking bookmarks.
 - **Testing:** Follow `thalia-testing` — extend `tests/photohunt.test.ts` and add integration tests for auth boundaries on new endpoints.
 

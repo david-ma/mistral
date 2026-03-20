@@ -37,3 +37,4 @@ This brief pairs with:
 - `DESIGN/design.md` — recorded decisions and assumptions.
 - `DESIGN/PRD.md` — requirements, stories, phasing, open questions.
 - `DESIGN/RALPH_PLAN_PHOTO_HUNT.md` — execution-sized checklist for Ralph loops.
+- `src/models.md` — **as-built ER diagram** (PoC) plus **Photo Hunt target model** (proposed tables/columns); keep in sync with Drizzle after migrations.

@@ -44,6 +44,23 @@ Living document. Resolved items belong here; unresolved items stay in `DESIGN/PR
 | AI | Mistral vision description + JSON score/safety on `bingo`-style cell upload API. |
 | Auth | ThaliaSecurity: guests can read `/event`; `user`/`admin` for organiser routes. |
 
+### ER diagram (PoC as shipped)
+
+The living **entity–relationship diagram** for this site is maintained in [`src/models.md`](../src/models.md) (Mermaid + table summary). It matches the hackathon **proof of concept**: **`events`** + **`bingo_cards`** with a JSON **`blob`** for grid cells, **`events.blob.approvedCardIds`** for card-level public previews, and Thalia **`users`** / **`sessions`** / **`albums`** / **`images`**.
+
+That diagram **does** help the PRD and brief: it makes explicit what must change — there is **no** first-class row per photo submission, **no** `isSuperuser`, and **no** event-level “listed for discovery” flag in the schema today.
+
+### Schema gaps vs Photo Hunt PRD
+
+| PRD need | PoC (`models.md`) gap |
+|----------|------------------------|
+| **Per-photo** public gallery + **bulk approve** | Cell data lives in **`bingo_cards.blob`**; hard to query, index, or approve rows in bulk without loading every card JSON. |
+| **Superuser** + **directory / homepage (3)** | No **`users.isSuperuser`**; no **`events`** fields for “approved for public listing” + timestamp. |
+| **Bounded hunt (n of m, then done)** | **`grid_size`** + fixed cell count is encoded in blob shape; prompt list length is separate from “session progress” unless derived in app code. |
+| **Moderation / abuse** | **`bingo_cards.approved`** is card-level, not per upload; safety/score live inside cell JSON. |
+
+**Direction:** introduce **new tables** (and/or columns) rather than stretching JSON further — see **`src/models.md` → Photo Hunt target model** and PRD §10 / §18.
+
 ---
 
 ## Architectural principles for the redesign

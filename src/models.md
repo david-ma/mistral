@@ -2,6 +2,8 @@
 
 This page describes the MySQL schemas used by the **smugmug** site: tables re-exported from Thalia (`users`, `sessions`, `audits`, `albums`, `images`, `mail`) plus app-local models under `websites/smugmug/models/` (`fruit`, `image_notes`, `events`, `bingo_cards`).
 
+**Product direction** for the next iteration is in [`DESIGN/PRD.md`](../DESIGN/PRD.md) and [`DESIGN/design.md`](../DESIGN/design.md) (Photo Hunt). The ER diagram below reflects the **hackathon proof of concept**; expect **new tables and columns** — see [Photo Hunt target model](#photo-hunt-target-model-prd-aligned) at the end.
+
 ## Entity–relationship diagram
 
 ```mermaid
@@ -171,8 +173,8 @@ erDiagram
 | `albums` | Cached SmugMug album metadata (keys, URIs, privacy, dates). |
 | `images` | Cached SmugMug image row per photo; **`album_id`** links to local `albums`. |
 | `image_notes` | JSON/text blob per image (AI description, faces, EXIF, etc.) keyed by SmugMug **`album_key` + `image_key`**. |
-| `events` | Bingo event: name, slug, grid size, prompt list, optional visibility blob. |
-| `bingo_cards` | Player card for an event; **`blob`** holds cell prompts + SmugMug URLs after upload. |
+| `events` | Bingo / photo-hunt event: name, slug, grid size, prompt list, optional **`blob`** (e.g. `approvedCardIds` for PoC public previews). |
+| `bingo_cards` | Player session for an event; **`blob`** holds cell prompts + image URLs + Mistral fields (PoC — likely superseded or complemented by normalized rows for moderation). |
 | `users` | Thalia Security users (login, role, verification). |
 | `sessions` | Session store; optional **`user_id`**. |
 | `audits` | Security/audit log. |
@@ -190,6 +192,82 @@ erDiagram
 7. **Retention / GDPR** — Flags or purge jobs for **`image_notes`** and **`bingo_cards.blob`** when users withdraw consent; document relationship to SmugMug deletes.
 8. **`mail` ↔ user** — Optional **`user_id`** or **`trigger`** for per-user mail logs and resends (same pattern as Paperless `models.md`).
 9. **`fruit`** — Remove or gate behind dev if it is only scaffolding; or prefix demo tables (`demo_fruit`) so production migrations stay clear.
+
+---
+
+## Photo Hunt target model (PRD-aligned)
+
+The PoC model conflates **player state**, **per-prompt uploads**, and **moderation** inside **`bingo_cards.blob`**. The PRD calls for **per-photo approval**, **bulk approve**, **superuser-gated discovery**, and a **clear completion** state. A practical evolution:
+
+### New or altered columns
+
+| Table | Change | Purpose |
+|-------|--------|--------|
+| `users` | Add `is_superuser` (boolean, default false) | Platform operator: approve events for homepage + directory. |
+| `events` | Add `approved_for_public_listing`, `public_listing_approved_at`, `public_listing_approved_by` (or equivalent in `blob` short-term) | Superuser gate: unlisted events still work via **direct URL**. |
+| `events` | Eventually drop or ignore `grid_size` in product logic; keep column nullable/deprecated for migration | Bounded hunt = **prompt list length**, not 3×3 / 5×5. |
+
+### New tables (recommended shape — names negotiable)
+
+**`hunt_sessions`** (may start as `bingo_cards` renamed in a later migration)
+
+- `id`, `event_id`, `owner_id` (nullable for guests), `created_at`, `updated_at`
+- `current_prompt_index` (or “next prompt ordinal”)
+- `completed_at` (null until all prompts done once)
+- Optional: `client_fingerprint` / notes — v1 relies on **localStorage** + `id`, not a server anonymous key
+
+**`hunt_submissions`** (one row per photo tied to a prompt attempt)
+
+- `id`, `hunt_session_id`, `event_id` (denormalised for listing queries), `prompt_index`, `prompt_text` (snapshot)
+- `image_url`, `thumbnail_url`, `description`, `score`, `safe` (or JSON `moderation` blob)
+- `approved_for_public_gallery` (boolean), `moderated_at`, `moderated_by_user_id`
+- Indexes: `(event_id, approved_for_public_gallery)`, `(hunt_session_id, prompt_index)`
+
+Bulk approve = `UPDATE hunt_submissions SET approved_for_public_gallery = 1, … WHERE id IN (…)`.
+
+### Target ER (sketch)
+
+```mermaid
+erDiagram
+  users ||--o{ events : "owns"
+  users ||--o{ hunt_sessions : "owns"
+  events ||--o{ hunt_sessions : "has"
+  events ||--o{ hunt_submissions : "has"
+  hunt_sessions ||--o{ hunt_submissions : "submits"
+
+  users {
+    int id PK
+    boolean is_superuser
+  }
+
+  events {
+    int id PK
+    boolean approved_for_public_listing
+    timestamp public_listing_approved_at
+  }
+
+  hunt_sessions {
+    int id PK
+    int event_id FK
+    int owner_id FK
+    int current_prompt_index
+    timestamp completed_at
+  }
+
+  hunt_submissions {
+    int id PK
+    int hunt_session_id FK
+    int event_id FK
+    int prompt_index
+    boolean approved_for_public_gallery
+  }
+```
+
+Keep **`bingo_cards`** + JSON **`blob`** during migration: backfill **`hunt_submissions`** from existing cells, then switch APIs and drop or archive blob-heavy paths.
+
+### Diagram maintenance
+
+After each Drizzle migration, refresh the **main ER diagram** in this file so it stays the single place agents and humans compare **as-built** vs **PRD**.
 
 ---
 
