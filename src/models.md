@@ -265,6 +265,8 @@ erDiagram
 
 Keep **`bingo_cards`** + JSON **`blob`** during migration: backfill **`hunt_submissions`** from existing cells, then switch APIs and drop or archive blob-heavy paths.
 
+**SmugMug (v1):** **One album per event** — store `album_key` (or equivalent) on **`events`** when the album is created; uploads target that album (replaces long-term reliance on a single shared `BINGO_ALBUM_KEY`). Exact lifecycle is an open implementation detail (PRD §18).
+
 ### Diagram maintenance
 
 After each Drizzle migration, refresh the **main ER diagram** in this file so it stays the single place agents and humans compare **as-built** vs **PRD**.

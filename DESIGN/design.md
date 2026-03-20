@@ -15,9 +15,25 @@ Living document. Resolved items belong here; unresolved items stay in `DESIGN/PR
 | **Homepage & directory** | Homepage shows the **latest 3** events that are **superuser-approved** for public listing. A **full directory** link exists; the directory lists **only** those same **superuser-approved** events. **Unapproved** events are **not** listed publicly but remain reachable by **direct URL** so organisers can create, test, and share links **without** waiting for superuser approval. |
 | **Superuser (platform)** | Implemented as a dedicated flag on the user record (e.g. **`isSuperuser`**) — **not** implied by generic `admin` alone unless you choose to bootstrap the first superuser that way. |
 | **Anonymous continuity** | **`localStorage` card id** only for v1 (no signed cookie / server session requirement). |
-| **Minimum prompts** | **≥ 3** prompts required to create or publish an event (exact enforcement point—create vs save vs “go live”—see PRD). |
+| **Minimum prompts** | **≥ 3** prompts; enforced **at event creation** (see Ralph plan interview below). |
 
 *Wording note:* “Superadmin” in conversation = **superuser** in docs (same role).
+
+---
+
+## Ralph plan interview — engineering & UX (resolved)
+
+*Encoding: `1a, 2a, 3a, 4b, 5b, 6b, 7a` — recorded for Ralph Loop execution.*
+
+| # | Topic | Decision |
+|---|--------|-----------|
+| **Q1** | **Data model** | New **`hunt_submissions`** table (normalised rows for moderation, bulk approve, queries). Do not rely on extending **`cells[]` JSON** alone. |
+| **Q2** | **Minimum prompts** | Enforce **≥ 3** prompts **on create event** (server + client validation). |
+| **Q3** | **`isSuperuser` bootstrap** | **Manual SQL** or **migration seed** — no env email list, no auto-promote all `admin` users. |
+| **Q4** | **Save-progress merge** | **Last write wins** **per prompt** when linking **localStorage** session to an account if a conflict exists with existing server-side data for that user/event. |
+| **Q5** | **Player / UI direction** | **Midnight Mono** + **`DESIGN/uncodixfy.md`** guardrails (dense, functional; avoid generic AI dashboard chrome). |
+| **Q6** | **SmugMug** | **One album per event** (isolation; more API work than single `BINGO_ALBUM_KEY`). |
+| **Q7** | **Loop 11 hardening** | **Security audit + tests only** for first release — **no** mandatory rate limiting in that loop (can add later). |
 
 ---
 
@@ -65,6 +81,7 @@ That diagram **does** help the PRD and brief: it makes explicit what must change
 
 ## Architectural principles for the redesign
 
+0. **UI:** Implement player and admin surfaces using **Midnight Mono**-style structure from `DESIGN/stitch/midnight_*` where applicable, and enforce **`DESIGN/uncodixfy.md`** (no Codex-default chrome) unless a screen is explicitly exempted in a PR.
 1. **Prefer evolving schemas** (Drizzle migrations, backward-compatible JSON blobs) over big-bang renames until domain language stabilises (`bingo_cards` may remain internal table name initially).
 2. **Keep upload + Mistral pipeline** as a single well-tested path; change **client UX** and **data shape** (e.g. list of submissions vs fixed-length `cells`) around it.
 3. **Explicit curation flags** in DB or JSON for: **per-submission** “approved for public event gallery”, and **per-event** “approved for public directory / homepage” (superuser). Homepage ordering: **latest 3** by approved-for-listing timestamp (or `updatedAt` — engineering detail).

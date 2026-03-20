@@ -2,7 +2,9 @@
 
 **Project:** Thalia website `websites/smugmug` (evolution from Mistral hackathon “Bingo”)  
 **Related docs:** `DESIGN/prompt.md`, `DESIGN/design.md`, `DESIGN/RALPH_PLAN_PHOTO_HUNT.md`  
-**Last updated:** 2026-03-20 (stakeholder interview answers folded in)
+**Last updated:** 2026-03-21 (Ralph plan interview `1a…7a` folded in; see `DESIGN/design.md`)
+
+**Documentation note:** Canonical filenames in this repo are **`DESIGN/PRD.md`** and **`DESIGN/RALPH_PLAN_PHOTO_HUNT.md`** (and other `DESIGN/*` paths as written here). A prior tooling run incorrectly emitted **lowercase** duplicates of some of these files; that was an output error and has been **corrected** — always link to the **uppercase** paths above (important on case-sensitive filesystems).
 
 ---
 
@@ -96,7 +98,7 @@ This PRD describes the **next product generation**: same technical spine, **new 
 ### 8.1 Event lifecycle
 
 - **FR-1 (MUST)** The system MUST allow authenticated organisers to **create**, **read**, **update** events (existing routes extended; slugs remain unique).
-- **FR-2 (MUST)** Each event MUST store an **ordered** list of prompt strings with **minimum length 3** at creation (or at publish — align with validation UX).
+- **FR-2 (MUST)** Each event MUST store an **ordered** list of prompt strings with **minimum length 3**, validated **on create event** (see `DESIGN/design.md`).
 - **FR-3 (MUST)** The **public gallery section** of an event page MUST show **only** photos **explicitly approved** by the event admin (**per-photo**; default **not** public until approved).
 - **FR-4 (SHOULD)** Deprecated concepts (**free space**, fixed grid size) SHOULD be removed from **user-visible** copy and primary UX; grid size may remain in DB temporarily for migration.
 
@@ -105,7 +107,7 @@ This PRD describes the **next product generation**: same technical spine, **new 
 - **FR-5 (MUST)** A guest MUST be able to **start** a hunt from `/event/:slug` (or dedicated join action) **without** logging in.
 - **FR-6 (MUST)** The client MUST support **photo capture or file pick** and upload via the existing **UploadThing** (or successor) pattern.
 - **FR-7 (MUST)** Server MUST run **vision description** and **relevance + safety** scoring consistent with current behaviour unless deliberately changed in a migration note.
-- **FR-8 (MUST)** When the player opts to **save progress**, the system MUST offer **account creation** or **login** and MUST **attach hunt state** to the authenticated user (merge strategy **TBD** — see §18).
+- **FR-8 (MUST)** When the player opts to **save progress**, the system MUST offer **account creation** or **login** and MUST **attach hunt state** to the authenticated user. If the user already has submissions for the same event, **last write wins per prompt** (see `DESIGN/design.md`).
 - **FR-8b (MUST)** When the player completes **all prompts once**, the client MUST show a clear **completion / “You’re done”** state (no automatic prompt loop).
 
 ### 8.3 Curation
@@ -137,7 +139,7 @@ This PRD describes the **next product generation**: same technical spine, **new 
 
 - **Stack:** Thalia, Bun, Handlebars, Drizzle, MariaDB/MySQL, UploadThing, Mistral API, optional SmugMug (`thalia`, `thalia-smugmug` skills).
 - **Current ER (PoC):** [`src/models.md`](../src/models.md) — documents **`events`**, **`bingo_cards`**, Thalia **`users`**, SmugMug cache tables, etc. Treat it as the **as-built** picture; the Photo Hunt programme should **extend it** with new tables/columns (see that file’s *Photo Hunt target model* section) and keep the diagram updated after migrations.
-- **Schema evolution:** Prefer **normalized submission rows** for moderation and bulk approve, plus explicit listing flags — e.g. `users.isSuperuser`, `events` columns for **approved for public listing** + timestamp, **`hunt_submissions`** (or equivalent) with `approved_for_public_gallery`, `moderated_by`. Migrations via **drizzle-kit**. Deprecate card-level-only showcase (`approvedCardIds`) and heavy reliance on **`blob` cells** once the new model is live.
+- **Schema evolution:** Use a **`hunt_submissions`** table (and related session table) for per-row moderation and bulk approve, plus explicit listing flags — `users.isSuperuser` (bootstrap via **seed/SQL** per `DESIGN/design.md`), `events` columns for **approved for public listing** + timestamp, `approved_for_public_gallery` / `moderated_by` on submissions. Migrations via **drizzle-kit**. Deprecate card-level-only showcase (`approvedCardIds`) and heavy reliance on **`blob` cells** once the new model is live.
 - **APIs:** REST-style JSON endpoints consistent with existing `/api/bingo-*` patterns; consider renaming **public** routes to `/api/hunt-*` in a phased way to avoid breaking bookmarks.
 - **Testing:** Follow `thalia-testing` — extend `tests/photohunt.test.ts` and add integration tests for auth boundaries on new endpoints.
 
@@ -159,7 +161,7 @@ This PRD describes the **next product generation**: same technical spine, **new 
 
 - **UploadThing** — client uploads, server-side finalize.
 - **Mistral** — `config/lib-mistral.ts` describe + score/safety.
-- **SmugMug** — optional long-term storage; `BINGO_ALBUM_KEY` / album per event (**open question**).
+- **SmugMug** — **one album per event** for v1 (isolation); replace single shared `BINGO_ALBUM_KEY` pattern over time (`DESIGN/design.md`).
 - **ThaliaSecurity** — route rules in `config/config.ts` must be updated for any new public/private paths.
 
 ---
@@ -201,9 +203,9 @@ This PRD describes the **next product generation**: same technical spine, **new 
 | **2** | Full-list prompt flow | Player completes **all prompts once**; APIs + client beyond 9/25; **completion** UX. |
 | **3** | Progressive registration | “Save progress” ties anonymous session to `user`; tests for merge/edge cases. |
 | **4** | Curation v2 | Event admin **per-photo** + **bulk approve**; superuser **listing approval**; homepage **3** + **directory**; **unlisted** by URL. |
-| **5** | Hardening | Security audit on new routes, tests, optional rate limits. |
+| **5** | Hardening | Security audit on new routes + tests; **rate limits optional** (deferred unless needed). |
 
-Detailed checkboxes: `DESIGN/RALPH_PLAN_PHOTO_HUNT.md`.
+Detailed execution checklist (**12 Ralph loops**, ordered): `DESIGN/RALPH_PLAN_PHOTO_HUNT.md`.
 
 ---
 
@@ -218,15 +220,14 @@ Detailed checkboxes: `DESIGN/RALPH_PLAN_PHOTO_HUNT.md`.
 
 ## 18. Open questions / decisions needed
 
-**Resolved (see `DESIGN/design.md` — interview 2026-03-20):** prompt exhaustion (**end**), gallery granularity (**per-photo** + **bulk approve**), homepage + directory (**latest 3** + directory, both superuser-gated; **unlisted** = URL only), superuser (**`isSuperuser` flag**), anonymous id (**localStorage**), minimum prompts (**≥ 3**).
+**Resolved — stakeholder interview (2026-03-20):** prompt exhaustion (**end**), gallery granularity (**per-photo** + **bulk approve**), homepage + directory (**latest 3** + directory, superuser-gated; **unlisted** = URL only), superuser (**`isSuperuser`**), anonymous id (**localStorage**), minimum count (**≥ 3**).
 
-**Still open (engineering / product detail):**
+**Resolved — Ralph plan interview (see `DESIGN/design.md`):** **`hunt_submissions`** table (not JSON-only), **≥ 3 prompts on create**, **`isSuperuser`** via **manual SQL / seed**, save-progress **last write wins per prompt**, UI **Midnight Mono + Uncodixify**, SmugMug **one album per event**, first-release hardening **security + tests only** (no required rate limit).
 
-1. **Data model:** Extend variable-length **`cells[]`** with per-cell `approvedForPublicGallery` vs new **`hunt_submissions`** table — choose for query performance and moderation UI.
-2. **Save-progress merge:** When linking **localStorage** card to a new account, conflict rules if server already has data for that user (last-write-wins vs merge by prompt).
-3. **Minimum prompts enforcement:** Validate on **create event**, on **first save**, or only when organiser clicks **“request listing”** / superuser queue?
-4. **SmugMug:** One album per event vs single shared album (`BINGO_ALBUM_KEY`) for v1.
-5. **Bootstrap:** How the **first** `isSuperuser` is created (manual SQL, env flag, or first `admin` user).
+**Still open (implementation validation):**
+
+1. **`users.isSuperuser` location** — Thalia core `users` table vs site-only extension; confirm where Drizzle migrations must run.
+2. **Per-event SmugMug album** — Exact lifecycle (create on event create vs first upload; folder path; failure/retry if API errors).
 
 ---
 
