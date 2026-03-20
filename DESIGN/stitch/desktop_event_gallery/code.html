@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PHOTO HUNT | Tech Hackathon Hunt Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#fabd00",
+                        "on-secondary-container": "#91b7f2",
+                        "surface-dim": "#131313",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#00390a",
+                        "secondary-container": "#1b477c",
+                        "on-secondary": "#003060",
+                        "secondary": "#a6c8ff",
+                        "on-tertiary-container": "#006419",
+                        "secondary-fixed": "#d5e3ff",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#98fe94",
+                        "on-surface": "#e5e2e1",
+                        "outline": "#9c8f78",
+                        "inverse-surface": "#e5e2e1",
+                        "tertiary-fixed": "#94f990",
+                        "on-primary": "#3f2e00",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#002204",
+                        "on-primary-fixed": "#261a00",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-container": "#ffc107",
+                        "tertiary-container": "#7ce17b",
+                        "primary": "#ffe4af",
+                        "surface-container-highest": "#353535",
+                        "on-secondary-fixed-variant": "#1b477c",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "surface-bright": "#393939",
+                        "secondary-fixed-dim": "#a6c8ff",
+                        "on-primary-fixed-variant": "#5b4300",
+                        "inverse-primary": "#785900",
+                        "surface": "#131313",
+                        "on-primary-container": "#6d5100",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "on-surface-variant": "#d4c5ab",
+                        "surface-tint": "#fabd00",
+                        "on-error": "#690005",
+                        "surface-container": "#20201f",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "primary-fixed": "#ffdf9e",
+                        "on-secondary-fixed": "#001c3b",
+                        "outline-variant": "#4f4632",
+                        "surface-variant": "#353535"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        .asymmetric-item:nth-child(3n) {
+            grid-column: span 2;
+        }
+        .glass-nav {
+            background: rgba(19, 19, 19, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-6 py-4 w-full sticky top-0 z-50 bg-[#131313]/80 backdrop-blur-xl shadow-[0px_20px_40px_rgba(250,189,0,0.06)]">
+<div class="text-2xl font-black text-[#FFE4AF] uppercase tracking-widest font-headline">PHOTO HUNT</div>
+<nav class="hidden md:flex items-center gap-8 bg-surface-container-high px-8 py-2 rounded-full">
+<a class="text-white/60 hover:text-[#FFE4AF] transition-colors font-headline text-sm uppercase tracking-widest" href="#">Hunt</a>
+<a class="text-[#FFC107] font-bold font-headline text-sm uppercase tracking-widest" href="#">Gallery</a>
+<a class="text-white/60 hover:text-[#FFE4AF] transition-colors font-headline text-sm uppercase tracking-widest" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-white/60 hover:text-[#FFE4AF] transition-colors scale-95 active:scale-90">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-white/60 hover:text-[#FFE4AF] transition-colors scale-95 active:scale-90">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto px-6 lg:px-12 py-12">
+<!-- Hero Section -->
+<section class="mb-16">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+<div class="max-w-2xl">
+<span class="text-tertiary font-headline font-bold tracking-[0.2em] uppercase text-sm mb-4 block">Live Showcase</span>
+<h1 class="text-6xl md:text-8xl font-headline font-black text-primary tracking-tighter leading-none mb-6">Tech Hackathon Hunt</h1>
+<p class="text-on-surface-variant text-lg max-w-lg leading-relaxed font-light">Capturing the pulse of innovation. Explore the curated feed of moments defined by the creators, dreamers, and builders of the 2024 Tech Summit.</p>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex gap-4 mb-4">
+<div class="flex flex-col items-end">
+<span class="text-3xl font-headline font-bold text-white leading-none">03</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">OF 10 CHALLENGES</span>
+</div>
+<div class="w-[1px] h-10 bg-outline-variant/30"></div>
+<div class="flex flex-col items-end">
+<span class="text-3xl font-headline font-bold text-tertiary leading-none">892</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Approved Hits</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Event Stats Bar -->
+<section class="mb-20">
+<div class="bg-surface-container-low p-1 rounded-full overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-3 items-center text-center">
+<div class="py-4 border-r border-outline-variant/10">
+<span class="block text-on-surface-variant text-[10px] uppercase tracking-[0.3em] font-bold mb-1">Participants</span>
+<div class="flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">group</span>
+<span class="text-2xl font-headline font-bold text-on-surface">142 Hunters</span>
+</div>
+</div>
+<div class="py-4 border-r border-outline-variant/10">
+<span class="block text-on-surface-variant text-[10px] uppercase tracking-[0.3em] font-bold mb-1">Total Submissions</span>
+<div class="flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">photo_library</span>
+<span class="text-2xl font-headline font-bold text-on-surface">2,401 Captures</span>
+</div>
+</div>
+<div class="py-4 bg-surface-container-highest">
+<span class="block text-primary/60 text-[10px] uppercase tracking-[0.3em] font-bold mb-1">Time Remaining</span>
+<div class="flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-sm">schedule</span>
+<span class="text-2xl font-headline font-bold text-tertiary tracking-widest">02:54:12</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Editorial Gallery Grid -->
+<section class="mb-24">
+<div class="flex items-center justify-between mb-10">
+<h2 class="text-2xl font-headline font-bold uppercase tracking-widest text-primary">Hall of Fame</h2>
+<div class="flex gap-2">
+<span class="px-4 py-1 rounded-full bg-surface-container-highest text-tertiary text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                        Live Feed
+                    </span>
+</div>
+</div>
+<div class="editorial-grid">
+<!-- Card 1 -->
+<div class="group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:-translate-y-2">
+<div class="aspect-[4/5] w-full overflow-hidden">
+<img alt="Submissions" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" data-alt="Futuristic neon light tech setup with keyboards" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnTIvbHKul55fILfKnrnofe5oNM9vac6LAj95k1uMswgMLjCzjfDSOKBkAU9B7APxOdaUn421gqKzQaxvf-DPRP3DBSqc3fuFVEZczCT9lPoZrBNXnykY4CeDyzl31MmH4i3sZcCpg5qFXfoXvp2LYJZP2deR_FQsXkAegjakPG41fM0nq3rMDsFdljCz-ClFtlXtnX6PD-yKhfE-_1Givxjlu6dV1t7DykNAIUd3tHpWLFnKRjzuL48Q9VKtw_7iknqz9sh2OatA"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="text-[10px] uppercase tracking-[0.2em] text-tertiary font-bold mb-1">Prompt: Cyberpunk Workspace</p>
+<h3 class="text-lg font-headline font-bold text-white mb-2">The Terminal Drift</h3>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Captured by <span class="text-on-surface">Alex Rivera</span></span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:-translate-y-2">
+<div class="aspect-[4/5] w-full overflow-hidden">
+<img alt="Submissions" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" data-alt="Close up of a coder typing on a laptop with motion blur" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW85_2hlDTZsko1myfWjfVqOWFkR6Npslzk45qW_yUhUs9_6nw-mB0s9iYQuYYEKVNCUw14Q5-Nf2AGppPzgeyOTDxr-Z08IUK9quTvuz6QmKO3OtfOXS-djnNzPKy3UG183ODXNAR2gcHVRytbqqU5GytW6im3PyledjMYiSHHnHnnmwNZ-SH_Lz78so12bauQoGMeI8Y2r8cN6nWdjFCx9BImy2ZejBAxBVKyFxYRHBuKThjJrFCLDuReXeYe62FxDLitTCx02s"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="text-[10px] uppercase tracking-[0.2em] text-tertiary font-bold mb-1">Prompt: Deep Focus</p>
+<h3 class="text-lg font-headline font-bold text-white mb-2">Flow State Engine</h3>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Captured by <span class="text-on-surface">Sarah Chen</span></span>
+</div>
+</div>
+</div>
+<!-- Card 3 (Wide) -->
+<div class="asymmetric-item group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:-translate-y-2">
+<div class="aspect-[16/9] w-full overflow-hidden">
+<img alt="Submissions" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" data-alt="A large stage with bright stage lights and tech equipment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcH_Oh2RJxr0BRpzgmlHNhO9qdyaLKuNiQwxziU1yAuZJ1L4Pg_ggQwMzK60HnKlJ6-daAm7K-w7kQcPZhtUwwgCb8upyE3PjzuoebQly1QtMIjpjbphpJlx8sk1Y0kt2ib0-4aos2AXCHZ-sTeQL04nR2vuDMDqqrHXPS-XVDtevMHluRdpQvvOd_WAVrdArzqd-THQledVpmaDQJ2DmyXGIqiek97un59LEbqFN3nyApyLGpME65d3MFGXDxuizAkdGALg6G260"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full flex justify-between items-end">
+<div>
+<p class="text-[10px] uppercase tracking-[0.2em] text-tertiary font-bold mb-1">Prompt: The Main Stage</p>
+<h3 class="text-2xl font-headline font-bold text-white mb-2">Epicenter of Innovation</h3>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-medium">Captured by <span class="text-on-surface">Jordan Smyth</span></span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl opacity-0 group-hover:opacity-100 transition-opacity">verified</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:-translate-y-2">
+<div class="aspect-[4/5] w-full overflow-hidden">
+<img alt="Submissions" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" data-alt="Modern robot arm holding a coffee mug" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUHboianqptgcROKCJE551rYXnSBp8exiys6_Kl2sGEMT_MPlExGsHFm49yF4cD3y61JIgfY3ogB1suev6xCzX6SEGjyVtcWaM6QOcmCldF_qlt6JvkIH9OX9WHNKvI7l5-UK2NjBl-Ro7NnIwn6XzcO2NqnPLvQyJ31pKNw3jtMcfeE_OUDEnT80Sfa14T-86pr90JHMRnlZn1TfGLLSJkmTVpOPx4Fp76mMjHT5u-yUrdbsn9MTyhN0gdAoepkFbG9C-wDqo4AE"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="text-[10px] uppercase tracking-[0.2em] text-tertiary font-bold mb-1">Prompt: Future Hardware</p>
+<h3 class="text-lg font-headline font-bold text-white mb-2">Silicon Senses</h3>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Captured by <span class="text-on-surface">Elena V</span></span>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="group relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:-translate-y-2">
+<div class="aspect-[4/5] w-full overflow-hidden">
+<img alt="Submissions" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" data-alt="Team brainstorming around a whiteboard with sticky notes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDejNr5DtVxmTtHoMZReONKD2subaNvWz6KLRpBaL3B9jHWVmxQqD1OyaEHkB2me2h0I8DRCzjwykoBpVkZZXHT_6g10vvoO0uT9lBzWExekW-JulRhARk7lgGJKz7f4gd3x3YO0JSUfwAE9rQmtInA_lYSG3TSU5Hw8lb6TXFuDeJzTCzjM2F_xDbUJAufFAdD4kj1-bLaSBlt-7hTPr4y5Pp8k8o9nmQDEUHMdSmqfNLF1TjVVDvzTaCSGnv1OXazRJl3deaIQ7g"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="text-[10px] uppercase tracking-[0.2em] text-tertiary font-bold mb-1">Prompt: Creative Chaos</p>
+<h3 class="text-lg font-headline font-bold text-white mb-2">Synthesis Protocol</h3>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Captured by <span class="text-on-surface">Marcus L</span></span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Join the Hunt CTA -->
+<section class="relative overflow-hidden rounded-3xl bg-surface-container-high py-20 px-12 group">
+<div class="absolute inset-0 opacity-10">
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary blur-[120px] -mr-48 -mt-48"></div>
+<div class="absolute bottom-0 left-0 w-96 h-96 bg-tertiary blur-[120px] -ml-48 -mb-48"></div>
+</div>
+<div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+<div class="text-center md:text-left">
+<h2 class="text-5xl md:text-7xl font-headline font-black text-white mb-4 tracking-tight leading-none">WANT TO<br/>JOIN THE <span class="text-primary italic">HUNT?</span></h2>
+<p class="text-on-surface-variant text-lg max-w-md">There are still 7 challenges remaining in this event. Register now and start capturing.</p>
+</div>
+<div class="flex flex-col gap-4 min-w-[320px]">
+<button class="w-full py-5 px-8 rounded-full bg-gradient-to-br from-[#FFE4AF] to-[#FFC107] text-[#3F2E00] font-headline font-bold text-lg uppercase tracking-widest shadow-[0px_20px_40px_rgba(250,189,0,0.15)] hover:scale-102 transition-transform active:scale-95">
+                        Start Hunting Now
+                    </button>
+<button class="w-full py-5 px-8 rounded-full bg-surface-container-highest text-on-surface font-headline font-bold text-sm uppercase tracking-widest hover:bg-surface-bright transition-colors">
+                        View Rules &amp; Guidelines
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<footer class="mt-24 pb-12 px-6 max-w-[1440px] mx-auto border-t border-outline-variant/10 pt-12">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="col-span-1 md:col-span-2">
+<div class="text-xl font-black text-[#FFE4AF] uppercase tracking-widest font-headline mb-6">PHOTO HUNT</div>
+<p class="text-on-surface-variant text-sm leading-relaxed max-w-sm font-light">
+                    The premium scavenger hunt platform for global events, conferences, and digital nomads. Capturing the world, one hunt at a time.
+                </p>
+</div>
+<div>
+<h4 class="text-xs uppercase tracking-[0.2em] font-bold text-primary mb-6">Explore</h4>
+<ul class="space-y-4">
+<li><a class="text-on-surface-variant text-sm hover:text-white transition-colors" href="#">Past Events</a></li>
+<li><a class="text-on-surface-variant text-sm hover:text-white transition-colors" href="#">Global Leaderboard</a></li>
+<li><a class="text-on-surface-variant text-sm hover:text-white transition-colors" href="#">Create Your Own</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-xs uppercase tracking-[0.2em] font-bold text-primary mb-6">Social</h4>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">share</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">podcasts</span>
+</a>
+</div>
+</div>
+</div>
+<div class="mt-24 flex flex-col md:flex-row justify-between items-center gap-6">
+<span class="text-[10px] text-on-surface-variant/40 uppercase tracking-[0.3em]">© 2024 PHOTO HUNT SYSTEM . ALL RIGHTS RESERVED</span>
+<div class="flex gap-8">
+<a class="text-[10px] text-on-surface-variant/40 uppercase tracking-[0.3em] hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="text-[10px] text-on-surface-variant/40 uppercase tracking-[0.3em] hover:text-primary transition-colors" href="#">Terms</a>
+</div>
+</div>
+</footer>
+<!-- Mobile Navigation Shell (Suppressed on large screens) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#2A2A2A]/80 backdrop-blur-2xl shadow-[0px_-10px_30px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-white/50 hover:bg-white/10 transition-all p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">camera_enhance</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider mt-1">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#FFE4AF] text-[#131313] rounded-full px-6 py-2" href="#">
+<span class="material-symbols-outlined">collections</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider mt-1">Gallery</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/50 hover:bg-white/10 transition-all p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider mt-1">Settings</span>
+</a>
+</nav>
+</body></html>

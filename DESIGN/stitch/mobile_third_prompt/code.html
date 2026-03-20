@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hunt Active - Prompt 03</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#0a0e14",
+              "on-secondary": "#1e2025",
+              "tertiary": "#edecff",
+              "on-tertiary-container": "#4c4e69",
+              "surface-container-lowest": "#000000",
+              "on-primary": "#004176",
+              "surface-container-low": "#0e141c",
+              "on-tertiary-fixed": "#393c55",
+              "primary-fixed": "#d3e4ff",
+              "secondary": "#9c9ea4",
+              "outline-variant": "#3c495b",
+              "primary": "#a2c9ff",
+              "on-error": "#490106",
+              "on-background": "#d9e6fd",
+              "surface-container-high": "#16202e",
+              "primary-dim": "#88bcff",
+              "tertiary-container": "#dcddfe",
+              "inverse-on-surface": "#51555c",
+              "inverse-primary": "#0061ab",
+              "on-primary-container": "#b4d2ff",
+              "inverse-surface": "#f8f9ff",
+              "error-dim": "#bb5551",
+              "surface-variant": "#1a2637",
+              "secondary-fixed-dim": "#d3d4da",
+              "on-secondary-container": "#bdbfc5",
+              "primary-container": "#004882",
+              "error-container": "#7f2927",
+              "secondary-container": "#393b40",
+              "surface-tint": "#a2c9ff",
+              "surface-container": "#121a25",
+              "surface-dim": "#0a0e14",
+              "on-error-container": "#ff9993",
+              "background": "#0a0e14",
+              "tertiary-fixed-dim": "#cecfef",
+              "on-primary-fixed-variant": "#005da5",
+              "on-primary-fixed": "#004075",
+              "tertiary-fixed": "#dcddfe",
+              "secondary-fixed": "#e1e2e8",
+              "on-secondary-fixed-variant": "#595b61",
+              "error": "#ee7d77",
+              "on-surface-variant": "#9facc1",
+              "surface-container-highest": "#1a2637",
+              "on-tertiary-fixed-variant": "#555873",
+              "tertiary-dim": "#cecfef",
+              "on-secondary-fixed": "#3d3f44",
+              "primary-fixed-dim": "#bbd6ff",
+              "on-surface": "#d9e6fd",
+              "surface-bright": "#1e2d41",
+              "secondary-dim": "#9c9ea4",
+              "outline": "#6a768a",
+              "on-tertiary": "#545671"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanner-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #a2c9ff, transparent);
+            box-shadow: 0 0 8px #a2c9ff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-[#0e141c] flex items-center justify-between px-4 h-14 w-full z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#a2c9ff]" data-icon="target">target</span>
+<h1 class="font-['Inter'] font-bold tracking-tighter text-[#a2c9ff] text-lg">Hunt Active</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#9facc1]" data-icon="info">info</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="relative h-[calc(100vh-120px)] w-full overflow-hidden flex flex-col">
+<!-- Progress Bar Component -->
+<div class="px-4 py-3 bg-surface-container-low">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-on-surface-variant">Progress</span>
+<span class="font-label text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-primary">2 / 12</span>
+</div>
+<div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+<div class="h-full bg-primary w-[16.6%] transition-all duration-300"></div>
+</div>
+</div>
+<!-- Camera Viewport / High Contrast Interface -->
+<div class="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+<!-- Simulated Camera Feed Placeholder -->
+<div class="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&amp;fit=crop&amp;q=80&amp;w=1200')] bg-cover bg-center" data-alt="Sharp corner of a modern glass office building"></div>
+<!-- Camera UI Overlays (The Kinetic Console) -->
+<div class="absolute inset-4 border border-outline-variant/30 flex flex-col justify-between pointer-events-none">
+<!-- Reticle Corners -->
+<div class="flex justify-between w-full">
+<div class="w-8 h-8 border-t-2 border-l-2 border-primary/40"></div>
+<div class="w-8 h-8 border-t-2 border-r-2 border-primary/40"></div>
+</div>
+<div class="flex-1 flex items-center justify-center">
+<!-- Central Focus -->
+<div class="w-20 h-20 border border-primary/20 flex items-center justify-center">
+<div class="w-1 h-1 bg-primary"></div>
+</div>
+</div>
+<div class="flex justify-between w-full">
+<div class="w-8 h-8 border-b-2 border-l-2 border-primary/40"></div>
+<div class="w-8 h-8 border-b-2 border-r-2 border-primary/40"></div>
+</div>
+</div>
+<!-- Task Descriptor Card -->
+<div class="absolute bottom-6 left-4 right-4 bg-surface-container-highest/90 backdrop-blur-md p-4 border-l-4 border-primary">
+<div class="flex items-start gap-4">
+<div class="flex-1">
+<span class="font-label text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-primary block mb-1">Current Objective 03</span>
+<p class="text-on-surface font-semibold text-lg leading-tight tracking-tight">A sharp corner of a glass building</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="architecture">architecture</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Camera Actions Area -->
+<div class="h-24 bg-surface flex items-center justify-around px-8 border-t border-outline-variant/10">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-[#16202e] rounded-lg transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="flash_off">flash_off</span>
+</button>
+<button class="group relative w-16 h-16 flex items-center justify-center">
+<div class="absolute inset-0 bg-primary/20 rounded-full scale-110"></div>
+<div class="w-14 h-14 bg-primary rounded-full flex items-center justify-center active:scale-90 transition-transform duration-100">
+<span class="material-symbols-outlined text-on-primary text-3xl" data-icon="camera" style="font-variation-settings: 'FILL' 1;">camera</span>
+</div>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-[#16202e] rounded-lg transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="cached">cached</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-16 flex justify-around items-stretch bg-[#0e141c] z-50">
+<a class="flex flex-col items-center justify-center text-[#a2c9ff] border-l-2 border-[#a2c9ff] bg-[#16202e] h-full w-full active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="camera" style="font-variation-settings: 'FILL' 1;">camera</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="collections">collections</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Gallery</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Profile</span>
+</a>
+</nav>
+</body></html>
