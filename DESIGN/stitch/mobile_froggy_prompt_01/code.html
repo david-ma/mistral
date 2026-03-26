@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Froggy Finder - Active Hunt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#fdd0ea",
+              "tertiary-dim": "#5c4f00",
+              "tertiary-fixed-dim": "#edd139",
+              "on-secondary-container": "#654459",
+              "inverse-surface": "#0d0f0d",
+              "secondary-dim": "#66465a",
+              "surface-bright": "#f7f7f3",
+              "on-primary": "#cbffd8",
+              "tertiary-fixed": "#fcdf46",
+              "surface-dim": "#d3d5d0",
+              "tertiary-container": "#fcdf46",
+              "surface-variant": "#dcddd9",
+              "on-error": "#ffefee",
+              "inverse-primary": "#94feba",
+              "outline": "#767774",
+              "on-primary-fixed-variant": "#006e3e",
+              "surface": "#f7f7f3",
+              "error-container": "#fb5151",
+              "on-secondary-fixed": "#503246",
+              "on-tertiary-fixed-variant": "#685900",
+              "error": "#b31b25",
+              "surface-container-lowest": "#ffffff",
+              "on-error-container": "#570008",
+              "on-surface-variant": "#5a5c59",
+              "on-primary-container": "#006237",
+              "error-dim": "#9f0519",
+              "secondary": "#735166",
+              "on-secondary": "#ffeef5",
+              "on-tertiary-container": "#5d5000",
+              "on-primary-fixed": "#004e2a",
+              "on-tertiary": "#fff3c5",
+              "primary-dim": "#005c33",
+              "background": "#f7f7f3",
+              "surface-container-low": "#f1f1ed",
+              "secondary-fixed": "#fdd0ea",
+              "primary-fixed": "#94feba",
+              "surface-container-high": "#e2e3df",
+              "primary-fixed-dim": "#86efac",
+              "inverse-on-surface": "#9c9d9a",
+              "outline-variant": "#adadaa",
+              "surface-container": "#e8e8e4",
+              "surface-container-highest": "#dcddd9",
+              "tertiary": "#6a5b00",
+              "on-secondary-fixed-variant": "#6f4e63",
+              "surface-tint": "#006a3c",
+              "secondary-fixed-dim": "#eec3db",
+              "on-surface": "#2d2f2d",
+              "on-tertiary-fixed": "#483d00",
+              "on-background": "#2d2f2d",
+              "primary-container": "#94feba",
+              "primary": "#006a3c"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Be Vietnam Pro"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDmEiN2-0y69OZtotHxKaJxzWD40qMx3hGFgzWvQJZKtDnbIhP1TkHtPyXZ3IZR6yFtPx4LcMAMera42MGKNXzsyJfuuqHsfC7lZyzGL9Q5xaVUlgK-55zibpk3hKt9RTCLmz7WlJUpsIMmty4rX8Q8VNeqM6IEdbd_ggsdiONTu2zwujhNWa9vYSHjMjj3tisJE9oYeYngZP1MJJ2kas4VtCbCr5YHTTDf_Q57utsVcTsIp-pLFotYyTS_UYpBNMGZdZi51YPpG3g)
+    }
+.ghost-border {
+    border: 3px solid #006a3c
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden paper-texture">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center bg-[#f7f7f3]/80 backdrop-blur-lg docked full-width top-0 px-4 py-4 border-b-4 border-[#006a3c] shadow-[4px_4px_0px_0px_rgba(0,106,60,1)]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#006a3c] text-3xl" data-icon="catching_pokemon">capture</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-2xl font-black text-[#006a3c] -rotate-2">Froggy Finder</h1>
+</div>
+<button class="text-[#006a3c] hover:rotate-3 transition-transform active:scale-95 duration-200">
+<span class="material-symbols-outlined text-3xl" data-icon="settings">settings</span>
+</button>
+</header>
+<main class="pt-24 pb-40 px-6 max-w-2xl mx-auto space-y-10">
+<!-- Scrapbook Header / Progress Section -->
+<section class="relative">
+<div class="absolute -top-4 -left-2 w-24 h-24 bg-primary-container rounded-full opacity-50 -z-10 -rotate-12"></div>
+<div class="flex flex-col gap-2">
+<span class="font-headline font-extrabold text-primary text-lg uppercase tracking-widest bg-tertiary-container self-start px-4 py-1 rounded-full ghost-border -rotate-1">Frog Fest Hunt</span>
+<h2 class="font-headline font-extrabold text-5xl text-on-surface leading-tight mt-2">Active Mission</h2>
+</div>
+<!-- Progress Bar -->
+<div class="mt-8 bg-surface-container-highest rounded-xl p-4 ghost-border shadow-[4px_4px_0px_0px_rgba(0,106,60,1)]">
+<div class="flex justify-between items-end mb-2">
+<span class="font-headline font-bold text-on-surface">Lilypads Collected</span>
+<span class="font-headline font-black text-2xl text-primary">1 of 5</span>
+</div>
+<div class="w-full h-8 bg-surface-container rounded-full overflow-hidden border-2 border-on-surface flex p-1">
+<!-- Progress Fill -->
+<div class="h-full bg-primary-fixed-dim rounded-full w-[20%] border-r-2 border-on-surface relative">
+<div class="absolute right-1 top-1/2 -translate-y-1/2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="water_drop" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Prompt Card -->
+<section class="bg-surface-container-low rounded-xl p-8 relative overflow-hidden ghost-border shadow-[8px_8px_0px_0px_rgba(115,81,102,1)] border-secondary">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-9xl" data-icon="eco">eco</span>
+</div>
+<div class="relative z-10 space-y-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="stars" style="font-variation-settings: 'FILL' 1;">stars</span>
+<p class="font-headline font-bold text-secondary uppercase tracking-widest text-sm">Challenge #1</p>
+</div>
+<h3 class="font-headline font-extrabold text-3xl text-on-surface-variant leading-snug">
+                    "Find something as green as a lilypad!"
+                </h3>
+<p class="text-on-surface opacity-80 text-lg leading-relaxed">
+                    Look around your garden or local park. Nature has many shades, but we're looking for that perfect froggy hue.
+                </p>
+</div>
+</section>
+<!-- Main Action Area -->
+<section class="flex flex-col items-center justify-center space-y-6">
+<div class="relative">
+<!-- Smiley Frog Decoration -->
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white rounded-full p-2 border-4 border-primary shadow-lg rotate-12 z-20">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="sentiment_very_satisfied" style="font-variation-settings: 'FILL' 1;">sentiment_very_satisfied</span>
+</div>
+<!-- Camera Button -->
+<button class="group relative w-48 h-48 bg-primary rounded-full border-8 border-on-primary-container shadow-[0px_12px_0px_0px_rgba(0,78,42,1)] active:translate-y-2 active:shadow-none transition-all flex flex-col items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-white text-7xl mb-2" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+<span class="font-headline font-extrabold text-white text-sm tracking-tighter uppercase">Snap Color</span>
+</button>
+</div>
+<p class="font-label font-bold text-on-surface-variant italic">Tapping this opens your lilypad lens!</p>
+</section>
+<!-- Bento Style Hints -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-secondary-container rounded-xl p-5 border-4 border-secondary rotate-1">
+<span class="material-symbols-outlined text-secondary text-3xl mb-2" data-icon="lightbulb">lightbulb</span>
+<h4 class="font-headline font-bold text-on-secondary-container">Pro Tip</h4>
+<p class="text-sm text-on-secondary-container/80">Soft daylight makes colors pop the most!</p>
+</div>
+<div class="bg-tertiary-container rounded-xl p-5 border-4 border-tertiary -rotate-1">
+<span class="material-symbols-outlined text-tertiary text-3xl mb-2" data-icon="map">map</span>
+<h4 class="font-headline font-bold text-on-tertiary-container">Hotspot</h4>
+<p class="text-sm text-on-tertiary-container/80">Check near the old oak tree!</p>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 bg-[#86efac] dark:bg-[#006a3c] fixed bottom-6 left-4 right-4 rounded-[3rem] border-4 border-[#006a3c] shadow-[0px_8px_0px_0px_rgba(0,106,60,1)]">
+<a class="flex flex-col items-center justify-center bg-[#fde047] text-[#006a3c] rounded-full p-4 border-2 border-[#006a3c] scale-110 -translate-y-2 animate-bounce" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-xs uppercase tracking-widest mt-1">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#006a3c] p-2 hover:-rotate-3 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="menu_book">menu_book</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-xs uppercase tracking-widest mt-1">Log</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#006a3c] p-2 hover:-rotate-3 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="account_circle">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-xs uppercase tracking-widest mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
