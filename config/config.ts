@@ -433,7 +433,7 @@ function apiController(
     const domains = smugmugDomains
     const hostInDomains = domains.includes(host)
     const rawHeaders: Record<string, string> = {}
-    const pick = ['host', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-for', 'x-host']
+    const pick = ['host', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-for', 'x-host', 'true-client-ip', 'cf-connecting-ip']
     for (const key of pick) {
       const val = req.headers[key]
       if (val != null) rawHeaders[key] = Array.isArray(val) ? val.join(', ') : String(val)
