@@ -14,8 +14,8 @@
     "drizzle-orm": "^0.45.2",
     "marked": "^18.0.5",
     "mysql2": "^3.14.1",
-    "uploadthing": "^7.7.4",
-    "thalia": "github:david-ma/Thalia"
+    "thalia": "github:david-ma/Thalia",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@types/bun": "latest",

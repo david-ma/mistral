@@ -18,13 +18,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-    "types": ["bun-types"],
-    "paths": {
-      "drizzle-orm": ["./node_modules/thalia/node_modules/drizzle-orm"],
-      "drizzle-orm/*": ["./node_modules/thalia/node_modules/drizzle-orm/*"],
-      "marked": ["./node_modules/marked"],
-      "marked/*": ["./node_modules/marked/*"]
-    }
+    "types": ["bun-types"]
   },
   "include": ["config/**/*.ts", "models/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist", "data", "src/js"]
