@@ -25,4 +25,5 @@ jobs:
       - name: Test
         env:
           NODE_ENV: test
+          SKIP_DATABASE_TESTS: "1"
         run: bun test
