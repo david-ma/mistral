@@ -7,7 +7,7 @@ import path from 'path'
 import fs from 'fs'
 import { pathToFileURL } from 'url'
 import { RawWebsiteConfig } from 'thalia/types'
-import { CrudFactory, SmugMugUploader, parseForm } from 'thalia/controllers'
+import { CrudFactory, ThaliaImageUploader, parseForm } from 'thalia/controllers'
 import { ThaliaSecurity, type RoleRouteRule } from 'thalia/security'
 import { recursiveObjectMerge } from 'thalia/website'
 
@@ -39,7 +39,25 @@ const security = new ThaliaSecurity({ mailAuthPath })
 
 const AlbumMachine = new CrudFactory(albums as any)
 const ImageMachine = new CrudFactory(images as any)
-const smugMugUploader = new SmugMugUploader()
+
+const siteRoot = path.join(import.meta.dirname, '..')
+/** Explicit adapter tier — default SmugMug for this site; override with THALIA_IMAGE_ADAPTER. */
+const imageUploaderAdapterEnv = process.env.THALIA_IMAGE_ADAPTER?.trim()
+const imageUploaderAdapter =
+  imageUploaderAdapterEnv === 'local-disk' ||
+  imageUploaderAdapterEnv === 'uploadthing' ||
+  imageUploaderAdapterEnv === 'smugmug'
+    ? imageUploaderAdapterEnv
+    : 'smugmug'
+
+const imageUploader = new ThaliaImageUploader({
+  adapter: imageUploaderAdapter,
+  uploadThingSecret: process.env.UPLOADTHING_SECRET,
+  localDisk: {
+    basePath: process.env.THALIA_LOCAL_DISK_BASEPATH ?? path.join(siteRoot, 'data', 'uploads'),
+    baseUrl: process.env.THALIA_LOCAL_DISK_BASEURL ?? '/uploads',
+  },
+})
 
 /** Resolve URL slug (urlName or albumKey) to albumKey. Prefers urlName match so human-readable URLs win. */
 async function resolveSlugToAlbumKey(db: any, slug: string): Promise<string | null> {
@@ -106,8 +124,19 @@ function getApprovedCardIds(blob: unknown): number[] {
   return b.approvedCardIds.filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
 }
 
+type BingoCell = {
+  prompt?: string
+  imageUrl?: string | null
+  thumbnailUrl?: string | null
+  description?: string | null
+  isFreeSpace?: boolean
+  score?: number
+  safe?: boolean
+  [key: string]: unknown
+}
+
 type BingoCardBlob = {
-  cells?: unknown[]
+  cells?: BingoCell[]
   playerName?: unknown
   [key: string]: unknown
 }
@@ -207,7 +236,7 @@ async function nodeRequestToFetch(
   return new Request(url, {
     method: req.method ?? 'GET',
     headers: req.headers as HeadersInit,
-    body: body.length > 0 ? body : undefined,
+    body: body.length > 0 ? new Uint8Array(body) : undefined,
   })
 }
 
@@ -236,7 +265,14 @@ function uploadPhotoController(
     readRequestBody(req)
       .then((buf) => {
         console.debug("Running readRequestBody")
-        let body: { uploadThingUrl?: string; fileKey?: string; albumKey?: string; filename?: string; url?: string }
+        let body: {
+          uploadThingUrl?: string
+          fileKey?: string
+          albumKey?: string
+          filename?: string
+          url?: string
+          size?: number
+        }
         try {
           body = JSON.parse(buf.toString('utf8'))
         } catch {
@@ -341,7 +377,7 @@ function uploadPhotoController(
       })
     return
   }
-  smugMugUploader.controller.call(smugMugUploader, res, req, website, requestInfo)
+  imageUploader.controller.call(imageUploader, res, req, website, requestInfo)
 }
 
 /**
@@ -614,7 +650,7 @@ function bingoCellController(res: ServerResponse, req: IncomingMessage, website:
       const { card, payload } = ctx
       console.log('[bingo-cell] card loaded, loading creds and bingo album key')
       const cardBlob = parseBingoCardBlob(card.blob)
-      const cells = Array.isArray(cardBlob.cells) ? cardBlob.cells.slice() : []
+      const cells: BingoCell[] = Array.isArray(cardBlob.cells) ? cardBlob.cells.slice() : []
       if (payload.cellIndex >= cells.length) {
         res.statusCode = 400
         res.setHeader('Content-Type', 'application/json')
@@ -1189,6 +1225,7 @@ const smugmugRoutes: RoleRouteRule[] = [
   { path: '/list-smugmug-albums', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/album-json', permissions: { admin: [...ALL_PERMISSIONS], user: ['read'] } },
   { path: '/uploadPhoto', permissions: { admin: [...ALL_PERMISSIONS], user: ['create'] } },
+  { path: '/oauthCallback', permissions: { admin: [...ALL_PERMISSIONS], user: ['read', 'create'], guest: ['read', 'create'] } },
   { path: '/api', permissions: { admin: [...ALL_PERMISSIONS], user: ['create', 'read'], guest: ['create', 'read'] } },
   /** UploadThing callbacks come from their servers (no session); guest must be allowed so the callback succeeds. */
   { path: '/api/uploadthing', permissions: { guest: ['create', 'read'], admin: [...ALL_PERMISSIONS], user: ['create', 'read'] } },
@@ -1213,6 +1250,11 @@ const smugmugDomains = ['localhost', '100.75.136.113:3535', 'mistral.david-ma.ne
 const smugmugConfig: RawWebsiteConfig = {
   domains: smugmugDomains,
   routes: smugmugRoutes,
+  /** Album + OAuth callback for `ThaliaImageUploader` when `adapter: 'smugmug'` (secrets.js overrides). */
+  smugmug: {
+    oauthCallbackUrl: process.env.SMUGMUG_OAUTH_CALLBACK_URL,
+    album: process.env.SMUGMUG_ALBUM,
+  },
   database: {
     schemas: {
       albums,
@@ -1224,7 +1266,7 @@ const smugmugConfig: RawWebsiteConfig = {
     machines: {
       albums: AlbumMachine,
       images: ImageMachine,
-      smugmug: smugMugUploader,
+      smugmug: imageUploader,
     },
   },
   controllers: {
@@ -1256,6 +1298,7 @@ const smugmugConfig: RawWebsiteConfig = {
     smugmugAlbums: AlbumMachine.controller.bind(AlbumMachine),
     smugmugImages: ImageMachine.controller.bind(ImageMachine),
     uploadPhoto: uploadPhotoController,
+    oauthCallback: imageUploader.oauthCallback.bind(imageUploader),
     api: apiController,
     'uploadthing-test': (res: ServerResponse, _req: IncomingMessage, website: Website) => {
       const html = website.getContentHtml('uploadthing-test', 'uploadthing-test')({})
@@ -1962,29 +2005,26 @@ const smugmugConfig: RawWebsiteConfig = {
             if (form.fields.Description != null) fields.Description = form.fields.Description
             if (form.fields.Privacy != null) fields.Privacy = form.fields.Privacy
             if (form.fields.UrlName != null) fields.UrlName = form.fields.UrlName
-            return patchAlbum(creds, albumKey, fields).then(() => {
-              if (!website.db) return { albumKey }
-              return website.db.drizzle
+            return patchAlbum(creds, albumKey, fields).then(async (): Promise<{ slug: string }> => {
+              if (!website.db) return { slug: albumKey }
+              const rows = await website.db.drizzle
                 .select({ urlName: albums.urlName })
                 .from(albums)
                 .where(eq(albums.albumKey, albumKey))
                 .limit(1)
-                .then((rows: any[]) => {
-                  const r = rows[0]
-                  const slug =
-                    r?.urlName && String(r.urlName).trim()
-                      ? encodeURIComponent(r.urlName.trim())
-                      : albumKey
-                  return { slug }
-                })
+              const r = rows[0] as { urlName?: string | null } | undefined
+              const slug =
+                r?.urlName && String(r.urlName).trim()
+                  ? encodeURIComponent(r.urlName.trim())
+                  : albumKey
+              return { slug }
             })
           })
         })
         .then((out) => {
           if (!out) return
-          const slug = 'slug' in out ? out.slug : out.albumKey
           res.statusCode = 302
-          res.setHeader('Location', `/album/${slug}`)
+          res.setHeader('Location', `/album/${out.slug}`)
           res.end()
         })
         .catch((err) => {

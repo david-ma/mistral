@@ -23,7 +23,7 @@ New Thalia project **smugmug** at `/usr/local/dev/Thalia/websites/smugmug`: a se
 | [websites/homelab](/usr/local/dev/Thalia/websites/homelab) | Example: minimal Thalia site, CrudFactory, API-style controllers |
 | [models/smugmug.ts](/usr/local/dev/Thalia/models/smugmug.ts) | Shared Drizzle schema: `albums`, `images` (for local cache / cross-site refs) |
 | [websites/dataviz/src/js/smugmug.ts](/usr/local/dev/Thalia/websites/dataviz/src/js/smugmug.ts) | Existing browser-side OAuth and API usage (reference only; we move to server-side) |
-| [server/controllers.ts](/usr/local/dev/Thalia/server/controllers.ts) | `SmugMugUploader`: OAuth 1.0a, upload to album, `smugmugApiCall`, signing |
+| [server/images/image-uploader.ts](/usr/local/dev/Thalia/server/images/image-uploader.ts) | `ThaliaImageUploader`: OAuth 1.0a, upload to album, adapters (SmugMug / UploadThing / local-disk) |
 | SmugMug API v2 | https://api.smugmug.com/api/v2/doc — nodes, albums, images, upload, PATCH for metadata |
 
 ---
@@ -93,7 +93,7 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 
 - [x] Introduce a **SmugMug API client** in `config/lib-smugmug.ts`: credentials, OAuth 1.0a, **list albums** (`listAlbums`), **list images in album** (`getAlbumImages`), **get album** (`getAlbum`), **PATCH album** (`patchAlbum`), **get node children** (`getNodeChildren`); generic **GET/PATCH** via `get(creds, path)` / `patch(creds, path, body)` with **`apiPath`** helper (e.g. `apiPath.album(key)`, `apiPath.albumImages(key)`).
 - [ ] **Get one image** (by image key) — not yet a dedicated helper; can use `get(creds, path)` with appropriate path.
-- [x] **Upload image to album** — Thalia's `SmugMugUploader` used from album page (override `image` partial with `albumKey`).
+- [x] **Upload image to album** — Thalia's `ThaliaImageUploader` used from album page (override `image` partial with `albumKey`).
 - [ ] **PATCH image metadata** — single-image PATCH not yet in lib-smugmug.
 - [ ] **PATCH multiple images** (or batch) — not yet.
 - [x] Use SmugMug API v2 for endpoints (album, album!images, User!albums, etc.).
@@ -131,7 +131,7 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 ## Review findings (plan vs implementation)
 
 - **Phase 1:** Project exists; auth loaded via `loadSmugMugCreds()` from `secrets.js` or `smugmugAuth.js` (503 when missing, not fail-fast). Skill doc in place.
-- **Phase 2:** Full client in `config/lib-smugmug.ts`: OAuth 1.0a, `get`/`patch`, `apiPath`, `listAlbums`, `getAlbum`, `getAlbumImages`, `patchAlbum`, `getNodeChildren`. Upload uses Thalia's `SmugMugUploader`. Still missing: dedicated get-one-image helper, PATCH image metadata, batch PATCH.
+- **Phase 2:** Full client in `config/lib-smugmug.ts`: OAuth 1.0a, `get`/`patch`, `apiPath`, `listAlbums`, `getAlbum`, `getAlbumImages`, `patchAlbum`, `getNodeChildren`. Upload uses Thalia's `ThaliaImageUploader` (plus site UploadThing→SmugMug JSON path). Still missing: dedicated get-one-image helper, PATCH image metadata, batch PATCH.
 - **Phase 3:** Galleries list (`/galleries`, `list-smugmug-albums`), album detail (`/album/:slug` with slug→albumKey resolution, DB display + top-up), create album, album-edit POST (redirect by slug). Not yet: image detail page, single-image metadata edit.
 - **Phase 4–5:** Bulk upload and bulk metadata edit not started. Skill doc updated (auth, API notes, album-json).
 - **Feature checklist:** View galleries and Enter gallery are done. Bulk upload, view/edit single image, bulk metadata edit remain.
@@ -153,7 +153,7 @@ These inform what we build in a **reusable** way so other Thalia sites can depen
 ## API Documentation (SmugMug)
 
 - **Base:** https://api.smugmug.com/api/v2/doc  
-- **Auth:** OAuth 1.0a (request token, authorize, access token). Existing implementation in `server/controllers.ts` (SmugMugUploader).
+- **Auth:** OAuth 1.0a (request token, authorize, access token). Existing implementation in `server/images/` (`ThaliaImageUploader` + SmugMug client).
 - **Key concepts:** **User** → **Node** (folder/album) → **Album** (has **AlbumImage**). Upload goes to `upload.smugmug.com` for a node/album. Metadata edits via PATCH on the AlbumImage resource.
 - **Endpoints to use:**  
   - User/node tree: e.g. `!authuser`, then node’s `!children`.  
