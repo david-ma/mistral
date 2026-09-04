@@ -6,7 +6,8 @@
   "scripts": {
     "refresh": "ssh katara 'cd /usr/local/dev/Thalia/websites/mistral && git pull && source /etc/profile.d/modules.sh && module load nodejs && module load bun && pm2 restart 0'",
     "typecheck": "bunx tsc --noEmit -p tsconfig.json",
-    "start": "thalia"
+    "start": "thalia",
+    "db:backup": "bun run scripts/backup-database.ts"
   },
   "dependencies": {
     "d3": "^7.9.0",
