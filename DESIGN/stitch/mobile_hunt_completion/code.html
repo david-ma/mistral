@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Photo Hunt - Success &amp; Completion</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#fabd00",
+              "on-secondary-container": "#91b7f2",
+              "surface-dim": "#131313",
+              "error": "#ffb4ab",
+              "surface-container-lowest": "#0e0e0e",
+              "inverse-on-surface": "#313030",
+              "on-tertiary": "#00390a",
+              "secondary-container": "#1b477c",
+              "on-secondary": "#003060",
+              "secondary": "#a6c8ff",
+              "on-tertiary-container": "#006419",
+              "secondary-fixed": "#d5e3ff",
+              "surface-container-high": "#2a2a2a",
+              "on-error-container": "#ffdad6",
+              "tertiary": "#98fe94",
+              "on-surface": "#e5e2e1",
+              "outline": "#9c8f78",
+              "inverse-surface": "#e5e2e1",
+              "tertiary-fixed": "#94f990",
+              "on-primary": "#3f2e00",
+              "on-background": "#e5e2e1",
+              "on-tertiary-fixed": "#002204",
+              "on-primary-fixed": "#261a00",
+              "surface-container-low": "#1c1b1b",
+              "primary-container": "#ffc107",
+              "tertiary-container": "#7ce17b",
+              "primary": "#ffe4af",
+              "surface-container-highest": "#353535",
+              "on-secondary-fixed-variant": "#1b477c",
+              "tertiary-fixed-dim": "#78dc77",
+              "surface-bright": "#393939",
+              "secondary-fixed-dim": "#a6c8ff",
+              "on-primary-fixed-variant": "#5b4300",
+              "inverse-primary": "#785900",
+              "surface": "#131313",
+              "on-surface-variant": "#d4c5ab",
+              "surface-tint": "#fabd00",
+              "on-error": "#690005",
+              "surface-container": "#20201f",
+              "on-tertiary-fixed-variant": "#005313",
+              "primary-fixed": "#ffdf9e",
+              "on-secondary-fixed": "#001c3b",
+              "outline-variant": "#4f4632",
+              "surface-variant": "#353535"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neon-glow-tertiary {
+            text-shadow: 0 0 20px rgba(152, 254, 148, 0.4);
+        }
+        .editorial-gradient {
+            background: linear-gradient(135deg, #ffe4af 0%, #ffc107 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary-fixed overflow-x-hidden">
+<!-- Top AppBar (Shared Component) -->
+<header class="flex justify-between items-center px-6 py-4 w-full sticky top-0 z-50 bg-[#131313]/80 backdrop-blur-xl shadow-[0px_20px_40px_rgba(250,189,0,0.06)]">
+<div class="text-2xl font-black text-[#FFE4AF] uppercase tracking-widest font-headline">PHOTO HUNT</div>
+<div class="flex items-center gap-4 text-[#FFC107]">
+<button class="scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="min-h-[calc(100vh-160px)] flex flex-col items-center justify-center px-6 py-12 space-y-24">
+<!-- Part 1: Success Feedback (Micro-State) -->
+<section class="w-full max-w-md bg-surface-container-low rounded-[2rem] p-8 relative overflow-hidden">
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 rounded-full blur-[80px]"></div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-6">
+<div class="w-20 h-20 rounded-full bg-tertiary/10 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-tertiary text-4xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="space-y-2">
+<h2 class="font-headline font-bold text-3xl tracking-tight text-primary">Nice shot!</h2>
+<p class="text-on-surface-variant font-medium">Analyzing your entry...</p>
+</div>
+<!-- Analyzing Indicator (Custom Bento Style) -->
+<div class="w-full grid grid-cols-2 gap-3 mt-4">
+<div class="bg-surface-container-highest p-4 rounded-xl flex flex-col items-start gap-2">
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Metadata</span>
+<div class="h-1 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-3/4"></div>
+</div>
+</div>
+<div class="bg-surface-container-highest p-4 rounded-xl flex flex-col items-start gap-2">
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">AI Verify</span>
+<div class="h-1 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/2"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Part 2: Final Completion State (Success Takeover) -->
+<section class="w-full max-w-2xl text-center space-y-12">
+<!-- Celebratory Graphic -->
+<div class="relative inline-block">
+<div class="absolute inset-0 bg-tertiary blur-[120px] opacity-20 animate-pulse"></div>
+<div class="relative bg-surface-container-high rounded-3xl p-1 overflow-hidden">
+<img alt="Cinematic shot of a winning camera lens" class="w-full aspect-video object-cover rounded-[1.4rem] opacity-80 grayscale hover:grayscale-0 transition-all duration-700" data-alt="Cinematic shot of a high-end camera lens with neon reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChOq1ccItmkzojhslbUyaS3I2ohxKXgT2BelgYxyrNyVm6xfvYhG8wvqTIK8hHNvGQTlQvqOEcp1tMljSO2btzxgasvxvPXLyAehmzyyzKiRnD9sVK74yeBtbj-XvBf3wWht_Blle3Rpj7Xvi3h4Zoahyh4nIlWhbT5VhuokKmn8UsqbOsTKjjAhETK1-tFIXRw94o21jb3G3rf2lveePOEPaCbnZ_nwVIQ5bhSJWJTMOTwnDGkWReaRGCkiBpUJWhTWJM7qYH-oc"/>
+<div class="absolute bottom-6 left-6 flex items-center gap-3">
+<div class="bg-tertiary text-on-tertiary px-4 py-1 rounded-full font-headline font-black text-sm tracking-tighter uppercase">COMPLETED</div>
+</div>
+</div>
+</div>
+<!-- Summary Text -->
+<div class="space-y-4">
+<h1 class="font-headline font-black text-6xl md:text-8xl text-white tracking-tighter uppercase leading-none">
+                    You're <span class="text-tertiary neon-glow-tertiary">Done!</span>
+</h1>
+<div class="flex items-center justify-center gap-4 py-6">
+<div class="flex flex-col items-center">
+<span class="font-headline text-5xl font-black text-primary">10</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">OF 10 Prompts</span>
+</div>
+<div class="h-12 w-[1px] bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="font-headline text-5xl font-black text-on-surface">1.2k</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Points Earned</span>
+</div>
+</div>
+</div>
+<!-- Kinetic CTAs -->
+<div class="flex flex-col gap-4 max-w-sm mx-auto">
+<button class="editorial-gradient text-on-primary-fixed h-16 rounded-full font-headline font-black text-lg uppercase tracking-widest scale-100 hover:scale-[1.02] active:scale-95 transition-all shadow-[0px_20px_40px_rgba(250,189,0,0.2)]">
+                    View My Card
+                </button>
+<button class="bg-surface-container-highest text-on-surface h-16 rounded-full font-headline font-bold text-sm uppercase tracking-widest hover:bg-surface-bright transition-colors">
+                    Join Another Event
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Shared Component) -->
+<!-- Determined active: "Hunt" as this is the result of a hunt activity -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-[#2A2A2A]/80 backdrop-blur-2xl">
+<a class="flex flex-col items-center justify-center bg-[#FFE4AF] text-[#131313] rounded-full px-6 py-2 transition-all duration-300 ease-out scale-110" href="#">
+<span class="material-symbols-outlined" data-icon="camera_enhance">camera_enhance</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/50 hover:bg-white/10 transition-all rounded-full p-2 px-4" href="#">
+<span class="material-symbols-outlined" data-icon="collections">collections</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Gallery</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/50 hover:bg-white/10 transition-all rounded-full p-2 px-4" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</nav>
+<!-- Success Accent Background Textures -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 opacity-30 overflow-hidden">
+<div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-tertiary/5 rounded-full blur-[120px]"></div>
+</div>
+</body></html>

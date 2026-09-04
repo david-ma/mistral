@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Frog Fest 2024</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#fdd0ea",
+              "tertiary-dim": "#5c4f00",
+              "tertiary-fixed-dim": "#edd139",
+              "on-secondary-container": "#654459",
+              "inverse-surface": "#0d0f0d",
+              "secondary-dim": "#66465a",
+              "surface-bright": "#f7f7f3",
+              "on-primary": "#cbffd8",
+              "tertiary-fixed": "#fcdf46",
+              "surface-dim": "#d3d5d0",
+              "tertiary-container": "#fcdf46",
+              "surface-variant": "#dcddd9",
+              "on-error": "#ffefee",
+              "inverse-primary": "#94feba",
+              "outline": "#767774",
+              "on-primary-fixed-variant": "#006e3e",
+              "surface": "#f7f7f3",
+              "error-container": "#fb5151",
+              "on-secondary-fixed": "#503246",
+              "on-tertiary-fixed-variant": "#685900",
+              "error": "#b31b25",
+              "surface-container-lowest": "#ffffff",
+              "on-error-container": "#570008",
+              "on-surface-variant": "#5a5c59",
+              "on-primary-container": "#006237",
+              "error-dim": "#9f0519",
+              "secondary": "#735166",
+              "on-secondary": "#ffeef5",
+              "on-tertiary-container": "#5d5000",
+              "on-primary-fixed": "#004e2a",
+              "on-tertiary": "#fff3c5",
+              "primary-dim": "#005c33",
+              "background": "#f7f7f3",
+              "surface-container-low": "#f1f1ed",
+              "secondary-fixed": "#fdd0ea",
+              "primary-fixed": "#94feba",
+              "surface-container-high": "#e2e3df",
+              "primary-fixed-dim": "#86efac",
+              "inverse-on-surface": "#9c9d9a",
+              "outline-variant": "#adadaa",
+              "surface-container": "#e8e8e4",
+              "surface-container-highest": "#dcddd9",
+              "tertiary": "#6a5b00",
+              "on-secondary-fixed-variant": "#6f4e63",
+              "surface-tint": "#006a3c",
+              "secondary-fixed-dim": "#eec3db",
+              "on-surface": "#2d2f2d",
+              "on-tertiary-fixed": "#483d00",
+              "on-background": "#2d2f2d",
+              "primary-container": "#94feba",
+              "primary": "#006a3c"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Be Vietnam Pro"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zine-shadow {
+            box-shadow: 4px 4px 0px 0px rgba(0, 106, 60, 1);
+        }
+        .sticker-shadow {
+            box-shadow: 0px 8px 0px 0px rgba(0, 106, 60, 1);
+        }
+        body {
+            background-color: #f7f7f3;
+            background-image: radial-gradient(#dcddd9 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body text-on-surface selection:bg-primary-fixed">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center bg-[#f7f7f3]/80 backdrop-blur-lg px-4 py-4 border-b-4 border-[#006a3c]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#006a3c] text-3xl" data-icon="catching_pokemon">capture</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black text-2xl tracking-tight text-[#006a3c] -rotate-2">Froggy Finder</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#735166] hover:rotate-3 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-2xl" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-5xl mx-auto">
+<!-- Hero Section: The Scrapbook Header -->
+<section class="relative mb-16">
+<div class="absolute -top-8 -left-4 w-32 h-32 bg-primary-fixed-dim rounded-full opacity-40 blur-3xl -z-10"></div>
+<div class="inline-block relative">
+<span class="absolute -top-6 -left-2 bg-tertiary-container text-on-tertiary-container px-4 py-1 rounded-full text-sm font-headline font-bold z-10 rotate-[-4deg] border-2 border-primary">
+                    AUG 24-26, 2024
+                </span>
+<h2 class="font-headline text-6xl md:text-8xl font-extrabold text-primary tracking-tighter leading-none mb-4 relative z-0">
+                    Frog Fest <span class="text-secondary rotate-3 inline-block">2024</span>
+</h2>
+</div>
+<p class="font-body text-xl md:text-2xl text-on-surface-variant max-w-xl mb-8 mt-4 leading-relaxed">
+                Hop into the annual celebration of our backyard neighbors! A weekend of discovery, community, and the great lilypad hunt.
+            </p>
+<div class="flex flex-wrap gap-4">
+<button class="bg-tertiary text-on-tertiary-container px-8 py-5 rounded-xl font-headline font-extrabold text-xl sticker-shadow border-4 border-primary hover:-rotate-3 transition-transform active:animate-bounce flex items-center gap-3">
+                    Join Hunt
+                    <span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+</button>
+<button class="bg-surface-container-lowest text-primary px-8 py-5 rounded-xl font-headline font-bold text-xl border-4 border-primary hover:rotate-3 transition-transform">
+                    Learn More
+                </button>
+</div>
+</section>
+<!-- Bento Grid Feature Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+<!-- Large Feature: The Frog illustration -->
+<div class="md:col-span-2 bg-primary-container rounded-lg p-8 border-4 border-primary zine-shadow relative overflow-hidden flex flex-col justify-end min-h-[400px]">
+<img alt="Green frog on lilypad" class="absolute top-0 left-0 w-full h-full object-cover mix-blend-multiply opacity-40" data-alt="Cutesy illustration of a green frog on a lilypad" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA10WTOQ7AX1GKtXB_SRKWvZ4WXF4n-4MJr-BU0F1dw0u6nkN4BEN1spxD0vrfcSHW-6eTcYibCfegMGCMqYHs4RVf0cgmQvdRewByzYebwLXfxwK9ZW7i1ej7x5Pc5JOOULPv9Iq3ACvTGW0TiMq7n09l2f4B9APP93ocKPG0_xCZv14bVZjm-QHlOMn2AMyTi4dCLxNDSMCqPrY-JZ9gKmzNvQHKgFKPTjc1wDIZtXJiP9x5sS2it2bMkJ_Bxz1Ying_XsytL__8"/>
+<div class="relative z-10">
+<h3 class="font-headline text-4xl text-on-primary-container font-extrabold mb-2 -rotate-1 inline-block bg-surface px-4 py-1 rounded-lg">Welcome Friend!</h3>
+<p class="text-on-primary-container font-medium text-lg max-w-md bg-surface/80 backdrop-blur p-4 rounded-xl">
+                        Explore the local pond ecosystem and help us document 50+ species of frogs arriving for the summer peak.
+                    </p>
+</div>
+</div>
+<!-- Stats Stack -->
+<div class="space-y-6">
+<div class="bg-secondary-container rounded-lg p-6 border-4 border-secondary rotate-2 hover:rotate-0 transition-transform">
+<span class="material-symbols-outlined text-secondary text-4xl mb-4" data-icon="group" data-weight="fill" style="font-variation-settings: 'FILL' 1;">group</span>
+<h4 class="font-headline text-3xl text-on-secondary-container font-black">1.2k</h4>
+<p class="text-on-secondary-container font-bold opacity-80 uppercase text-xs tracking-widest">Frog Hunters</p>
+</div>
+<div class="bg-tertiary-fixed rounded-lg p-6 border-4 border-tertiary -rotate-1 hover:rotate-0 transition-transform">
+<span class="material-symbols-outlined text-tertiary text-4xl mb-4" data-icon="forest">forest</span>
+<h4 class="font-headline text-3xl text-on-tertiary-container font-black">12</h4>
+<p class="text-on-tertiary-container font-bold opacity-80 uppercase text-xs tracking-widest">Active Ponds</p>
+</div>
+</div>
+</section>
+<!-- Featured List Section (Zine Style) -->
+<section class="bg-surface-container-low rounded-lg p-8 border-4 border-primary mb-16 relative">
+<div class="flex items-center gap-4 mb-8">
+<div class="bg-primary p-3 rounded-full rotate-12">
+<span class="material-symbols-outlined text-on-primary" data-icon="menu_book">menu_book</span>
+</div>
+<h3 class="font-headline text-3xl font-extrabold text-primary">Festival Logbook</h3>
+</div>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex items-center gap-6 p-4 bg-surface-container-lowest rounded-xl border-2 border-outline-variant/20 hover:scale-[1.02] transition-transform cursor-pointer">
+<div class="w-16 h-16 bg-primary-fixed-dim rounded-full flex items-center justify-center font-headline text-2xl font-black text-primary border-2 border-primary">
+                        01
+                    </div>
+<div>
+<h5 class="font-headline text-xl text-primary">The Great Lilypad Scramble</h5>
+<p class="text-on-surface-variant">Gather at the Central Marsh for our first group discovery event.</p>
+</div>
+<span class="ml-auto material-symbols-outlined text-tertiary" data-icon="arrow_forward">arrow_forward</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-6 p-4 bg-surface-container-lowest rounded-xl border-2 border-outline-variant/20 hover:scale-[1.02] transition-transform cursor-pointer">
+<div class="w-16 h-16 bg-secondary-fixed rounded-full flex items-center justify-center font-headline text-2xl font-black text-secondary border-2 border-secondary">
+                        02
+                    </div>
+<div>
+<h5 class="font-headline text-xl text-secondary">Nocturnal Croak-off</h5>
+<p class="text-on-surface-variant">A late-night listening session to identify tree frogs by sound.</p>
+</div>
+<span class="ml-auto material-symbols-outlined text-tertiary" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</section>
+<!-- Floating Cards Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+<div class="relative pt-8">
+<div class="absolute top-0 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-headline font-bold text-xs uppercase z-20">New Arrival</div>
+<div class="bg-surface-container-highest rounded-lg p-6 border-4 border-on-surface -rotate-2 zine-shadow">
+<img alt="Tiny colorful frog" class="w-full h-48 object-cover rounded-md mb-4 border-2 border-on-surface" data-alt="Close up of a tiny bright green tree frog" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtBLozywTyjw2p6sMxOtZ5HkzXIbVttfb09Ck1F2ikJr1TTGvl0TlGbokeXBkYLp0Ujko_y9LmiUhDUOeOIuLqIKUKBbBTP3i3fsQSnzT-CK-ORQcVB4XA9fQYA1nqk7gycE52gprmWoaIu27z3rTbPzuPeHBtO48sfU-lQnGftSYyyvCYfqllSI-jRAW8iKLaks7EIgW_LDK7HDUnTMTi1_VrrjnukxuPewldH8gpMbU41DJcFfmaxzNtJwDrEMyjx_exqgsyy6Q"/>
+<h4 class="font-headline text-2xl font-bold mb-1">Bullfrog Bayou</h4>
+<p class="text-on-surface-variant mb-4">Our latest habitat mapping is complete. Explore 3 new trails!</p>
+</div>
+</div>
+<div class="relative pt-8 md:mt-12">
+<div class="bg-tertiary-container rounded-lg p-6 border-4 border-tertiary rotate-2 zine-shadow">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="emoji_events">emoji_events</span>
+<h4 class="font-headline text-2xl font-bold">Top Hunter</h4>
+</div>
+<div class="flex items-center gap-4 bg-surface/50 p-3 rounded-xl border-2 border-tertiary">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed border-2 border-secondary overflow-hidden">
+<img alt="Avatar" data-alt="User avatar icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGPM9WYYx1N6Uq4RoD1YAqf40LKPKTRguwQRcb6sruy0q5ilVv9mxFpHVZv4k5CPAurzXhjjSasDwUGds7ZWBht-eof7jv3p2ynj5UTj9dBhR7Xxpu0yAtKsr-kdmybXwfdc5Xsh-xlPOmzAPW7rdX4-JGlBPHikDtSHEJkPqx8AIReCU9f7rhMf4wlnhzOHT54AEXxB-K9qmJDUqncn5y9VotDhNPkHnaagHWVzWF2i1xOjBS5eC9v0wBt6QHAEJpOa-6hdYtwdc"/>
+</div>
+<div>
+<p class="font-headline font-bold">@HopMaster_99</p>
+<p class="text-xs uppercase font-bold text-tertiary-dim">42 Rare Finds Found</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4">
+<div class="fixed bottom-6 left-4 right-4 rounded-[3rem] border-4 border-[#006a3c] bg-[#86efac] flex justify-around items-center p-2 shadow-[0px_8px_0px_0px_rgba(0,106,60,1)]">
+<!-- Hunt (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#fde047] text-[#006a3c] rounded-full p-4 border-2 border-[#006a3c] scale-110 -translate-y-2 animate-bounce" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Hunt</span>
+</a>
+<!-- Log (Inactive) -->
+<a class="flex flex-col items-center justify-center text-[#006a3c] p-2 hover:-rotate-3 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="menu_book">menu_book</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Log</span>
+</a>
+<!-- Profile (Inactive) -->
+<a class="flex flex-col items-center justify-center text-[#006a3c] p-2 hover:-rotate-3 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="account_circle">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>

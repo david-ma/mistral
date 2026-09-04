@@ -9,6 +9,8 @@ interface AdminCell {
   imageUrl?: string | null
   thumbnailUrl?: string | null
   description?: string | null
+  score?: number
+  safe?: boolean
 }
 
 interface AdminCard {
@@ -40,36 +42,11 @@ function getEventId(): number | null {
   return Number.isFinite(id) ? id : null
 }
 
-// Demo only: remove fake_data() and fake_name() when replacing with real scores/owners.
-const FAKE_NAMES = [
-  'Leonardo',
-  'Michaelangelo',
-  'Donatello',
-  'Raphael',
-  'John',
-  'George',
-  'Ringo',
-  'Paul',
-  'Alice',
-  'Bob',
-  'Charlie',
-  'Diana',
-]
-
-function fake_name(): string {
-  return FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)]
-}
-
-function fake_data(data: AdminData): AdminData {
-  const promptScores = data.prompts.map(() => Math.floor(Math.random() * 10) + 1)
-  const notes = ['high quality', 'flagged for inappropriate content', 'high quality', 'high quality']
-  const cards = data.cards.map((card) => ({
-    ...card,
-    totalScore: Math.floor(Math.random() * 100) + 1,
-    note: notes[Math.floor(Math.random() * notes.length)],
-    owner: card.owner && (card.owner.name || card.owner.email) ? card.owner : { name: fake_name(), email: '' },
-  }))
-  return { ...data, promptScores, cards }
+// Fill in placeholder owner name when server sends null (e.g. guest players)
+const FAKE_NAMES = ['Guest', 'Player', 'Anonymous']
+function withDemoOwner(card: AdminCard): AdminCard {
+  if (card.owner && (card.owner.name || card.owner.email)) return card
+  return { ...card, owner: { name: FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)], email: '' } }
 }
 
 const PREVIEW_CELL_SIZE = 32
@@ -176,14 +153,22 @@ function drawPromptsTable(container: d3.Selection<HTMLDivElement, unknown, null,
   const totalCells = gridSize * gridSize
 
   // For each prompt, collect submissions from all cards (cells where cell.prompt === prompt and has imageUrl)
-  type PromptRow = { index: number; prompt: string; score: number; submissions: { cardId: number; imageUrl: string; thumbnailUrl?: string | null; description?: string | null }[] }
-  const promptScores = data.promptScores ?? prompts.map(() => Math.floor(Math.random() * 10) + 1)
+  type Sub = { cardId: number; imageUrl: string; thumbnailUrl?: string | null; description?: string | null; score?: number; safe?: boolean }
+  type PromptRow = { index: number; prompt: string; score: number; submissions: Sub[] }
+  const promptScores = data.promptScores ?? prompts.map(() => 0)
   const promptRows: PromptRow[] = prompts.map((prompt, index) => {
-    const submissions: { cardId: number; imageUrl: string; thumbnailUrl?: string | null; description?: string | null }[] = []
+    const submissions: Sub[] = []
     cards.forEach((card) => {
       card.cells.forEach((cell) => {
         if (cell.prompt === prompt && cell.imageUrl) {
-          submissions.push({ cardId: card.id, imageUrl: cell.imageUrl, thumbnailUrl: cell.thumbnailUrl ?? null, description: cell.description ?? null })
+          submissions.push({
+            cardId: card.id,
+            imageUrl: cell.imageUrl,
+            thumbnailUrl: cell.thumbnailUrl ?? null,
+            description: cell.description ?? null,
+            score: cell.score,
+            safe: cell.safe,
+          })
         }
       })
     })
@@ -215,9 +200,16 @@ function drawPromptsTable(container: d3.Selection<HTMLDivElement, unknown, null,
           if (sub.description) {
             block.append('div').attr('class', 'small text-muted').style('max-width', '200px').text(sub.description.slice(0, 80) + (sub.description.length > 80 ? '…' : ''))
           }
+          const meta = block.append('div').attr('class', 'small')
+          if (typeof sub.score === 'number') {
+            meta.append('span').attr('class', 'me-1').text(`Score: ${sub.score}`)
+          }
+          if (sub.safe === false) {
+            meta.append('span').attr('class', 'badge bg-warning text-dark ms-1').text('Flagged')
+          }
         })
       }
-      tr.append('td').text(String(row.score))
+      tr.append('td').text(row.score > 0 ? String(row.score) : '—')
     })
 }
 
@@ -246,9 +238,10 @@ function run(): void {
       return r.json() as Promise<AdminData>
     })
     .then((data) => {
-      const demoData = fake_data(data)
-      drawCardsList(cardsSection, demoData.cards, demoData)
-      drawPromptsTable(promptsSection, demoData)
+      const cardsWithOwner = data.cards.map(withDemoOwner)
+      const dataWithCards = { ...data, cards: cardsWithOwner }
+      drawCardsList(cardsSection, dataWithCards.cards, dataWithCards)
+      drawPromptsTable(promptsSection, dataWithCards)
     })
     .catch((err) => {
       showError(cardsSection, err?.message ?? 'Failed to load admin data.')

@@ -5,17 +5,25 @@
   "private": true,
   "scripts": {
     "refresh": "ssh katara 'cd /usr/local/dev/Thalia/websites/mistral && git pull && source /etc/profile.d/modules.sh && module load nodejs && module load bun && pm2 restart 0'",
-    "start": "thalia"
+    "typecheck": "bunx tsc --noEmit -p tsconfig.json",
+    "start": "thalia",
+    "db:backup": "bun run scripts/backup-database.ts"
   },
   "dependencies": {
     "d3": "^7.9.0",
     "drizzle-kit": "^0.31.7",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.2",
+    "marked": "^18.0.5",
     "mysql2": "^3.14.1",
+    "thalia": "github:david-ma/Thalia",
     "uploadthing": "^7.7.4"
   },
   "devDependencies": {
-    "typescript": "^4.9.5",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/d3": "^7.4.3",
+    "@types/formidable": "^3.5.1",
+    "@types/nodemailer": "^8.0.1",
+    "bun-types": "1.3.14",
+    "typescript": "7.0.2"
   }
 }

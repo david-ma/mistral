@@ -1,11 +1,10 @@
 import path from 'path'
+import { SecurityService } from 'thalia/security'
 
 const drizzleConfig = await import(
   // @ts-ignore
   path.join(import.meta.dirname, '..', 'drizzle.config.ts')
 )
-
-import { SecurityService } from '../../../server/security'
 
 const securityService = new SecurityService(drizzleConfig)
 

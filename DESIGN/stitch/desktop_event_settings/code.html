@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Event Settings - PHOTO HUNT</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#fabd00",
+                        "on-secondary-container": "#91b7f2",
+                        "surface-dim": "#131313",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#00390a",
+                        "secondary-container": "#1b477c",
+                        "on-secondary": "#003060",
+                        "secondary": "#a6c8ff",
+                        "on-tertiary-container": "#006419",
+                        "secondary-fixed": "#d5e3ff",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#98fe94",
+                        "on-surface": "#e5e2e1",
+                        "outline": "#9c8f78",
+                        "inverse-surface": "#e5e2e1",
+                        "tertiary-fixed": "#94f990",
+                        "on-primary": "#3f2e00",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#002204",
+                        "on-primary-fixed": "#261a00",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-container": "#ffc107",
+                        "tertiary-container": "#7ce17b",
+                        "primary": "#ffe4af",
+                        "surface-container-highest": "#353535",
+                        "on-secondary-fixed-variant": "#1b477c",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "surface-bright": "#393939",
+                        "secondary-fixed-dim": "#a6c8ff",
+                        "on-primary-fixed-variant": "#5b4300",
+                        "inverse-primary": "#785900",
+                        "surface": "#131313",
+                        "on-primary-container": "#6d5100",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "on-surface-variant": "#d4c5ab",
+                        "surface-tint": "#fabd00",
+                        "on-error": "#690005",
+                        "surface-container": "#20201f",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "primary-fixed": "#ffdf9e",
+                        "on-secondary-fixed": "#001c3b",
+                        "outline-variant": "#4f4632",
+                        "surface-variant": "#353535"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-[#131313]/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full sticky top-0 z-50 shadow-[0px_20px_40px_rgba(250,189,0,0.06)]">
+<div class="text-2xl font-black text-[#FFE4AF] uppercase tracking-widest font-['Space_Grotesk']">PHOTO HUNT</div>
+<nav class="hidden md:flex items-center gap-8 bg-[#2A2A2A] px-8 py-2 rounded-full">
+<a class="text-white/60 font-['Space_Grotesk'] font-medium hover:text-[#FFE4AF] transition-colors" href="#">Hunt</a>
+<a class="text-white/60 font-['Space_Grotesk'] font-medium hover:text-[#FFE4AF] transition-colors" href="#">Gallery</a>
+<a class="text-[#FFC107] font-bold font-['Space_Grotesk'] transition-colors" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-white/60 hover:text-[#FFE4AF] transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-white/60 hover:text-[#FFE4AF] transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="max-w-6xl mx-auto px-6 pt-12 pb-32">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+<div class="space-y-2">
+<h1 class="font-headline text-5xl font-bold tracking-tight text-on-surface">Event Settings</h1>
+<p class="text-on-surface-variant font-body max-w-xl">Configure your hunt's identity and define the challenges your photographers will face. Aim for clarity and inspiration.</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-surface-container-highest text-on-surface px-8 py-3 rounded-full font-headline font-bold hover:bg-surface-bright transition-all scale-100 active:scale-95">
+                    Request Superuser Listing
+                </button>
+<button class="bg-gradient-to-br from-[#FFE4AF] to-[#FFC107] text-[#3f2e00] px-8 py-3 rounded-full font-headline font-bold shadow-[0px_10px_20px_rgba(250,189,0,0.15)] hover:scale-105 transition-all active:scale-95">
+                    Save Changes
+                </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Column: Core Identity -->
+<div class="lg:col-span-5 space-y-12">
+<section class="bg-surface-container-low p-8 rounded-xl space-y-8">
+<h2 class="font-headline text-xl font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">fingerprint</span>
+                        Event Identity
+                    </h2>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="font-label text-sm font-bold uppercase tracking-wider text-on-surface-variant">Event Title</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-4 text-on-surface focus:ring-2 focus:ring-primary/40 font-body transition-all" placeholder="Midnight Neon Run" type="text" value="Urban Jungle 2024"/>
+</div>
+<div class="space-y-2">
+<label class="font-label text-sm font-bold uppercase tracking-wider text-on-surface-variant">Custom Slug</label>
+<div class="flex items-center bg-surface-container-highest rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/40 transition-all">
+<span class="pl-4 text-on-surface-variant font-body">photohunt.io/</span>
+<input class="bg-transparent border-none p-4 text-on-surface font-body w-full focus:ring-0" type="text" value="urban-jungle-2024"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label text-sm font-bold uppercase tracking-wider text-on-surface-variant">Description</label>
+<textarea class="w-full bg-surface-container-highest border-none rounded-lg p-4 text-on-surface focus:ring-2 focus:ring-primary/40 font-body transition-all resize-none" placeholder="Describe the vibe of this hunt..." rows="4">A competitive street photography event focused on the intersection of architecture and nature within the concrete city center.</textarea>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10">
+<h3 class="font-headline text-lg font-bold text-tertiary mb-4">Event Status</h3>
+<div class="flex items-center gap-4 bg-surface-container-high p-4 rounded-lg">
+<div class="w-3 h-3 rounded-full bg-tertiary shadow-[0_0_10px_rgba(152,254,148,0.5)]"></div>
+<span class="font-body text-on-surface">Active &amp; Accepting Submissions</span>
+</div>
+</section>
+</div>
+<!-- Right Column: Ordered Prompt List -->
+<div class="lg:col-span-7 space-y-8">
+<div class="flex justify-between items-center">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Hunt Prompts</h2>
+<span class="bg-surface-container-high px-4 py-1 rounded-full font-label text-sm text-tertiary font-bold tracking-tighter">03 / 10 MAX</span>
+</div>
+<div class="space-y-6">
+<!-- Prompt Item 01 -->
+<div class="bg-surface-container-low p-6 rounded-xl flex gap-6 group">
+<div class="flex flex-col items-center gap-2">
+<div class="font-headline text-4xl font-bold text-tertiary opacity-40 group-hover:opacity-100 transition-opacity">01</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<div class="flex-grow space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Prompt Description</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/40" type="text" value="Reflections in a puddle at dusk"/>
+</div>
+<div class="space-y-1">
+<label class="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Optional Hint</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/40" placeholder="e.g. Look near the subway entrance" type="text" value="Get low to the ground for the best angle"/>
+</div>
+</div>
+</div>
+<div class="flex items-center">
+<button class="text-on-surface-variant/40 hover:text-error transition-colors p-2 rounded-lg hover:bg-error/10">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<!-- Prompt Item 02 -->
+<div class="bg-surface-container-low p-6 rounded-xl flex gap-6 group">
+<div class="flex flex-col items-center gap-2">
+<div class="font-headline text-4xl font-bold text-tertiary opacity-40 group-hover:opacity-100 transition-opacity">02</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<div class="flex-grow space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Prompt Description</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/40" type="text" value="A stranger wearing a bright yellow hat"/>
+</div>
+<div class="space-y-1">
+<label class="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Optional Hint</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/40" placeholder="e.g. Look near the subway entrance" type="text"/>
+</div>
+</div>
+</div>
+<div class="flex items-center">
+<button class="text-on-surface-variant/40 hover:text-error transition-colors p-2 rounded-lg hover:bg-error/10">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<!-- Prompt Item 03 -->
+<div class="bg-surface-container-low p-6 rounded-xl flex gap-6 group">
+<div class="flex flex-col items-center gap-2">
+<div class="font-headline text-4xl font-bold text-tertiary opacity-40 group-hover:opacity-100 transition-opacity">03</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<div class="flex-grow space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Prompt Description</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/40" type="text" value="Juxtaposition of old stone and modern steel"/>
+</div>
+<div class="space-y-1">
+<label class="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Optional Hint</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/40" placeholder="e.g. Look near the subway entrance" type="text" value="Try the financial district bank row"/>
+</div>
+</div>
+</div>
+<div class="flex items-center">
+<button class="text-on-surface-variant/40 hover:text-error transition-colors p-2 rounded-lg hover:bg-error/10">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<!-- Add Button -->
+<button class="w-full py-8 rounded-xl border-2 border-dashed border-outline-variant/30 text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 group">
+<span class="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">add_circle</span>
+<span class="font-headline font-bold uppercase tracking-widest text-sm">Add New Challenge Prompt</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only Logic Implementation) -->
+<div class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#2A2A2A]/80 backdrop-blur-2xl shadow-[0px_-10px_30px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-white/50" href="#">
+<span class="material-symbols-outlined">camera_enhance</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/50" href="#">
+<span class="material-symbols-outlined">collections</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Gallery</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#FFE4AF] text-[#131313] rounded-full px-6 py-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</div>
+</body></html>

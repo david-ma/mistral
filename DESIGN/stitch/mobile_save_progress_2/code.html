@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hunt Active - Save Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#0a0e14",
+              "on-secondary": "#1e2025",
+              "tertiary": "#edecff",
+              "on-tertiary-container": "#4c4e69",
+              "surface-container-lowest": "#000000",
+              "on-primary": "#004176",
+              "surface-container-low": "#0e141c",
+              "on-tertiary-fixed": "#393c55",
+              "primary-fixed": "#d3e4ff",
+              "secondary": "#9c9ea4",
+              "outline-variant": "#3c495b",
+              "primary": "#a2c9ff",
+              "on-error": "#490106",
+              "on-background": "#d9e6fd",
+              "surface-container-high": "#16202e",
+              "primary-dim": "#88bcff",
+              "tertiary-container": "#dcddfe",
+              "inverse-on-surface": "#51555c",
+              "inverse-primary": "#0061ab",
+              "on-primary-container": "#b4d2ff",
+              "inverse-surface": "#f8f9ff",
+              "error-dim": "#bb5551",
+              "surface-variant": "#1a2637",
+              "secondary-fixed-dim": "#d3d4da",
+              "on-secondary-container": "#bdbfc5",
+              "primary-container": "#004882",
+              "error-container": "#7f2927",
+              "secondary-container": "#393b40",
+              "surface-tint": "#a2c9ff",
+              "surface-container": "#121a25",
+              "surface-dim": "#0a0e14",
+              "on-error-container": "#ff9993",
+              "background": "#0a0e14",
+              "tertiary-fixed-dim": "#cecfef",
+              "on-primary-fixed-variant": "#005da5",
+              "on-primary-fixed": "#004075",
+              "tertiary-fixed": "#dcddfe",
+              "secondary-fixed": "#e1e2e8",
+              "on-secondary-fixed-variant": "#595b61",
+              "error": "#ee7d77",
+              "on-surface-variant": "#9facc1",
+              "surface-container-highest": "#1a2637",
+              "on-tertiary-fixed-variant": "#555873",
+              "tertiary-dim": "#cecfef",
+              "on-secondary-fixed": "#3d3f44",
+              "primary-fixed-dim": "#bbd6ff",
+              "on-surface": "#d9e6fd",
+              "surface-bright": "#1e2d41",
+              "secondary-dim": "#9c9ea4",
+              "outline": "#6a768a",
+              "on-tertiary": "#545671"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#0e141c] flex items-center justify-between px-4 h-14 w-full z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#a2c9ff]" data-icon="target">target</span>
+<h1 class="font-['Inter'] font-semibold tracking-tight text-lg text-[#a2c9ff]">Hunt Active</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="person">person</span>
+</div>
+</header>
+<main class="flex-1 relative flex flex-col">
+<!-- Background/Active Hunt Context (Dimmed) -->
+<div class="absolute inset-0 z-0 p-4 opacity-40 select-none pointer-events-none">
+<div class="grid grid-cols-2 gap-4">
+<div class="aspect-square bg-surface-container rounded-lg overflow-hidden border border-outline-variant/20">
+<img alt="Captured hunting trophy 1" class="w-full h-full object-cover" data-alt="Close up of a wild deer in forest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA4ZSOLzaLftaBGyzzyM2nvF3Svu6SLpiIo3puhjzj5viNhBjL7wlu34JuD5_TkILnKkNmKfeEwTv66U5XWKRmPWgumWzbn4xKLoX8BP2WkFjewqnn-hwx8IL4cYBpEmPbuaTG-5mIL9BGMa9D2Fxcaeb8SSpgGsm7HNWG1PkAqnwQqom15IC6WIeXjkbBruI7_lEuiMHK5mg7-i-LR9PG6zPhrA4iESSGGQQJXmPZhJ2zhQ8HaWm0vZ-PUJcbfqkyQS-RfOwEaVg"/>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg overflow-hidden border border-outline-variant/20">
+<img alt="Captured hunting trophy 2" class="w-full h-full object-cover" data-alt="A wild elk standing in a clearing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAePU-syahCJjq3aLedQbU1qKTVO0wlNep2ld0W7-yltvR9pseyAHSRy9cx2e7ItRgGZJc11kECVKNtHAohzjR-rV902E-MrFt6SlaWnYgsCohp2NNwfSe_napBK4cYVNC4TRMA5mkkMoDRWrvLM1mNxg80Vwd6j_woVF54YWhEBBXcCALvEbhTBMai2TfEqLiuUpVG0MvgQp_dOVQrLrf6wO5eSRGAGAEWzuan74zIqXyCjpWhcoCixA0oeVV3K7YjicWLgRia9xI"/>
+</div>
+</div>
+<div class="mt-6 space-y-4">
+<div class="h-4 w-3/4 bg-surface-container rounded"></div>
+<div class="h-4 w-1/2 bg-surface-container rounded"></div>
+</div>
+</div>
+<!-- Save Progress Modal Overlay -->
+<div class="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+<div class="w-full max-w-md bg-surface-container-high rounded-xl border border-outline-variant p-6 shadow-2xl">
+<!-- Status Badge -->
+<div class="flex justify-center mb-6">
+<div class="bg-primary/10 px-3 py-1 rounded-full border border-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-[0.6875rem] uppercase tracking-[0.05em] font-bold text-primary">2 Captures Recorded</span>
+</div>
+</div>
+<!-- Header Content -->
+<div class="text-center mb-8">
+<h2 class="text-2xl font-extrabold tracking-tight text-on-surface mb-3">Save your Hunt?</h2>
+<p class="text-on-surface-variant text-sm leading-relaxed">
+                        Create an account to keep your 2 photos and resume on any device. Don't lose your progress.
+                    </p>
+</div>
+<!-- Form Section -->
+<form class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-on-surface-variant block ml-1">Email Address</label>
+<input class="w-full bg-surface-container-highest border-b-2 border-outline focus:border-primary focus:ring-0 text-on-surface px-4 py-3 rounded-t-lg transition-colors" placeholder="hunter@example.com" type="email"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-on-surface-variant block ml-1">Password</label>
+<input class="w-full bg-surface-container-highest border-b-2 border-outline focus:border-primary focus:ring-0 text-on-surface px-4 py-3 rounded-t-lg transition-colors" placeholder="••••••••" type="password"/>
+</div>
+<div class="pt-4 space-y-3">
+<button class="w-full bg-primary text-on-primary font-bold py-4 rounded-lg active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-lg shadow-primary/10" type="submit">
+                            Save &amp; Continue
+                            <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="w-full py-3 text-on-surface-variant font-medium text-sm hover:text-on-surface transition-colors flex items-center justify-center" type="button">
+                            Skip for now
+                        </button>
+</div>
+</form>
+<!-- Security Note -->
+<div class="mt-8 flex items-center justify-center gap-2 opacity-50">
+<span class="material-symbols-outlined text-xs" data-icon="lock">lock</span>
+<span class="text-[0.6rem] uppercase tracking-wider font-semibold">End-to-End Encryption Enabled</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Suppressed (Transactional State) -->
+<!-- Per instructions: Shell Visibility & Relevance (THE FILTER): exclude navigation shell if the page intent is Transactional -->
+</body></html>

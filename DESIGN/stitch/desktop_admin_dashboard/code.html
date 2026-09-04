@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PHOTO HUNT | Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#fabd00",
+                        "on-secondary-container": "#91b7f2",
+                        "surface-dim": "#131313",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#00390a",
+                        "secondary-container": "#1b477c",
+                        "on-secondary": "#003060",
+                        "secondary": "#a6c8ff",
+                        "on-tertiary-container": "#006419",
+                        "secondary-fixed": "#d5e3ff",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#98fe94",
+                        "on-surface": "#e5e2e1",
+                        "outline": "#9c8f78",
+                        "inverse-surface": "#e5e2e1",
+                        "tertiary-fixed": "#94f990",
+                        "on-primary": "#3f2e00",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#002204",
+                        "on-primary-fixed": "#261a00",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-container": "#ffc107",
+                        "tertiary-container": "#7ce17b",
+                        "primary": "#ffe4af",
+                        "surface-container-highest": "#353535",
+                        "on-secondary-fixed-variant": "#1b477c",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "surface-bright": "#393939",
+                        "secondary-fixed-dim": "#a6c8ff",
+                        "on-primary-fixed-variant": "#5b4300",
+                        "inverse-primary": "#785900",
+                        "surface": "#131313",
+                        "on-primary-container": "#6d5100",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "on-surface-variant": "#d4c5ab",
+                        "surface-tint": "#fabd00",
+                        "on-error": "#690005",
+                        "surface-container": "#20201f",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "primary-fixed": "#ffdf9e",
+                        "on-secondary-fixed": "#001c3b",
+                        "outline-variant": "#4f4632",
+                        "surface-variant": "#353535"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-surface selection:bg-primary selection:text-on-primary">
+<!-- Desktop SideNavBar -->
+<aside class="hidden md:flex flex-col h-screen py-8 gap-4 bg-[#1C1B1B] w-64 fixed left-0 top-0 border-r border-outline-variant/10">
+<div class="px-6 mb-8">
+<h1 class="text-[#FFC107] font-black italic text-2xl tracking-tighter font-headline">PHOTO HUNT</h1>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-1">Admin Panel</p>
+</div>
+<nav class="flex flex-col gap-1 px-3">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#98FE94] border-r-4 border-[#98FE94] bg-[#2A2A2A] transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-headline text-lg font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/40 hover:text-white/80 hover:bg-[#2A2A2A] transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="font-headline text-lg font-medium">Moderation</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/40 hover:text-white/80 hover:bg-[#2A2A2A] transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+<span class="font-headline text-lg font-medium">Events</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-white/40 hover:text-white/80 hover:bg-[#2A2A2A] transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+<span class="font-headline text-lg font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-6 pt-6 border-t border-outline-variant/10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="Organizer profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG70i3dSMJSvxHcgCXmGD4zqdn7jRZN1UqRgWVhfMMg4EAbdWaLoFGhNutBK0pLp8rouG6iNIIHKOa2Eo3Z0K79upF1m1XI4-arBRJQJkx5WAz9rImkVvJDpo_-VOn5zHZ6D9KQoiXO6bq4rKLEvW9I1tWoLpW4XuAY2vSWzZlFGhuVxpxZPVnl-RL4kfC0ua35M8PVe-a1FmCvZlPROG4O6w2oZmPuht3uS3E11hwKIm6GqEiFkwHtWWujtaaZdYbtBMJNZojbm0"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Alex Hunter</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Global Organizer</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-8 py-6 w-full sticky top-0 z-50 bg-[#131313]/80 backdrop-blur-xl shadow-[0px_20px_40px_rgba(250,189,0,0.06)]">
+<div>
+<h2 class="font-headline text-3xl font-black text-on-surface tracking-tight">Overview</h2>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-bold px-6 py-2.5 rounded-full flex items-center gap-2 hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-primary-container/20">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span>Create New Event</span>
+</button>
+<div class="flex items-center gap-4 text-white/60">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</header>
+<div class="px-8 pb-16 space-y-12">
+<!-- Hero Stats Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+<div class="bg-surface-container-low p-8 rounded-2xl relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-on-surface-variant font-label text-xs font-bold uppercase tracking-widest mb-2">Total Participants</p>
+<h3 class="font-headline text-5xl font-black text-primary tracking-tighter">2,481</h3>
+<div class="mt-4 flex items-center gap-2 text-tertiary text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span>+12% this month</span>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-9xl" data-icon="groups">groups</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 rounded-2xl relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-on-surface-variant font-label text-xs font-bold uppercase tracking-widest mb-2">Active Hunts</p>
+<h3 class="font-headline text-5xl font-black text-tertiary tracking-tighter">04</h3>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+<span>Across 3 timezones</span>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-9xl" data-icon="camera_enhance">camera_enhance</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 rounded-2xl relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-on-surface-variant font-label text-xs font-bold uppercase tracking-widest mb-2">Pending Review</p>
+<h3 class="font-headline text-5xl font-black text-[#FFB4AB] tracking-tighter">156</h3>
+<div class="mt-4 flex items-center gap-2 text-error text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="priority_high">priority_high</span>
+<span>Needs immediate action</span>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-9xl" data-icon="fact_check">fact_check</span>
+</div>
+</div>
+</section>
+<!-- Active Events - Asymmetric Editorial Layout -->
+<section>
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="font-headline text-4xl font-bold tracking-tight">Active Hunts</h2>
+<p class="text-on-surface-variant mt-2 font-medium">Currently live and gathering submissions.</p>
+</div>
+<div class="h-[2px] flex-grow mx-8 mb-4 bg-outline-variant/20 hidden lg:block"></div>
+<button class="text-primary font-bold uppercase tracking-widest text-xs hover:underline decoration-2 underline-offset-8">View All</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Major Card -->
+<div class="lg:col-span-8 group">
+<div class="bg-surface-container-low rounded-[2rem] overflow-hidden flex flex-col md:flex-row h-full border border-white/5 hover:border-primary/20 transition-all duration-500">
+<div class="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Cyberpunk city street at night with neon signs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA26azq2nyvDYDHgM-XUmlM7DPzHUGA2NYAPZPjqJc10w9tV8NiXUq1-GMK3yFuBO8s_gAwrvxNnOW9_DGTBs9Se6R1Qctq5CYLGiyIVQxOYbwG2DFJlcA1pXX0PmsXCJNh-_Qsjcvn27lRJ9t8HBOvqqym3ooA76LTEj_a1hK1uRd389ghrm2dBtBgZdpmThOCim7KaElXuksx-hPOjTpMXld9n5baSfqSdSkI_vnRiO5FhqixqedKH7uKGBcBuW-Wh_dyTcQOf3o"/>
+<div class="absolute top-6 left-6 bg-tertiary text-on-tertiary px-4 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">Live Now</div>
+</div>
+<div class="md:w-1/2 p-10 flex flex-col justify-between">
+<div>
+<h3 class="font-headline text-3xl font-bold leading-tight mb-4">Tech Hackathon Hunt</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8">A high-stakes digital scavenger hunt through the Silicon Valley innovation hub. Find the hidden Easter eggs in local tech landmarks.</p>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter mb-1">Participants</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black font-headline text-white">142</span>
+<span class="text-[10px] text-tertiary">Live</span>
+</div>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter mb-1">Submissions</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black font-headline text-white">892</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 flex items-center justify-between p-4 bg-surface-container-highest rounded-2xl">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error" data-icon="error">error</span>
+<span class="text-xs font-bold text-on-surface">12 Pending Review</span>
+</div>
+<button class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Active Card -->
+<div class="lg:col-span-4 group">
+<div class="bg-surface-container-low rounded-[2rem] overflow-hidden flex flex-col h-full border border-white/5 hover:border-tertiary/20 transition-all duration-500">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Abstract colorful neon party atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-L3h2yhXEc4hkXXDfN07NG8rL6Wcabt9R2Uz9w5TbsjxCDY8YfppEeDk9ojNPKNjQITbBE2DUzXICsYJBQdy-QKQqzE-OANo3T_QxjLFNkuKPEtUUlJO7z60NX_preq8SZuZowjeZOvQK8oLZu2Fjj_z2le4NNDRXqLyovgrFWFigD4of3gGIRBdh-QrIfM3A2a27dxYYdRuHG8Wif_RqTm6D3xoZzA2EbO3ot15d5UG3diW8ASx9fsSX-hQ8YEO8jUx0Is93aBQ"/>
+<div class="absolute top-4 left-4 bg-tertiary text-on-tertiary px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest">Ending Soon</div>
+</div>
+<div class="p-8 flex flex-col flex-grow">
+<h3 class="font-headline text-2xl font-bold mb-4">City Scavenger Run</h3>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-xs text-on-surface-variant font-bold uppercase">Participants</span>
+<span class="font-headline font-bold">534</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-xs text-on-surface-variant font-bold uppercase">Photos</span>
+<span class="font-headline font-bold">1,204</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-xs text-on-surface-variant font-bold uppercase">Time Left</span>
+<span class="font-headline font-bold text-primary">02:45:12</span>
+</div>
+</div>
+<button class="mt-auto w-full py-3 bg-surface-container-highest rounded-xl font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="monitoring">monitoring</span>
+<span>Real-time Stats</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Past Events Section -->
+<section>
+<div class="flex items-center gap-4 mb-8">
+<h2 class="font-headline text-3xl font-bold tracking-tight">Archive</h2>
+<span class="px-3 py-1 bg-surface-container-high rounded-lg text-xs font-bold text-on-surface-variant">12 EVENTS</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Past Event Card 1 -->
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:bg-surface-container-high transition-all cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="history">history</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase bg-surface-container-highest px-3 py-1 rounded-full">Finished Jan 12</span>
+</div>
+<h4 class="font-headline text-xl font-bold mb-2">Winter Solstice Hunt</h4>
+<div class="flex items-center gap-6 mt-6">
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Total Players</p>
+<p class="text-lg font-black font-headline">1,102</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Engagement</p>
+<p class="text-lg font-black font-headline text-tertiary">94%</p>
+</div>
+</div>
+</div>
+<!-- Past Event Card 2 -->
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:bg-surface-container-high transition-all cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="restaurant">restaurant</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase bg-surface-container-highest px-3 py-1 rounded-full">Finished Dec 24</span>
+</div>
+<h4 class="font-headline text-xl font-bold mb-2">Gourmet Street Crawl</h4>
+<div class="flex items-center gap-6 mt-6">
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Total Players</p>
+<p class="text-lg font-black font-headline">482</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Engagement</p>
+<p class="text-lg font-black font-headline text-tertiary">88%</p>
+</div>
+</div>
+</div>
+<!-- Past Event Card 3 -->
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:bg-surface-container-high transition-all cursor-pointer">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="architecture">architecture</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase bg-surface-container-highest px-3 py-1 rounded-full">Finished Nov 15</span>
+</div>
+<h4 class="font-headline text-xl font-bold mb-2">Modernism Photo Trail</h4>
+<div class="flex items-center gap-6 mt-6">
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Total Players</p>
+<p class="text-lg font-black font-headline">629</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Engagement</p>
+<p class="text-lg font-black font-headline text-tertiary">91%</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB - Only for main management screen -->
+<div class="fixed bottom-10 right-10 z-50">
+<button class="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-transform group">
+<span class="material-symbols-outlined text-on-primary text-3xl font-bold" data-icon="add">add</span>
+<span class="absolute right-full mr-4 bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                New Event
+            </span>
+</button>
+</div>
+</body></html>

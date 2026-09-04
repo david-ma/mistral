@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Save Your Progress - Froggy Finder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#fdd0ea",
+              "tertiary-dim": "#5c4f00",
+              "tertiary-fixed-dim": "#edd139",
+              "on-secondary-container": "#654459",
+              "inverse-surface": "#0d0f0d",
+              "secondary-dim": "#66465a",
+              "surface-bright": "#f7f7f3",
+              "on-primary": "#cbffd8",
+              "tertiary-fixed": "#fcdf46",
+              "surface-dim": "#d3d5d0",
+              "tertiary-container": "#fcdf46",
+              "surface-variant": "#dcddd9",
+              "on-error": "#ffefee",
+              "inverse-primary": "#94feba",
+              "outline": "#767774",
+              "on-primary-fixed-variant": "#006e3e",
+              "surface": "#f7f7f3",
+              "error-container": "#fb5151",
+              "on-secondary-fixed": "#503246",
+              "on-tertiary-fixed-variant": "#685900",
+              "error": "#b31b25",
+              "surface-container-lowest": "#ffffff",
+              "on-error-container": "#570008",
+              "on-surface-variant": "#5a5c59",
+              "on-primary-container": "#006237",
+              "error-dim": "#9f0519",
+              "secondary": "#735166",
+              "on-secondary": "#ffeef5",
+              "on-tertiary-container": "#5d5000",
+              "on-primary-fixed": "#004e2a",
+              "on-tertiary": "#fff3c5",
+              "primary-dim": "#005c33",
+              "background": "#f7f7f3",
+              "surface-container-low": "#f1f1ed",
+              "secondary-fixed": "#fdd0ea",
+              "primary-fixed": "#94feba",
+              "surface-container-high": "#e2e3df",
+              "primary-fixed-dim": "#86efac",
+              "inverse-on-surface": "#9c9d9a",
+              "outline-variant": "#adadaa",
+              "surface-container": "#e8e8e4",
+              "surface-container-highest": "#dcddd9",
+              "tertiary": "#6a5b00",
+              "on-secondary-fixed-variant": "#6f4e63",
+              "surface-tint": "#006a3c",
+              "secondary-fixed-dim": "#eec3db",
+              "on-surface": "#2d2f2d",
+              "on-tertiary-fixed": "#483d00",
+              "on-background": "#2d2f2d",
+              "primary-container": "#94feba",
+              "primary": "#006a3c"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Be Vietnam Pro"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zine-shadow {
+            box-shadow: 8px 8px 0px 0px rgba(0, 106, 60, 1);
+        }
+        .zine-shadow-pink {
+            box-shadow: 8px 8px 0px 0px rgba(115, 81, 102, 1);
+        }
+        .sticker-border {
+            border: 3px solid #2d2f2d;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-background min-h-screen flex flex-col overflow-x-hidden">
+<!-- TopAppBar suppressed for Transactional Flow (Signup) -->
+<main class="flex-grow flex flex-col items-center justify-center px-6 py-12 relative">
+<!-- Background Decorations -->
+<div class="absolute top-10 left-[-2rem] -rotate-12 opacity-20 hidden md:block">
+<img alt="Cute frog illustration" class="w-48 h-48" data-alt="Cartoon green frog sitting on lilypad" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo8DYLfNOJfLmN2IFXGnlrX3zmMKmTyLVcxc5y_vfc-ivlyVrjTerMWj4EDv65Feg1yk6_UnFqRgpkNfBscZ1Z5mGE7ki5J7Tftb0x0utf8xSkeq8ceiPkLpccc5DAVTQg-OeGPfdiAGwB1-NcqJigW6803E7J5BqeYno4yUze7kTLSpwszonJksyP2oi8SyMA_fPKsGGGo8yPip-x4TklVC0x5hMX8eq5wHmD3uJsoPUwXgx3UH08OOmV-Wygo9Ho-xCjdZpiJ7s"/>
+</div>
+<div class="absolute bottom-10 right-[-2rem] rotate-12 opacity-20 hidden md:block">
+<img alt="Cute frog illustration" class="w-48 h-48" data-alt="Happy cartoon frog jumping upwards" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6ocP-00TtB7-vnyMtDrk3y_8PfWgqxkT1D4XJheVuB2QYMwxGE71G46nq8OpKvrcvu1gS9bAALyTEtnSjbHwX6SlyoK8jPgIoEVM-OaG2iMgHoMn5x20MM-JU7sSCQz8Z8K_3uDw4aFbBzQasmX_nCUN8gQ7pzJxhcJQ5VDPlbCSNr1ooEwNwFeoiOJPFBjvbmhJnfV6TsRpWbIxM2DwgaJoTPTxpO12SflZ6Y_QQ05_I5mQEgK4l_EcatlWht5J-x5j3TVtpu6E"/>
+</div>
+<!-- Scrapbook Header Layout -->
+<div class="relative mb-12 text-center">
+<div class="absolute -inset-4 bg-primary-fixed-dim rounded-xl -rotate-2 -z-10"></div>
+<h1 class="font-headline text-4xl md:text-6xl font-extrabold text-on-primary-fixed tracking-tight leading-none px-4">
+                Don't hop away!
+            </h1>
+</div>
+<!-- Signup Card -->
+<div class="w-full max-w-md bg-secondary-fixed p-8 rounded-xl zine-shadow-pink border-4 border-secondary border-opacity-20 relative">
+<!-- Floating Accessory -->
+<div class="absolute -top-6 -right-6 bg-tertiary-fixed sticker-border p-3 rounded-full rotate-12 shadow-md">
+<span class="material-symbols-outlined text-on-tertiary-fixed text-3xl" style="font-variation-settings: 'FILL' 1;">capture</span>
+</div>
+<p class="font-headline text-xl text-on-secondary-container text-center mb-8 font-bold">
+                Don't hop away without saving your progress!
+            </p>
+<form class="space-y-6">
+<!-- Input Group 1 -->
+<div class="space-y-2">
+<label class="font-label text-sm uppercase tracking-widest font-extrabold text-on-secondary-container ml-2">
+                        Your Pond Email
+                    </label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest sticker-border rounded-xl px-6 py-4 text-on-surface focus:ring-4 focus:ring-primary focus:outline-none placeholder:text-outline-variant font-medium transition-all" placeholder="frog@lilypad.com" type="email"/>
+</div>
+</div>
+<!-- Input Group 2 -->
+<div class="space-y-2">
+<label class="font-label text-sm uppercase tracking-widest font-extrabold text-on-secondary-container ml-2">
+                        Secret Toad Name
+                    </label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest sticker-border rounded-xl px-6 py-4 text-on-surface focus:ring-4 focus:ring-primary focus:outline-none placeholder:text-outline-variant font-medium transition-all" placeholder="e.g. Sir Hopsalot" type="text"/>
+</div>
+</div>
+<!-- Action Button -->
+<button class="group w-full bg-primary text-on-primary font-headline text-xl font-black py-5 rounded-xl sticker-border zine-shadow hover:rotate-2 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 mt-8" type="submit">
+<span>Save My Hunt</span>
+<span class="material-symbols-outlined group-hover:animate-bounce">
+                        east
+                    </span>
+</button>
+</form>
+<!-- Close/Back Action (Suppresses Shell) -->
+<div class="mt-8 text-center">
+<button class="font-label text-xs uppercase tracking-widest font-bold text-on-secondary-container opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 mx-auto">
+<span class="material-symbols-outlined text-sm">close</span>
+                    I'll risk my lilypad
+                </button>
+</div>
+</div>
+<!-- Decorative Footer Element -->
+<div class="mt-12 flex gap-4 overflow-hidden">
+<div class="bg-tertiary-container text-on-tertiary-container px-4 py-2 rounded-full sticker-border -rotate-3 font-bold text-sm">
+                No Spies Allowed
+            </div>
+<div class="bg-primary-container text-on-primary-container px-4 py-2 rounded-full sticker-border rotate-2 font-bold text-sm">
+                100% Organic
+            </div>
+<div class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-full sticker-border -rotate-1 font-bold text-sm">
+                Safe &amp; Snug
+            </div>
+</div>
+</main>
+<!-- BottomNavBar suppressed for Transactional Flow (Signup) -->
+</body></html>

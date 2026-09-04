@@ -5,6 +5,7 @@
     <p class="bingo-page__lead bingo-join__description">{{event.description}}</p>
   {{/if}}
   <p class="bingo-join__grid-info"><strong>Grid:</strong> {{event.gridSize}}×{{event.gridSize}}</p>
+  {{> photo-upload-disclaimer-blurb}}
   <a href="{{joinUrl}}" class="bingo-join__cta">Join and get my card</a>
   <p class="bingo-join__hint">You’ll get a card with randomised prompts. Click each prompt to take or upload a photo; we’ll analyse it and add it to your card.</p>
 
@@ -14,7 +15,7 @@
       <p class="bingo-page__lead">Completed bingo cards from this event.</p>
       <div class="bingo-join__approved-grid">
         {{#each approvedCards}}
-          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
+          {{> instagram-style-bingo-card-preview cells=this.cells gridSize=this.gridSize is3x3=this.is3x3 title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
         {{/each}}
       </div>
     </section>

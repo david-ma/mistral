@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Photo Hunt - Save Your Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#fabd00",
+              "on-secondary-container": "#91b7f2",
+              "surface-dim": "#131313",
+              "error": "#ffb4ab",
+              "surface-container-lowest": "#0e0e0e",
+              "inverse-on-surface": "#313030",
+              "on-tertiary": "#00390a",
+              "secondary-container": "#1b477c",
+              "on-secondary": "#003060",
+              "secondary": "#a6c8ff",
+              "on-tertiary-container": "#006419",
+              "secondary-fixed": "#d5e3ff",
+              "surface-container-high": "#2a2a2a",
+              "on-error-container": "#ffdad6",
+              "tertiary": "#98fe94",
+              "on-surface": "#e5e2e1",
+              "outline": "#9c8f78",
+              "inverse-surface": "#e5e2e1",
+              "tertiary-fixed": "#94f990",
+              "on-primary": "#3f2e00",
+              "on-background": "#e5e2e1",
+              "on-tertiary-fixed": "#002204",
+              "on-primary-fixed": "#261a00",
+              "surface-container-low": "#1c1b1b",
+              "primary-container": "#ffc107",
+              "tertiary-container": "#7ce17b",
+              "primary": "#ffe4af",
+              "surface-container-highest": "#353535",
+              "on-secondary-fixed-variant": "#1b477c",
+              "tertiary-fixed-dim": "#78dc77",
+              "surface-bright": "#393939",
+              "secondary-fixed-dim": "#a6c8ff",
+              "on-primary-fixed-variant": "#5b4300",
+              "inverse-primary": "#785900",
+              "surface": "#131313",
+              "on-primary-container": "#6d5100",
+              "error-container": "#93000a",
+              "background": "#131313",
+              "on-surface-variant": "#d4c5ab",
+              "surface-tint": "#fabd00",
+              "on-error": "#690005",
+              "surface-container": "#20201f",
+              "on-tertiary-fixed-variant": "#005313",
+              "primary-fixed": "#ffdf9e",
+              "on-secondary-fixed": "#001c3b",
+              "outline-variant": "#4f4632",
+              "surface-variant": "#353535"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex flex-col">
+<!-- Hero Visual Background (Abstract Neon Vibe) -->
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-primary-container/10 rounded-full blur-[120px]"></div>
+<div class="absolute top-1/2 -right-24 w-80 h-80 bg-tertiary/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 flex-1 flex flex-col px-6 pt-12 pb-24 max-w-md mx-auto w-full">
+<!-- App Logo Anchor -->
+<div class="mb-12 flex justify-center">
+<h1 class="font-headline text-2xl font-black text-primary uppercase tracking-widest">PHOTO HUNT</h1>
+</div>
+<!-- Progress Indicator (Editorial Style) -->
+<div class="mb-8 flex items-baseline gap-2">
+<span class="font-headline text-5xl font-bold text-tertiary">05</span>
+<span class="font-label text-sm font-bold text-on-surface-variant tracking-widest uppercase">Photos Captured</span>
+</div>
+<!-- Value Proposition Section -->
+<section class="mb-10">
+<h2 class="font-headline text-3xl font-bold leading-tight mb-4 tracking-tight">
+                Don't lose your progress.
+            </h2>
+<p class="text-on-surface-variant text-lg leading-relaxed">
+                Create an account to save your photos and resume on any device. Your hunt is just getting started.
+            </p>
+</section>
+<!-- Dynamic Content Card -->
+<div class="surface-container-low rounded-xl p-6 shadow-[0px_20px_40px_rgba(250,189,0,0.04)]">
+<form action="#" class="space-y-5">
+<!-- Form Group: Email -->
+<div class="space-y-2">
+<label class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1" for="email">Email Address</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-lg py-4 px-4 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/40 transition-all outline-none" id="email" placeholder="explorer@photohunt.com" type="email"/>
+</div>
+</div>
+<!-- Form Group: Password -->
+<div class="space-y-2">
+<label class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1" for="password">Secret Key</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-lg py-4 px-4 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary/40 transition-all outline-none" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<!-- Action Section -->
+<div class="pt-4 flex flex-col gap-4">
+<button class="w-full py-5 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-bold text-lg shadow-[0px_10px_20px_rgba(250,189,0,0.15)] active:scale-95 transition-transform" type="submit">
+                        Save My Hunt
+                    </button>
+<button class="w-full py-4 text-on-surface-variant font-label font-bold text-sm uppercase tracking-widest hover:text-on-surface transition-colors active:scale-95" type="button">
+                        Skip for now
+                    </button>
+</div>
+</form>
+</div>
+<!-- Trust Signals / Features Bento-ish Layout -->
+<div class="mt-12 grid grid-cols-2 gap-4">
+<div class="surface-container-low p-4 rounded-lg flex flex-col gap-3">
+<span class="material-symbols-outlined text-tertiary" data-icon="cloud_done">cloud_done</span>
+<p class="font-label text-xs font-medium text-on-surface-variant">Cloud Syncing</p>
+</div>
+<div class="surface-container-low p-4 rounded-lg flex flex-col gap-3">
+<span class="material-symbols-outlined text-tertiary" data-icon="devices">devices</span>
+<p class="font-label text-xs font-medium text-on-surface-variant">Multi-device</p>
+</div>
+</div>
+</main>
+<!-- Contextual Information (Footer) -->
+<footer class="mt-auto px-6 py-8 text-center relative z-10">
+<p class="text-on-surface-variant/40 text-[10px] uppercase tracking-[0.2em] font-label">
+            By continuing, you agree to the Hunt Terms of Service.
+        </p>
+</footer>
+<!-- Decorative Image Treatment (Staggered Editorial Feel) -->
+<div class="fixed bottom-0 right-0 w-32 h-48 opacity-20 pointer-events-none z-0">
+<img class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700" data-alt="Close up of a vintage camera lens with neon reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC54A9edkVdqvvNgeNnaFsoCaJydv4G0cXGPDci6-8yWlbRxA3DBlQh3sED-4HmFue3IkaVUfJ-92cet1_yKXX9HUIeVgrikmJQtMWoTKvxgpGzIzDpF4-F803qTqqVJDxro00qMUBv2RcLBcHhtR8FdoNpg8dNMxV2dcN2j7rfYenls_AVzi5gKGc_r70V8-uqwOTWYofXLyKLriNJ4oIdi_SBUtz6WEiCnLr4Og2nNXPHOQubmZXUVhuVClKzawNsne7jQRhslME"/>
+</div>
+</body></html>

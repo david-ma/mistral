@@ -1,38 +1,20 @@
 <div class="bingo-landing">
   <header class="bingo-hero">
-    <h1 class="bingo-hero__title">Photo Bingo</h1>
-    <p class="bingo-hero__tagline">Play bingo with your camera. Get prompts, snap photos, and let AI describe what you captured.</p>
-    <a href="/list-events" class="bingo-hero__cta">Play bingo</a>
-  </header>
-
-  <section class="bingo-section bingo-section--featured">
-    <h2 class="bingo-section__title">Play a card</h2>
-    <p class="bingo-section__body">Try a card — no login required. Click to play.</p>
-    <div class="bingo-landing__approved-grid">
-      {{#each featuredCards}}
-          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
-      {{else}}
-        <p class="bingo-section__empty">No cards to show. Cards 1, 2, 3 will appear here.</p>
-      {{/each}}
+    <h1 class="bingo-hero__title">Unihack Photo Hunt</h1>
+    <p class="bingo-hero__tagline">
+      Get a 3×3 grid of Unihack-themed prompts, hunt for photos around the venue, and let AI describe what you captured.
+    </p>
+    <div class="bingo-hero__cta-row">
+      <button id="uph-start" class="bingo-hero__cta bingo-hero__cta--primary">Start a new card</button>
+      <button id="uph-continue" class="bingo-hero__cta bingo-hero__cta--secondary" hidden>Continue your card</button>
     </div>
-  </section>
-
-  {{#if approvedCards.length}}
-    <section class="bingo-section bingo-section--cards">
-      <h2 class="bingo-section__title">Completed cards</h2>
-      <p class="bingo-section__body">Bingo cards from the community.</p>
-      <div class="bingo-landing__approved-grid">
-        {{#each approvedCards}}
-          {{> bingo-card-preview cells=this.cells gridSize=this.gridSize title=this.title playerName=this.playerName cardUrl=this.cardUrl}}
-        {{/each}}
-      </div>
-    </section>
-  {{/if}}
+    <p id="uph-status" class="bingo-hero__status" aria-live="polite"></p>
+  </header>
 
   <section class="bingo-section bingo-section--about">
     <h2 class="bingo-section__title">How it works</h2>
     <div class="bingo-section__body">
-      <p>This app is built for the <a href="https://worldwide-hackathon.mistral.ai/" target="_blank" rel="noopener">Mistral AI Worldwide Hackathon 2026</a>. The stack:</p>
+      <p>This app is rebranded for <a href="{{unihackUrl}}" target="_blank" rel="noopener">Unihack</a>. The stack:</p>
       <ul>
         <li><strong>Thalia</strong> — lightweight Bun-based web framework (Handlebars, Drizzle ORM, multi-site).</li>
         <li><strong>Mistral AI</strong> — vision API to describe each photo you upload for a bingo cell.</li>
@@ -40,33 +22,85 @@
         <li><strong>D3.js</strong> — card grid is drawn on the client from a JSON game state; fast load, then fetch.</li>
         <li><strong>Socket.IO</strong> — real-time updates (e.g. when a cell is filled) for a smoother experience.</li>
       </ul>
-      <p>Organisers create events with a list of prompts (e.g. “Team photo”, “Photo of lunch”). Players join an event, get a randomised bingo card, then tap each prompt to take or upload a photo. We run the image through Mistral, store the description on the card, and you can review everything on the admin “View all prompts” page.</p>
+      <p>Organisers create events with a list of prompts (e.g. “Team photo”, “Photo of your hardware setup”). Players join the Unihack event, get a randomised 3×3 photo-hunt card (no free space), then tap each prompt to take or upload a photo. We run the image through Mistral, store the description on the card, and you can review everything later on the admin dashboard.</p>
     </div>
   </section>
 
   <section class="bingo-section bingo-section--hackathon">
-    <h2 class="bingo-section__title">Hackathon &amp; sponsors</h2>
+    <h2 class="bingo-section__title">Play at Unihack</h2>
     <div class="bingo-hackathon">
-      <h3 class="bingo-hackathon__title">Mistral AI Worldwide Hackathon 2026</h3>
-      <a href="https://worldwide-hackathon.mistral.ai/" class="bingo-hackathon__link" target="_blank" rel="noopener">worldwide-hackathon.mistral.ai →</a>
-      <p class="bingo-hackathon__meta">February 28th – March 1st · 7 locations · Build the next era of AI</p>
-
-      <div class="bingo-hackathon__stats">
-        <span class="bingo-hackathon__stat">1000+ hackers</span>
-        <span class="bingo-hackathon__stat">1–4 per team</span>
-        <span class="bingo-hackathon__stat">48 hours</span>
-        <span class="bingo-hackathon__stat">200k+ in prizes</span>
-      </div>
-
-      <p class="bingo-hackathon__subtitle">Prizes</p>
+      <h3 class="bingo-hackathon__title">Unihack Photo Hunt</h3>
+      <a href="{{unihackUrl}}" class="bingo-hackathon__link" target="_blank" rel="noopener">unihack.net →</a>
+      <p class="bingo-hackathon__meta">Capture the energy of the hackathon: teams, mentors, venue details, late-night coding sessions, and demos.</p>
+      <p class="bingo-hackathon__subtitle">How to play</p>
       <ul class="bingo-hackathon__list">
-        <li><strong>Global winner:</strong> hiring opportunity at Mistral, $15k Mistral credits, $10k cash</li>
-        <li><strong>Per location:</strong> 1st – $3k credits + $1.5k cash; 2nd – $2k credits + $1k cash; 3rd – $2k credits + $500 cash</li>
-        <li>Special awards: Best Vibe Usage, Best Use of ElevenLabs, Best Video Game Project, Best Use of Agent Skills, and more</li>
+        <li>Click <strong>Start a new card</strong> to get a fresh 3×3 grid of Unihack prompts.</li>
+        <li>Tap any prompt to take or upload a photo from your phone or laptop.</li>
+        <li>We send the image to Mistral, describe what’s in it, and store it on your card.</li>
+        <li>Come back to this page on the same device to <strong>continue your card</strong> from local storage.</li>
+        <li>When you’re happy with your photos, <strong>save your card</strong> by creating an account with your email.</li>
       </ul>
-
-      <p class="bingo-hackathon__subtitle">Sponsors</p>
-      <p class="bingo-hackathon__sponsors">Weight &amp; Biases (global track), NVIDIA (New York, London, Paris), Amazon Web Services (London, Paris), Hugging Face, ElevenLabs, Supercell, Raise, Giant, Jump Trading, White Circle, Tilde Research. Hackathon organised by Iterate.</p>
     </div>
   </section>
 </div>
+
+<script>
+  (function () {
+    const STORAGE_KEY = 'uph_card_id';
+    const JOIN_URL = '{{joinUrl}}';
+
+    function getStoredCardId() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const n = parseInt(raw, 10);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function setStoredCardId(id) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, String(id));
+      } catch {
+        // ignore
+      }
+    }
+
+    function init() {
+      var startBtn = document.getElementById('uph-start');
+      var continueBtn = document.getElementById('uph-continue');
+      var statusEl = document.getElementById('uph-status');
+      if (!startBtn || !continueBtn || !statusEl) return;
+
+      var existing = getStoredCardId();
+      if (existing) {
+        continueBtn.hidden = false;
+        statusEl.textContent = 'Welcome back – continue your card or start a fresh one.';
+      }
+
+      startBtn.addEventListener('click', function () {
+        statusEl.textContent = 'Creating a new photo-hunt card…';
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.location.href = JOIN_URL;
+      });
+
+      continueBtn.addEventListener('click', function () {
+        var id = getStoredCardId();
+        if (!id) {
+          statusEl.textContent = 'No saved card found on this device. Starting a new one instead.';
+          window.location.href = JOIN_URL;
+          return;
+        }
+        window.location.href = '/bingo/' + id;
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>

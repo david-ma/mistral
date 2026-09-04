@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "background": "#f7f9fb",
+              "on-surface": "#191c1e",
+              "on-primary-container": "#fdfcff",
+              "on-primary": "#ffffff",
+              "on-tertiary-fixed-variant": "#6b3b00",
+              "on-error-container": "#93000a",
+              "surface-tint": "#006398",
+              "secondary-fixed-dim": "#abcae9",
+              "tertiary-fixed-dim": "#ffb875",
+              "inverse-on-surface": "#eff1f3",
+              "on-secondary-fixed-variant": "#2a4a63",
+              "on-background": "#191c1e",
+              "surface-container-lowest": "#ffffff",
+              "error": "#ba1a1a",
+              "surface-container-low": "#f2f4f6",
+              "primary": "#006194",
+              "secondary": "#43617c",
+              "on-tertiary-container": "#fffbff",
+              "on-tertiary": "#ffffff",
+              "secondary-container": "#c1e0ff",
+              "inverse-surface": "#2d3133",
+              "on-secondary-fixed": "#001d31",
+              "surface-container-high": "#e6e8ea",
+              "tertiary-container": "#ac6200",
+              "on-primary-fixed": "#001d31",
+              "surface-container-highest": "#e0e3e5",
+              "surface-container": "#eceef0",
+              "on-error": "#ffffff",
+              "primary-fixed-dim": "#93ccff",
+              "surface-variant": "#e0e3e5",
+              "outline": "#707881",
+              "primary-container": "#007bb9",
+              "on-secondary": "#ffffff",
+              "outline-variant": "#bfc7d2",
+              "inverse-primary": "#93ccff",
+              "on-surface-variant": "#3f4850",
+              "on-tertiary-fixed": "#2d1600",
+              "tertiary-fixed": "#ffdcc0",
+              "surface-dim": "#d8dadc",
+              "secondary-fixed": "#cce5ff",
+              "tertiary": "#894d00",
+              "error-container": "#ffdad6",
+              "on-primary-fixed-variant": "#004b73",
+              "surface": "#f7f9fb",
+              "on-secondary-container": "#45647f",
+              "surface-bright": "#f7f9fb",
+              "primary-fixed": "#cce5ff"
+            },
+            fontFamily: {
+              "headline": ["Inter", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+        }
+        .arctic-border {
+            border: 1px solid #bfc7d2;
+        }
+        .text-tight {
+            letter-spacing: -0.02em;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-white border-b border-slate-300">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-sky-900 tracking-tighter">Active Hunt</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined" data-icon="save">save</span>
+</button>
+<button class="text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<div class="flex pt-16 min-h-screen">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-[calc(100vh-64px)] w-64 border-r border-slate-300 bg-slate-50 py-8 px-6 fixed">
+<div class="mb-10">
+<h2 class="text-2xl font-bold tracking-tighter text-sky-900">Arctic Hunt</h2>
+<p class="text-sm text-slate-500 font-medium">Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-sky-800 font-bold border-r-2 border-sky-800 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="dashboard">dashboard</span>
+<span class="text-sm tracking-tight">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 font-medium hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="rule">rule</span>
+<span class="text-sm tracking-tight">Moderation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 font-medium hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+<span class="text-sm tracking-tight">Settings</span>
+</a>
+</nav>
+<div class="mt-auto">
+<button class="w-full py-3 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity">
+                    New Event
+                </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-8 lg:p-12">
+<!-- Editorial Header -->
+<div class="max-w-6xl mx-auto mb-16">
+<h1 class="text-[3.5rem] font-extrabold text-on-surface leading-none tracking-tight mb-4">
+                    Hunt Analytics
+                </h1>
+<div class="flex items-center gap-8 text-slate-500">
+<div class="flex flex-col">
+<span class="text-[0.65rem] uppercase tracking-widest font-bold text-outline">System Status</span>
+<span class="text-sm font-medium text-primary">Active Operations</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[0.65rem] uppercase tracking-widest font-bold text-outline">Region</span>
+<span class="text-sm font-medium text-on-surface">Circumpolar North</span>
+</div>
+</div>
+</div>
+<!-- Bento Stats Grid -->
+<section class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+<!-- Large Primary Stat -->
+<div class="md:col-span-2 md:row-span-2 arctic-border p-8 bg-surface-container-lowest rounded-lg flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary mb-4" data-icon="photo_camera" style="font-size: 32px;">photo_camera</span>
+<h3 class="text-lg font-bold text-on-surface-variant">Capture Volume</h3>
+</div>
+<div class="mt-12">
+<div class="text-6xl font-extrabold text-tight text-on-surface">12,482</div>
+<div class="flex items-center gap-2 mt-2 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span class="text-sm font-bold">+14.2% this week</span>
+</div>
+</div>
+</div>
+<!-- Small Stats -->
+<div class="arctic-border p-6 bg-surface-container-low rounded-lg">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface-variant">Active Hunters</h3>
+<span class="material-symbols-outlined text-outline" data-icon="person">person</span>
+</div>
+<div class="text-3xl font-extrabold text-on-surface">842</div>
+</div>
+<div class="arctic-border p-6 bg-surface-container-low rounded-lg">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface-variant">Avg. Score</h3>
+<span class="material-symbols-outlined text-outline" data-icon="leaderboard">leaderboard</span>
+</div>
+<div class="text-3xl font-extrabold text-on-surface">4.8k</div>
+</div>
+<!-- Medium Stat -->
+<div class="md:col-span-2 arctic-border p-6 bg-white rounded-lg flex items-center justify-between">
+<div class="space-y-1">
+<h3 class="text-sm font-bold text-on-surface-variant">Verification Queue</h3>
+<div class="text-2xl font-extrabold text-on-surface">128 Pending</div>
+</div>
+<button class="px-4 py-2 arctic-border text-sm font-bold hover:bg-slate-50 transition-colors rounded-lg">Review All</button>
+</div>
+</section>
+<!-- Data Sheet: Recent Events -->
+<section class="max-w-6xl mx-auto">
+<div class="flex justify-between items-end mb-8">
+<h2 class="text-2xl font-bold tracking-tight text-on-surface">Recent Deployments</h2>
+<a class="text-sm font-bold text-primary underline underline-offset-4" href="#">View Full Registry</a>
+</div>
+<div class="arctic-border rounded-lg overflow-hidden">
+<!-- Column Headers -->
+<div class="grid grid-cols-12 gap-4 px-6 py-4 bg-surface-container-high border-b border-outline-variant">
+<div class="col-span-5 text-[0.65rem] uppercase tracking-widest font-bold text-on-surface-variant">Event Identifier</div>
+<div class="col-span-3 text-[0.65rem] uppercase tracking-widest font-bold text-on-surface-variant">Coordination</div>
+<div class="col-span-2 text-[0.65rem] uppercase tracking-widest font-bold text-on-surface-variant">Status</div>
+<div class="col-span-2 text-right text-[0.65rem] uppercase tracking-widest font-bold text-on-surface-variant">Capacity</div>
+</div>
+<!-- Data Sheet Rows -->
+<div class="grid grid-cols-12 gap-4 px-6 py-6 items-center bg-white hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 flex items-center gap-4">
+<div class="w-10 h-10 bg-slate-100 arctic-border rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400" data-icon="landscape">landscape</span>
+</div>
+<div>
+<div class="font-bold text-on-surface">Glacier Path Finding</div>
+<div class="text-xs text-slate-500">ID: ARCT-2024-001</div>
+</div>
+</div>
+<div class="col-span-3 text-sm font-medium text-slate-700">64.2008° N, 149.4937° W</div>
+<div class="col-span-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[0.65rem] font-bold bg-sky-100 text-sky-800 arctic-border border-sky-200">ACTIVE</span>
+</div>
+<div class="col-span-2 text-right font-mono text-sm">142/200</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-6 items-center bg-surface-container-low hover:bg-surface-container-highest transition-colors">
+<div class="col-span-5 flex items-center gap-4">
+<div class="w-10 h-10 bg-slate-100 arctic-border rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400" data-icon="ac_unit">ac_unit</span>
+</div>
+<div>
+<div class="font-bold text-on-surface">Frost Architecture Hunt</div>
+<div class="text-xs text-slate-500">ID: ARCT-2024-002</div>
+</div>
+</div>
+<div class="col-span-3 text-sm font-medium text-slate-700">69.2197° N, 49.8175° W</div>
+<div class="col-span-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[0.65rem] font-bold bg-slate-200 text-slate-600 arctic-border border-slate-300">QUEUED</span>
+</div>
+<div class="col-span-2 text-right font-mono text-sm">0/500</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-6 items-center bg-white hover:bg-surface-container-low transition-colors">
+<div class="col-span-5 flex items-center gap-4">
+<div class="w-10 h-10 bg-slate-100 arctic-border rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400" data-icon="flare">flare</span>
+</div>
+<div>
+<div class="font-bold text-on-surface">Solar Flare Capture</div>
+<div class="text-xs text-slate-500">ID: ARCT-2024-003</div>
+</div>
+</div>
+<div class="col-span-3 text-sm font-medium text-slate-700">78.2232° N, 15.6267° E</div>
+<div class="col-span-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[0.65rem] font-bold bg-sky-100 text-sky-800 arctic-border border-sky-200">ACTIVE</span>
+</div>
+<div class="col-span-2 text-right font-mono text-sm">891/1000</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Mobile Navigation -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full h-16 z-50 flex justify-around items-center bg-white border-t border-slate-300 px-4">
+<a class="flex flex-col items-center justify-center text-sky-800 font-bold" href="#">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+<span class="text-[10px] tracking-tight">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="text-[10px] tracking-tight">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] tracking-tight">Profile</span>
+</a>
+</nav>
+</body></html>

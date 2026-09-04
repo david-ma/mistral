@@ -1,23 +1,32 @@
 // -----------------------------------------------------------------------------
-// Bingo – design system for event list, create/edit, play card, admin
-// Works with wrapper darkmode; uses consistent spacing and clear hierarchy.
+// Unihack Photo Hunt – design system (Uncodixfy + colours.hbs)
+// Normal UI: 8px radius max, 1px borders, 8/16/24px spacing, no decorative flair.
+// Palette: Obsidian Depth (dark, no blue) – background, surface, primary, secondary, accent, text.
 // -----------------------------------------------------------------------------
 
-// Variables
-$bingo-spacing: 1rem;
-$bingo-spacing-lg: 1.5rem;
-$bingo-radius: 10px;
+$uph-bg: #0f0f0f;
+$uph-surface: #1a1a1a;
+$uph-primary: #00d4aa;
+$uph-secondary: #00a3cc;
+$uph-accent: #ff6b9d;
+$uph-text: #f5f5f5;
+$uph-text-muted: #a3a3a3;
+$uph-border: #2a2a2a;
+
+$bingo-spacing: 16px;
+$bingo-spacing-lg: 24px;
+$bingo-radius: 8px;
 $bingo-radius-sm: 6px;
-$bingo-accent: #22c55e;      // green – "go", success, filled cell
-$bingo-accent-dim: rgba(34, 197, 94, 0.15);
-$bingo-cta: #f59e0b;        // amber – join, create, primary actions
-$bingo-cta-hover: #d97706;
-$bingo-free: #94a3b8;       // slate – free space
-$bingo-card-bg: #1e293b;
-$bingo-cell-empty: #334155;
-$bingo-cell-hover: #475569;
-$bingo-border: #475569;
-$bingo-text-muted: #94a3b8;
+$bingo-accent: $uph-primary;
+$bingo-accent-dim: rgba(0, 212, 170, 0.15);
+$bingo-cta: $uph-primary;
+$bingo-cta-hover: #00b894;
+$bingo-free: $uph-text-muted;
+$bingo-card-bg: $uph-surface;
+$bingo-cell-empty: #262626;
+$bingo-cell-hover: #333;
+$bingo-border: $uph-border;
+$bingo-text-muted: $uph-text-muted;
 
 // -----------------------------------------------------------------------------
 // Page shell
@@ -58,31 +67,71 @@ $bingo-text-muted: #94a3b8;
   line-height: 1.5;
 }
 
+// Photo upload disclaimer blurb (event + bingo play pages)
+.bingo-disclaimer-blurb {
+  margin: 0 0 $bingo-spacing;
+  font-size: 0.88rem;
+  color: $bingo-text-muted;
+  line-height: 1.45;
+}
+.bingo-disclaimer-blurb__link {
+  color: #94a3b8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  &:hover { color: #e2e8f0; }
+}
+
+// Photo upload disclaimer page
+.bingo-page--disclaimer .bingo-disclaimer__content {
+  margin-top: $bingo-spacing-lg;
+  padding: $bingo-spacing-lg;
+  background: $bingo-card-bg;
+  border: 1px solid $bingo-border;
+  border-radius: $bingo-radius;
+}
+.bingo-disclaimer__lead {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+.bingo-disclaimer__body {
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  color: $bingo-text-muted;
+  line-height: 1.6;
+
+  ul {
+    margin: 0.75rem 0;
+    padding-left: 1.25rem;
+  }
+  li { margin-bottom: 0.5rem; }
+}
+.bingo-disclaimer__back {
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid $bingo-border;
+}
+
 // -----------------------------------------------------------------------------
 // Bingo card preview (reusable: homepage, admin, event pages)
 // -----------------------------------------------------------------------------
 .bingo-card-preview {
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.96) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba($bingo-border, 0.85);
+  background: $bingo-card-bg;
+  border-radius: $bingo-radius;
+  border: 1px solid $bingo-border;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: none;
   height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: border-color 0.15s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    border-color: rgba($bingo-cta, 0.55);
-    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.55);
-  }
-
-  &:hover .bingo-card-preview__image {
-    transform: scale(1.04);
+    border-color: $bingo-cta;
   }
 
   &__header {
@@ -90,10 +139,10 @@ $bingo-text-muted: #94a3b8;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.8rem 0.9rem;
-    border-bottom: 1px solid rgba($bingo-border, 0.85);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid $bingo-border;
+    background: $bingo-card-bg;
   }
 
   &__title-wrap {
@@ -125,17 +174,16 @@ $bingo-text-muted: #94a3b8;
     line-height: 1;
     color: $bingo-cta;
     text-decoration: none;
-    padding: 0.38rem 0.52rem;
-    border-radius: 999px;
-    border: 1px solid rgba($bingo-cta, 0.35);
-    background: rgba($bingo-cta, 0.12);
+    padding: 6px 10px;
+    border-radius: $bingo-radius-sm;
+    border: 1px solid $bingo-cta;
+    background: transparent;
     transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
     white-space: nowrap;
 
     &:hover {
-      color: #fff;
-      border-color: rgba($bingo-cta, 0.75);
-      background: rgba($bingo-cta, 0.35);
+      color: $uph-bg;
+      background: $bingo-cta;
     }
   }
 
@@ -205,7 +253,6 @@ $bingo-text-muted: #94a3b8;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.2s ease;
   }
 
   &__desc {
@@ -248,10 +295,10 @@ $bingo-text-muted: #94a3b8;
 
   .bingo-play__player {
     margin-bottom: $bingo-spacing;
-    padding: 0.75rem;
-    border: 1px solid rgba($bingo-border, 0.8);
+    padding: 12px 16px;
+    border: 1px solid $bingo-border;
     border-radius: $bingo-radius;
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.92) 100%);
+    background: $bingo-card-bg;
   }
 
   .bingo-play__player-label {
@@ -271,12 +318,12 @@ $bingo-text-muted: #94a3b8;
   .bingo-play__player-input {
     flex: 1;
     min-width: 0;
-    padding: 0.5rem 0.65rem;
+    padding: 8px 12px;
     font-size: 0.95rem;
     border-radius: $bingo-radius-sm;
-    border: 1px solid rgba($bingo-border, 0.9);
-    background: rgba(15, 23, 42, 0.8);
-    color: #e2e8f0;
+    border: 1px solid $bingo-border;
+    background: $uph-bg;
+    color: $uph-text;
 
     &::placeholder {
       color: $bingo-text-muted;
@@ -284,21 +331,20 @@ $bingo-text-muted: #94a3b8;
   }
 
   .bingo-play__player-save {
-    padding: 0.5rem 0.75rem;
+    padding: 8px 12px;
     border-radius: $bingo-radius-sm;
-    border: 1px solid rgba($bingo-cta, 0.45);
-    background: rgba($bingo-cta, 0.15);
+    border: 1px solid $bingo-cta;
+    background: transparent;
     color: $bingo-cta;
     font-size: 0.86rem;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
 
     &:hover:enabled {
-      color: #fff;
-      border-color: rgba($bingo-cta, 0.75);
-      background: rgba($bingo-cta, 0.35);
+      color: $uph-bg;
+      background: $bingo-cta;
     }
 
     &:disabled {
@@ -368,7 +414,8 @@ $bingo-text-muted: #94a3b8;
     background: $bingo-card-bg;
     border-radius: $bingo-radius;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid $bingo-border;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .bingo-cell {
@@ -672,85 +719,6 @@ $bingo-text-muted: #94a3b8;
     font-size: 0.8rem;
     color: $bingo-text-muted;
   }
-
-  .bingo-form__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: center;
-    margin-top: 1rem;
-    padding-top: 0.5rem;
-  }
-}
-
-// -----------------------------------------------------------------------------
-// Edit event page – layout and demo placeholders
-// -----------------------------------------------------------------------------
-.bingo-page--edit-event {
-  .bingo-edit-event__form-section {
-    margin-bottom: 2rem;
-  }
-
-  .bingo-edit-event__demo-actions {
-    margin-bottom: 2rem;
-    padding: $bingo-spacing-lg;
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.7) 100%);
-    border: 1px dashed rgba($bingo-border, 0.7);
-    border-radius: $bingo-radius;
-  }
-
-  .bingo-edit-event__heading {
-    margin: 0 0 1rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #e2e8f0;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .bingo-edit-event__demo-badge {
-    display: inline-block;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #0f172a;
-    background: #fbbf24;
-    border-radius: 4px;
-  }
-
-  .bingo-edit-event__demo-desc {
-    margin: 0 0 0.75rem;
-    font-size: 0.88rem;
-    color: $bingo-text-muted;
-    line-height: 1.4;
-  }
-
-  .bingo-edit-event__demo-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-}
-
-.bingo-admin__demo-btn {
-  padding: 0.5rem 0.9rem;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: $bingo-text-muted;
-  background: transparent;
-  border: 1px dashed rgba($bingo-border, 0.9);
-  border-radius: $bingo-radius-sm;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    color: #cbd5e1;
-    border-color: $bingo-text-muted;
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -873,6 +841,10 @@ $bingo-text-muted: #94a3b8;
       font-size: 0.9rem;
     }
 
+    th.photos-column, td.photos-column {
+      min-width: 400px !important;
+    }
+
     th,
     td {
       padding: 0.5rem 0.75rem;
@@ -921,98 +893,101 @@ $bingo-text-muted: #94a3b8;
 }
 
 .bingo-hero {
-  text-align: center;
-  padding: clamp(1.5rem, 3vw, 2.5rem) 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid rgba($bingo-border, 0.85);
-  border-radius: 14px;
-  background:
-    radial-gradient(120% 120% at 50% 0%, rgba($bingo-accent, 0.22) 0%, rgba($bingo-accent, 0) 55%),
-    linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
-  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba($bingo-cta, 0.1) 0%, rgba($bingo-cta, 0) 60%);
-    pointer-events: none;
-  }
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  border: 1px solid $bingo-border;
+  border-radius: $bingo-radius;
+  background: $bingo-card-bg;
 
   &__title {
-    margin: 0 0 0.5rem;
-    font-size: clamp(2rem, 3.4vw, 2.9rem);
-    font-weight: 800;
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: -0.02em;
-    position: relative;
-    z-index: 1;
+    color: $uph-text;
   }
 
   &__tagline {
     margin: 0 auto $bingo-spacing-lg;
     max-width: 56ch;
-    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    font-size: 1rem;
     color: $bingo-text-muted;
     line-height: 1.5;
-    position: relative;
-    z-index: 1;
+  }
+
+  &__cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 8px;
   }
 
   &__cta {
     display: inline-block;
-    padding: 0.8rem 1.35rem;
+    padding: 8px 16px;
     font-size: 1rem;
     font-weight: 600;
-    color: #0f172a;
+    color: $uph-bg;
     background: $bingo-cta;
-    border: none;
-    border-radius: 999px;
+    border: 1px solid $bingo-cta;
+    border-radius: $bingo-radius;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 8px 22px rgba($bingo-cta, 0.35);
-    transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.2s ease;
-    position: relative;
-    z-index: 1;
+    transition: background 0.15s ease, color 0.15s ease;
 
     &:hover {
       background: $bingo-cta-hover;
-      color: #fff;
-      transform: translateY(-1px) scale(1.01);
-      box-shadow: 0 10px 24px rgba($bingo-cta-hover, 0.35);
+      color: $uph-bg;
     }
+
+    &--secondary {
+      background: transparent;
+      color: $bingo-cta;
+      border-color: $bingo-border;
+
+      &:hover {
+        background: rgba($bingo-cta, 0.12);
+        border-color: $bingo-cta;
+      }
+    }
+  }
+
+  &__status {
+    margin: 0;
+    font-size: 0.9rem;
+    color: $bingo-text-muted;
   }
 }
 
 .bingo-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
 
   &--featured,
   &--cards,
-  &--about {
-    padding: 1rem;
-    border: 1px solid rgba($bingo-border, 0.78);
-    border-radius: 12px;
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.93) 0%, rgba(15, 23, 42, 0.94) 100%);
-    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.35);
+  &--about,
+  &--hackathon {
+    padding: 16px;
+    border: 1px solid $bingo-border;
+    border-radius: $bingo-radius;
+    background: $bingo-card-bg;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     @media (min-width: 768px) {
-      padding: 1.25rem;
+      padding: 20px;
     }
   }
 
   &--featured {
-    border-color: rgba($bingo-cta, 0.42);
+    border-color: $bingo-cta;
   }
 
   &--featured .bingo-section__title {
-    color: #fbbf24;
+    color: $bingo-cta;
   }
 
   &--cards .bingo-section__title {
-    color: #e2e8f0;
+    color: $uph-text;
   }
 
   &--about .bingo-section__body {
@@ -1069,12 +1044,198 @@ $bingo-text-muted: #94a3b8;
   }
 }
 
+// -----------------------------------------------------------------------------
+// Pricing teaser (homepage)
+// -----------------------------------------------------------------------------
+.bingo-pricing-more {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+
+  a {
+    color: $bingo-cta;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Pricing page
+// -----------------------------------------------------------------------------
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: start;
+  }
+}
+
+.pricing-card {
+  background: $bingo-card-bg;
+  border-radius: $bingo-radius;
+  border: 1px solid $bingo-border;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &--featured {
+    border-color: $bingo-cta;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: $bingo-radius-sm;
+    align-self: flex-start;
+
+    &--free {
+      background: rgba($bingo-accent, 0.15);
+      color: $bingo-accent;
+      border: 1px solid rgba($bingo-accent, 0.4);
+    }
+
+    &--standard {
+      background: rgba($bingo-cta, 0.18);
+      color: $bingo-cta;
+      border: 1px solid rgba($bingo-cta, 0.45);
+    }
+
+    &--corporate {
+      background: rgba(139, 92, 246, 0.15);
+      color: #a78bfa;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+  }
+
+  &__price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  &__period {
+    font-size: 0.85rem;
+    color: $bingo-text-muted;
+    margin-top: 0.1rem;
+  }
+
+  &__tagline {
+    margin: 0;
+    font-size: 0.9rem;
+    color: $bingo-text-muted;
+    line-height: 1.5;
+  }
+
+  &__features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    flex: 1;
+  }
+
+  &__feature {
+    font-size: 0.9rem;
+    padding-left: 1.5rem;
+    position: relative;
+    line-height: 1.4;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.15em;
+      width: 1rem;
+      height: 1rem;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+    }
+
+    &--yes {
+      color: #e2e8f0;
+
+      &::before {
+        // Checkmark via border trick
+        content: '✓';
+        color: $bingo-accent;
+        font-size: 0.85rem;
+        top: 0;
+      }
+    }
+
+    &--no {
+      color: $bingo-text-muted;
+      text-decoration: line-through;
+      text-decoration-color: rgba($bingo-text-muted, 0.45);
+
+      &::before {
+        content: '✗';
+        color: rgba($bingo-text-muted, 0.5);
+        font-size: 0.85rem;
+        top: 0;
+      }
+    }
+  }
+
+  &__cta {
+    display: block;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    border-radius: $bingo-radius-sm;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease, opacity 0.15s ease;
+
+    &--primary {
+      background: $bingo-cta;
+      color: #0f172a;
+
+      &:hover {
+        background: $bingo-cta-hover;
+      }
+    }
+
+    &--secondary {
+      background: rgba($bingo-border, 0.25);
+      color: #e2e8f0;
+      border: 1px solid rgba($bingo-border, 0.6);
+
+      &:hover {
+        background: rgba($bingo-border, 0.4);
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
 .bingo-hackathon {
-  padding: clamp(1rem, 2vw, 1.6rem);
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.96) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba($bingo-border, 0.9);
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+  padding: 16px 20px;
+  background: $bingo-card-bg;
+  border-radius: $bingo-radius;
+  border: 1px solid $bingo-border;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   &__title {
     margin: 0 0 0.5rem;
@@ -1142,4 +1303,27 @@ $bingo-text-muted: #94a3b8;
 
     strong { color: inherit; }
   }
+}
+
+// Apply Obsidian Depth palette to page when darkmode (Uncodixfy: dark muted, no blue)
+body.darkmode .main {
+  background: $uph-bg !important;
+  color: $uph-text !important;
+}
+body.darkmode .main a {
+  color: $uph-primary !important;
+}
+body.darkmode .main a:hover {
+  color: $uph-secondary !important;
+}
+body.darkmode .nav {
+  background: $uph-surface !important;
+  border-bottom-color: $uph-border !important;
+}
+body.darkmode .nav-brand,
+body.darkmode .nav-links a:hover {
+  color: $uph-text !important;
+}
+body.darkmode .nav-links a {
+  color: $uph-text-muted !important;
 }

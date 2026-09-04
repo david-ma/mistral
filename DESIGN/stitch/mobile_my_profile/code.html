@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hunt Active - My Events</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#0a0e14",
+              "on-secondary": "#1e2025",
+              "tertiary": "#edecff",
+              "on-tertiary-container": "#4c4e69",
+              "surface-container-lowest": "#000000",
+              "on-primary": "#004176",
+              "surface-container-low": "#0e141c",
+              "on-tertiary-fixed": "#393c55",
+              "primary-fixed": "#d3e4ff",
+              "secondary": "#9c9ea4",
+              "outline-variant": "#3c495b",
+              "primary": "#a2c9ff",
+              "on-error": "#490106",
+              "on-background": "#d9e6fd",
+              "surface-container-high": "#16202e",
+              "primary-dim": "#88bcff",
+              "tertiary-container": "#dcddfe",
+              "inverse-on-surface": "#51555c",
+              "inverse-primary": "#0061ab",
+              "on-primary-container": "#b4d2ff",
+              "inverse-surface": "#f8f9ff",
+              "error-dim": "#bb5551",
+              "surface-variant": "#1a2637",
+              "secondary-fixed-dim": "#d3d4da",
+              "on-secondary-container": "#bdbfc5",
+              "primary-container": "#004882",
+              "error-container": "#7f2927",
+              "secondary-container": "#393b40",
+              "surface-tint": "#a2c9ff",
+              "surface-container": "#121a25",
+              "surface-dim": "#0a0e14",
+              "on-error-container": "#ff9993",
+              "background": "#0a0e14",
+              "tertiary-fixed-dim": "#cecfef",
+              "on-primary-fixed-variant": "#005da5",
+              "on-primary-fixed": "#004075",
+              "tertiary-fixed": "#dcddfe",
+              "secondary-fixed": "#e1e2e8",
+              "on-secondary-fixed-variant": "#595b61",
+              "error": "#ee7d77",
+              "on-surface-variant": "#9facc1",
+              "surface-container-highest": "#1a2637",
+              "on-tertiary-fixed-variant": "#555873",
+              "tertiary-dim": "#cecfef",
+              "on-secondary-fixed": "#3d3f44",
+              "primary-fixed-dim": "#bbd6ff",
+              "on-surface": "#d9e6fd",
+              "surface-bright": "#1e2d41",
+              "secondary-dim": "#9c9ea4",
+              "outline": "#6a768a",
+              "on-tertiary": "#545671"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0e14; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased pb-20">
+<!-- TopAppBar -->
+<header class="bg-[#0e141c] flex items-center justify-between px-4 h-14 w-full sticky top-0 z-50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#a2c9ff]" data-icon="target">target</span>
+<h1 class="text-[#a2c9ff] font-bold tracking-tighter text-lg">Hunt Active</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 flex items-center justify-center text-[#9facc1] hover:bg-[#16202e] transition-colors duration-150 rounded">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-4 py-6 space-y-8 max-w-md mx-auto">
+<!-- Profile Header Section -->
+<section class="bg-surface-container-low p-4 rounded-lg flex items-center justify-between group border border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="Professional male user profile portrait avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTIbx3037uiOLGOEdbbgLlwsN-pe9ETg8lNa1ULcY-DNjkKGrncNdXGndWlyCpgzVMM9ujisavS2fdWyY2b0mY23kQIPEbEnilneav_j2-aSK4yZrY4tX5aLtMf7lwdlKrvqvzoRKbrVUqZDRl40EwsjeHbm4QNa0ORcd8Wqht7baWANkEINAo4Bt75ioCCOQ9NReU0Jr7Tzy-utBNO7YkmDvPu6qDGVo0WFnGGbMofn0bF7xC1d-DuW04sqKqqQMq0yL5SvtZWyg"/>
+</div>
+<div class="flex flex-col">
+<span class="text-label-sm uppercase tracking-[0.05em] font-medium text-on-surface-variant text-[0.6875rem]">Active Operator</span>
+<span class="text-body-md font-semibold text-on-surface truncate max-w-[140px]">user@midnight.io</span>
+</div>
+</div>
+<button class="flex items-center gap-1 text-error text-[0.6875rem] font-bold uppercase tracking-wider px-3 py-2 hover:bg-error-container/20 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+                Logout
+            </button>
+</section>
+<!-- Active Hunts Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-label-sm uppercase tracking-[0.05em] font-bold text-primary text-[0.6875rem]">Active Hunts</h2>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<!-- Bento Card: Urban Neon -->
+<div class="bg-surface-container-high rounded-lg overflow-hidden border border-outline-variant/20">
+<div class="relative h-32 w-full">
+<img alt="Urban Neon" class="w-full h-full object-cover opacity-60" data-alt="Cyberpunk city street neon lights night" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYZ19uUcZb3Yjf6HRsj70aXvpE8VdbbG4x_j2vyGbtGVUzh0rT8VSwvukqQWhxPDg1-X4qzR9zdXRku1uIYdlkV2NRC3vxEBhdgPYblnKgeAByeGbUd7TcgAV82vmz6dpughERMzzXLpX4ShB5NO8yYvapB-O_YMmFD8mzo_kCTxs03VGa12outjvlNxxOhVDyXMzBUkU2uJQ-2v6o1vdvffXz4tRJvHBRaQIxGqJeAK413dCuhex8RTaSQHalhgWnMlrpvYIOqec"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high via-transparent to-transparent"></div>
+<div class="absolute bottom-3 left-4">
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[0.6rem] font-black tracking-widest uppercase">In Progress</span>
+</div>
+</div>
+<div class="p-4 space-y-3">
+<div class="flex justify-between items-start">
+<h3 class="font-headline font-bold text-lg leading-tight text-on-surface">Urban Neon 2024</h3>
+<div class="text-right">
+<span class="text-primary font-mono font-bold text-xl">2/12</span>
+<p class="text-[0.6rem] text-on-surface-variant uppercase tracking-tighter">Checkpoints</p>
+</div>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[16.6%] rounded-full shadow-[0_0_8px_rgba(162,201,255,0.5)]"></div>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded font-bold uppercase tracking-widest text-[0.75rem] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                        Resume Hunt
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Previous Hunts Section -->
+<section class="space-y-4">
+<h2 class="text-label-sm uppercase tracking-[0.05em] font-bold text-on-surface-variant text-[0.6875rem]">Previous Hunts</h2>
+<!-- Empty State / Placeholder -->
+<div class="border border-dashed border-outline-variant/30 rounded-lg p-8 flex flex-col items-center justify-center text-center gap-3">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant opacity-30" data-icon="history">history</span>
+</div>
+<div>
+<p class="text-body-md font-medium text-on-surface-variant">Archived data empty</p>
+<p class="text-[0.6875rem] text-outline uppercase tracking-tighter">Finish a hunt to see your stats</p>
+</div>
+</div>
+<!-- Single Placeholder Row (Subtle) -->
+<div class="bg-surface-container-low/40 p-3 rounded-lg flex items-center gap-3 border border-outline-variant/5">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="landscape">landscape</span>
+</div>
+<div class="flex-1">
+<p class="text-[0.75rem] font-bold text-on-surface-variant">Mountain Ghost 2023</p>
+<p class="text-[0.6rem] text-outline uppercase">Completed Sept 12</p>
+</div>
+<span class="text-[0.6875rem] font-mono text-outline">12/12</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-16 flex justify-around items-stretch bg-[#0e141c] z-50">
+<!-- Hunt Tab (Active) -->
+<a class="flex flex-col items-center justify-center text-[#a2c9ff] border-l-2 border-[#a2c9ff] bg-[#16202e] h-full w-full active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="camera" style="font-variation-settings: 'FILL' 1;">camera</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mt-1">Hunt</span>
+</a>
+<!-- Gallery Tab -->
+<a class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="collections">collections</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mt-1">Gallery</span>
+</a>
+<!-- Profile Tab -->
+<a class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#fabd00",
+              "on-secondary-container": "#91b7f2",
+              "surface-dim": "#131313",
+              "error": "#ffb4ab",
+              "surface-container-lowest": "#0e0e0e",
+              "inverse-on-surface": "#313030",
+              "on-tertiary": "#00390a",
+              "secondary-container": "#1b477c",
+              "on-secondary": "#003060",
+              "secondary": "#a6c8ff",
+              "on-tertiary-container": "#006419",
+              "secondary-fixed": "#d5e3ff",
+              "surface-container-high": "#2a2a2a",
+              "on-error-container": "#ffdad6",
+              "tertiary": "#98fe94",
+              "on-surface": "#e5e2e1",
+              "outline": "#9c8f78",
+              "inverse-surface": "#e5e2e1",
+              "tertiary-fixed": "#94f990",
+              "on-primary": "#3f2e00",
+              "on-background": "#e5e2e1",
+              "on-tertiary-fixed": "#002204",
+              "on-primary-fixed": "#261a00",
+              "surface-container-low": "#1c1b1b",
+              "primary-container": "#ffc107",
+              "tertiary-container": "#7ce17b",
+              "primary": "#ffe4af",
+              "surface-container-highest": "#353535",
+              "on-secondary-fixed-variant": "#1b477c",
+              "tertiary-fixed-dim": "#78dc77",
+              "surface-bright": "#393939",
+              "secondary-fixed-dim": "#a6c8ff",
+              "on-primary-fixed-variant": "#5b4300",
+              "inverse-primary": "#785900",
+              "surface": "#131313",
+              "on-primary-container": "#6d5100",
+              "error-container": "#93000a",
+              "background": "#131313",
+              "on-surface-variant": "#d4c5ab",
+              "surface-tint": "#fabd00",
+              "on-error": "#690005",
+              "surface-container": "#20201f",
+              "on-tertiary-fixed-variant": "#005313",
+              "primary-fixed": "#ffdf9e",
+              "on-secondary-fixed": "#001c3b",
+              "outline-variant": "#4f4632",
+              "surface-variant": "#353535"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-glass {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Top Navigation Anchor -->
+<header class="flex justify-between items-center px-6 py-4 w-full sticky top-0 z-50 bg-[#131313]/80 backdrop-blur-xl shadow-[0px_20px_40px_rgba(250,189,0,0.06)]">
+<div class="text-2xl font-black text-[#FFE4AF] uppercase tracking-widest font-headline">
+            PHOTO HUNT
+        </div>
+<div class="flex gap-4">
+<button class="text-white/60 hover:text-[#FFE4AF] transition-colors scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-white/60 hover:text-[#FFE4AF] transition-colors scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="min-h-[calc(100vh-140px)] flex flex-col p-6 pb-32">
+<!-- Kinetic Progress Indicator -->
+<section class="mb-12">
+<div class="flex items-baseline gap-2 mb-4">
+<span class="text-5xl font-headline font-bold text-tertiary">03</span>
+<span class="text-sm font-label font-bold text-on-surface-variant uppercase tracking-widest">of 10 Prompts</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full w-1/3 bg-gradient-to-r from-primary to-primary-container rounded-full"></div>
+</div>
+</section>
+<!-- Editorial Prompt Canvas -->
+<section class="flex-grow flex flex-col justify-center">
+<div class="space-y-2 mb-4">
+<span class="text-primary text-xs font-label font-bold uppercase tracking-[0.3em]">Current Mission</span>
+<div class="w-12 h-1 bg-primary"></div>
+</div>
+<h1 class="text-5xl md:text-7xl font-headline font-bold tracking-tighter leading-[0.9] text-on-surface">
+                Capture something that represents <span class="text-transparent bg-clip-text bg-gradient-to-br from-primary via-primary-container to-surface-tint">"Collaboration"</span>
+</h1>
+<p class="mt-8 text-on-surface-variant max-w-xs font-body leading-relaxed">
+                Think beyond people. Look for interlocking patterns, gears, or elements supporting one another in the urban landscape.
+            </p>
+</section>
+<!-- Dynamic Interaction Zone -->
+<div class="fixed bottom-24 left-0 w-full px-6 flex items-end justify-between pointer-events-none">
+<!-- Last Submission Thumbnail -->
+<div class="pointer-events-auto">
+<div class="group relative w-16 h-16 rounded-xl overflow-hidden shadow-2xl ring-2 ring-white/10 transition-transform active:scale-95">
+<img alt="Previous photo submission" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="Minimalist architectural photo showing lines meeting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8PePPnXU0nn21_tttLCP_toE39ONb_Bc_bWuMuh4wCFO4SqHq0iR_IILKKOWQf7OvhY3HZJzSke7fARTgCXcQDAbgaQgJ361kk5bUlDr2cb8b8XoTrS0kmMvewYc_MPyTM7lcCrgDodxdiNOyvWOPyen2XP_AgDQmnu6xkM7g8v6zPL-o6itqlvh2rJ7XCixb4HcOHzJlnplQU-d4F66uuR3kUxX2vJIcwTYjdNNeasYSPCe8uIh-rW-EUbwqV-mUpt_QmEoB6Ao"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-primary">visibility</span>
+</div>
+</div>
+<span class="block mt-2 text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-tighter">Last Shot</span>
+</div>
+<!-- List Toggle -->
+<div class="pointer-events-auto flex flex-col items-end">
+<button class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface shadow-xl active:scale-90 transition-transform">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+</button>
+<span class="block mt-2 text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-tighter text-right">View List</span>
+</div>
+</div>
+<!-- Master Action Button (The FAB replacement) -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60]">
+<button class="relative group p-6 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0px_20px_40px_rgba(250,189,0,0.3)] hover:scale-105 active:scale-95 transition-all">
+<div class="absolute inset-0 rounded-full bg-white opacity-0 group-active:opacity-20 transition-opacity"></div>
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">camera_enhance</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Shell (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#2A2A2A]/80 backdrop-blur-2xl no-border shadow-[0px_-10px_30px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center bg-[#FFE4AF] text-[#131313] rounded-full px-6 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">camera_enhance</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/50 hover:bg-white/10 transition-all px-6 py-2" href="#">
+<span class="material-symbols-outlined">collections</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Gallery</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/50 hover:bg-white/10 transition-all px-6 py-2" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</nav>
+<!-- Hidden Grid for editorial texture -->
+<div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+<div class="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-primary/5 to-transparent blur-[120px]"></div>
+<div class="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-tertiary/5 to-transparent blur-[100px]"></div>
+</div>
+</body></html>

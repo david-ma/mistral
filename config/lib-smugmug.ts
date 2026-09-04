@@ -299,7 +299,7 @@ export type CreateAlbumFields = {
 export function createAlbum(
   creds: SmugMugCredentials,
   fields: CreateAlbumFields
-): Promise<{ albumKey: string; uri?: string }> {
+): Promise<{ albumKey: string; uri?: string; urlName?: string }> {
   return getAuthUserUri(creds).then((userPath) => {
     const match = userPath.match(/\/user\/([^/!]+)/)
     const username = match ? match[1] : ''

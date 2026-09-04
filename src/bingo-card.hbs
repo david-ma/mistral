@@ -1,7 +1,9 @@
 <div class="bingo-page bingo-play">
-  <a href="/list-events" class="bingo-page__back">&larr; Events</a>
-  <h1 class="bingo-page__title" id="bingoTitle">Bingo{{#if eventName}}: {{eventName}}{{/if}}</h1>
+  <a href="/" class="bingo-page__back">&larr; Unihack Photo Hunt</a>
+  <h1 class="bingo-page__title" id="bingoTitle">Photo Hunt{{#if eventName}}: {{eventName}}{{/if}}</h1>
   <p class="bingo-page__lead bingo-play__instructions">Click a prompt to take or upload a photo. We’ll analyse it and add it to your card.</p>
+
+  {{> photo-upload-disclaimer-blurb}}
 
   <div class="bingo-play__player">
     <label for="bingoPlayerName" class="bingo-play__player-label">Your name (shown on card previews)</label>
@@ -26,3 +28,7 @@
 
 <script type="module" src="/js/uploadthing-init.js"></script>
 <script type="module" src="/js/bingo-game.js"></script>
+
+<div style="text-align: center;">
+  {{> photo-upload-disclaimer-blurb }}
+</div>

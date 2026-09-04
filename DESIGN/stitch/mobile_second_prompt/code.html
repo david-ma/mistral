@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hunt Active - Mission Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#0a0e14",
+              "on-secondary": "#1e2025",
+              "tertiary": "#edecff",
+              "on-tertiary-container": "#4c4e69",
+              "surface-container-lowest": "#000000",
+              "on-primary": "#004176",
+              "surface-container-low": "#0e141c",
+              "on-tertiary-fixed": "#393c55",
+              "primary-fixed": "#d3e4ff",
+              "secondary": "#9c9ea4",
+              "outline-variant": "#3c495b",
+              "primary": "#a2c9ff",
+              "on-error": "#490106",
+              "on-background": "#d9e6fd",
+              "surface-container-high": "#16202e",
+              "primary-dim": "#88bcff",
+              "tertiary-container": "#dcddfe",
+              "inverse-on-surface": "#51555c",
+              "inverse-primary": "#0061ab",
+              "on-primary-container": "#b4d2ff",
+              "inverse-surface": "#f8f9ff",
+              "error-dim": "#bb5551",
+              "surface-variant": "#1a2637",
+              "secondary-fixed-dim": "#d3d4da",
+              "on-secondary-container": "#bdbfc5",
+              "primary-container": "#004882",
+              "error-container": "#7f2927",
+              "secondary-container": "#393b40",
+              "surface-tint": "#a2c9ff",
+              "surface-container": "#121a25",
+              "surface-dim": "#0a0e14",
+              "on-error-container": "#ff9993",
+              "background": "#0a0e14",
+              "tertiary-fixed-dim": "#cecfef",
+              "on-primary-fixed-variant": "#005da5",
+              "on-primary-fixed": "#004075",
+              "tertiary-fixed": "#dcddfe",
+              "secondary-fixed": "#e1e2e8",
+              "on-secondary-fixed-variant": "#595b61",
+              "error": "#ee7d77",
+              "on-surface-variant": "#9facc1",
+              "surface-container-highest": "#1a2637",
+              "on-tertiary-fixed-variant": "#555873",
+              "tertiary-dim": "#cecfef",
+              "on-secondary-fixed": "#3d3f44",
+              "primary-fixed-dim": "#bbd6ff",
+              "on-surface": "#d9e6fd",
+              "surface-bright": "#1e2d41",
+              "secondary-dim": "#9c9ea4",
+              "outline": "#6a768a",
+              "on-tertiary": "#545671"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .perspective-text {
+        text-shadow: 0 0 10px rgba(162, 201, 255, 0.3);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#0e141c] flex items-center justify-between px-4 h-14 w-full fixed top-0 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#a2c9ff]" data-icon="target">target</span>
+<h1 class="text-[#a2c9ff] font-['Inter'] font-bold tracking-tighter text-lg">Hunt Active</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[#9facc1] font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Rank 04</span>
+</div>
+</header>
+<main class="pt-14 pb-20 px-4 max-w-md mx-auto min-h-screen">
+<!-- Mission Progress Header -->
+<section class="mt-6 mb-8">
+<div class="flex justify-between items-end mb-2">
+<span class="text-[#9facc1] font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Mission Progress</span>
+<span class="text-primary font-bold text-sm">1/12</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-primary w-[8.33%]"></div>
+</div>
+</section>
+<!-- Current Hunt Objective Card -->
+<section class="bg-surface-container-high p-6 mb-8 border-l-4 border-primary">
+<div class="flex flex-col gap-1">
+<span class="text-[#9facc1] font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mb-1">Active Objective 02/12</span>
+<h2 class="text-2xl font-bold tracking-tight text-on-surface mb-6 leading-tight">Find a silhouette against a glowing window</h2>
+<button class="bg-primary text-on-primary py-3 px-6 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="camera">camera</span>
+                    CAPTURE
+                </button>
+</div>
+</section>
+<!-- Success Toast (Previous Action) -->
+<div class="bg-[#16202e] border border-primary/20 p-4 mb-8 flex items-center gap-3 animate-pulse">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-primary">First Capture Confirmed</span>
+<span class="text-xs text-[#9facc1]">Objective 01 synced to grid.</span>
+</div>
+</div>
+<!-- My Shots Section -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-2">
+<h3 class="text-[#9facc1] font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">My Shots</h3>
+<span class="material-symbols-outlined text-[#9facc1] text-sm" data-icon="collections">collections</span>
+</div>
+<!-- Grid of past captures -->
+<div class="grid grid-cols-3 gap-2">
+<div class="aspect-square bg-surface-container-highest overflow-hidden relative group">
+<img alt="Shot 01" class="w-full h-full object-cover grayscale opacity-80" data-alt="Black and white architectural high contrast shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPvPfSgo0ZXzaqkNn_l4hR3PfXxpR1BJhnR58kGw58Lu8fhIvTDU-2iom5WqiWGqOSknVIlIGTdxy9N-nfP1XVE5gCB59CTG5pJnR9yfQlojO71yf0qDbhRRJlkoa3FQmkvTJ95rEPJODwH6vxu7IcI9Oa3NLd32JyUi6FGjKw2xWTyfkNCrG-jHrW8H9TUGbguf22pN51-2WvS-BUI9r_Q6PMn4Ip1N9SGM2ihzaA7BoDrs9QBzTlBpMgYi7U_S04uwYLm8AmQsc"/>
+<div class="absolute inset-0 border-2 border-primary/40 pointer-events-none"></div>
+<div class="absolute bottom-1 right-1 bg-surface-container-highest px-1 text-[10px] text-primary font-bold">01</div>
+</div>
+<!-- Placeholders for remaining objectives -->
+<div class="aspect-square bg-surface-container-low border border-dashed border-outline-variant/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline/30" data-icon="lock">lock</span>
+</div>
+<div class="aspect-square bg-surface-container-low border border-dashed border-outline-variant/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline/30" data-icon="lock">lock</span>
+</div>
+<div class="aspect-square bg-surface-container-low border border-dashed border-outline-variant/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline/30" data-icon="lock">lock</span>
+</div>
+<div class="aspect-square bg-surface-container-low border border-dashed border-outline-variant/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline/30" data-icon="lock">lock</span>
+</div>
+<div class="aspect-square bg-surface-container-low border border-dashed border-outline-variant/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline/30" data-icon="lock">lock</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-16 flex justify-around items-stretch bg-[#0e141c] z-50">
+<!-- Hunt Tab Active -->
+<a class="flex flex-col items-center justify-center text-[#a2c9ff] border-l-2 border-[#a2c9ff] bg-[#16202e] h-full w-full active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="camera" style="font-variation-settings: 'FILL' 1;">camera</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mt-1">Hunt</span>
+</a>
+<!-- Gallery Tab Inactive -->
+<a class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="collections">collections</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mt-1">Gallery</span>
+</a>
+<!-- Profile Tab Inactive -->
+<a class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

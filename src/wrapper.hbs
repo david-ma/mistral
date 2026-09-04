@@ -14,9 +14,10 @@
 <body class="darkmode">
   {{> nav}}
   <main class="main container">
-{{> content}}
     {{#if @partial-block }}
-{{> @partial-block }}
+      {{~> @partial-block~}}
+    {{else}}
+      {{~> content~}}
     {{/if}}
   </main>
   {{> footer}}

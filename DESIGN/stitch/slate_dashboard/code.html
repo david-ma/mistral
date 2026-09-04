@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hunt Control | Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#2d3449",
+                        "tertiary-container": "#f1a02b",
+                        "on-primary-fixed": "#001e2c",
+                        "primary-fixed-dim": "#7bd0ff",
+                        "on-error": "#690005",
+                        "surface-container": "#171f33",
+                        "outline": "#87929a",
+                        "surface-variant": "#2d3449",
+                        "secondary": "#a4cce6",
+                        "on-tertiary": "#472a00",
+                        "on-tertiary-container": "#613b00",
+                        "inverse-surface": "#dae2fd",
+                        "secondary-container": "#214b61",
+                        "on-secondary-fixed": "#001e2c",
+                        "surface-container-high": "#222a3d",
+                        "secondary-fixed": "#c4e7ff",
+                        "on-primary-fixed-variant": "#004c69",
+                        "error-container": "#93000a",
+                        "tertiary": "#ffc176",
+                        "surface": "#0b1326",
+                        "primary-fixed": "#c4e7ff",
+                        "surface-bright": "#31394d",
+                        "on-secondary-container": "#92bad4",
+                        "on-secondary": "#023449",
+                        "outline-variant": "#3e484f",
+                        "primary-container": "#38bdf8",
+                        "on-surface-variant": "#bdc8d1",
+                        "on-tertiary-fixed": "#2a1700",
+                        "inverse-primary": "#00668a",
+                        "surface-dim": "#0b1326",
+                        "tertiary-fixed": "#ffddb8",
+                        "secondary-fixed-dim": "#a4cce6",
+                        "inverse-on-surface": "#283044",
+                        "tertiary-fixed-dim": "#ffb960",
+                        "on-surface": "#dae2fd",
+                        "background": "#0b1326",
+                        "on-primary-container": "#004965",
+                        "on-primary": "#00354a",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-tint": "#7bd0ff",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#131b2e",
+                        "primary": "#8ed5ff",
+                        "on-secondary-fixed-variant": "#214b61",
+                        "surface-container-lowest": "#060e20",
+                        "on-background": "#dae2fd",
+                        "error": "#ffb4ab"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .data-grid-cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #060e20; }
+        ::-webkit-scrollbar-thumb { background: #31394d; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-4 py-2 w-full fixed top-0 z-50 bg-[#0b1326] shadow-sm">
+<div class="flex items-center gap-4">
+<span class="text-lg font-medium tracking-tighter text-[#8ed5ff]">HuntManager</span>
+<div class="hidden md:flex gap-6 ml-8">
+<a class="font-sans text-sm tracking-tight text-[#8ed5ff] border-b border-[#8ed5ff]" href="#">Dashboard</a>
+<a class="font-sans text-sm tracking-tight text-[#bdc8d1] hover:bg-[#31394d] transition-colors" href="#">Moderation</a>
+<a class="font-sans text-sm tracking-tight text-[#bdc8d1] hover:bg-[#31394d] transition-colors" href="#">Events</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined text-[#bdc8d1] cursor-pointer p-1 hover:bg-[#31394d] rounded-lg">search</span>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-[#bdc8d1] cursor-pointer p-1 hover:bg-[#31394d] rounded-lg">notifications</span>
+<span class="material-symbols-outlined text-[#bdc8d1] cursor-pointer p-1 hover:bg-[#31394d] rounded-lg">settings</span>
+<span class="material-symbols-outlined text-[#bdc8d1] cursor-pointer p-1 hover:bg-[#31394d] rounded-lg">help</span>
+</div>
+<div class="w-8 h-8 rounded-xl bg-surface-container-highest overflow-hidden ml-2 border border-outline-variant/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of the administrator user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaMmWXxgfWSgsuDD8mNXAnBd801BLOQW_RoUgCWV1lBMZ0-L8Hwz8UVH4MoYpcS2qwuM8wdcGTbgPjYexTXt-jMTw-zqqfnd9E97eZJV8M1tI5krzyuvnx2KWlcOgDv60Co12Z0LBb-m-m0trOp19ZlVVxl64HeB-wYTIoqjp3lj-GQcgLwmNikFecpevSc4uiOnAooarKZlns5xOF-YVeWvcJNFYVFOmVbgOR3xrQQXjDm__LJTI47TDILxyQ2Io9MQZ67EUgIQY"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Utility Blade) -->
+<aside class="hidden md:flex flex-col h-full fixed left-0 top-0 pt-16 pb-8 bg-[#060e20] w-64 z-40">
+<div class="px-6 py-4 mb-4">
+<h2 class="text-md font-bold text-[#8ed5ff]">Hunt Control</h2>
+<p class="text-[0.6875rem] font-sans text-[#bdc8d1] opacity-60">Admin Console</p>
+</div>
+<nav class="flex-1 space-y-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-[#171f33] text-[#8ed5ff] font-bold border-r-2 border-[#8ed5ff] active:opacity-80 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="label-md font-sans">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#bdc8d1] hover:bg-[#171f33] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="label-md font-sans">Moderation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#bdc8d1] hover:bg-[#171f33] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="label-md font-sans">Events</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#bdc8d1] hover:bg-[#171f33] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="label-md font-sans">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-[#bdc8d1] hover:bg-[#171f33] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="label-md font-sans">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#bdc8d1] hover:bg-[#171f33] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="label-md font-sans">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-16 pb-20 md:pb-8 min-h-screen">
+<div class="p-6">
+<!-- Header Utility Bar -->
+<div class="flex justify-between items-end mb-6">
+<div>
+<h1 class="text-1.5rem font-medium text-on-surface leading-tight">System Overview</h1>
+<p class="text-sm text-on-surface-variant">Real-time telemetry and hunt progression metrics.</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-high px-3 py-1.5 text-xs font-medium border-b border-outline-variant/15 flex items-center gap-2 hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                    </button>
+<button class="bg-primary-container px-3 py-1.5 text-xs font-bold text-on-primary-container flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">add</span> New Hunt
+                    </button>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="bg-surface-container p-4 rounded-xl border-l-2 border-primary shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<p class="text-[0.6875rem] font-medium text-on-surface-variant mb-1">ACTIVE HUNTS</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold font-mono">1,284</span>
+<span class="text-[0.6875rem] text-primary font-bold">+12%</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl border-l-2 border-tertiary shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<p class="text-[0.6875rem] font-medium text-on-surface-variant mb-1">PENDING REVIEW</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold font-mono">42</span>
+<span class="text-[0.6875rem] text-tertiary font-bold">Priority</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl border-l-2 border-secondary shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<p class="text-[0.6875rem] font-medium text-on-surface-variant mb-1">TOTAL PHOTOS</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold font-mono">15.4k</span>
+<span class="text-[0.6875rem] text-on-surface-variant">Last 24h</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl border-l-2 border-outline-variant shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<p class="text-[0.6875rem] font-medium text-on-surface-variant mb-1">SYS LATENCY</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold font-mono">24ms</span>
+<span class="text-[0.6875rem] text-green-400 font-bold">Stable</span>
+</div>
+</div>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+<!-- Recent Submissions (High Density List) -->
+<div class="lg:col-span-8 bg-surface-container rounded-xl overflow-hidden shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<div class="bg-surface-container-high px-4 py-3 flex justify-between items-center">
+<h3 class="text-xs font-bold tracking-widest text-on-surface-variant">LIVE FEED: SUBMISSIONS</h3>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">refresh</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/10">
+<th class="px-4 py-2 text-[0.6875rem] font-bold text-on-surface-variant uppercase">Thumbnail</th>
+<th class="px-4 py-2 text-[0.6875rem] font-bold text-on-surface-variant uppercase">Hunter</th>
+<th class="px-4 py-2 text-[0.6875rem] font-bold text-on-surface-variant uppercase">Mission</th>
+<th class="px-4 py-2 text-[0.6875rem] font-bold text-on-surface-variant uppercase">Status</th>
+<th class="px-4 py-2 text-[0.6875rem] font-bold text-on-surface-variant uppercase text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-bright/5 transition-colors">
+<td class="px-4 py-2">
+<div class="w-10 h-10 rounded bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Forest Photo" class="w-full h-full object-cover" data-alt="Dense green pine forest photograph submission" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjaBdgj-J1PFDVRJNH-p20h4ujGd72mYT3zhBAfyHd1_dD7jJQs6S_J2qu43a7QRM53MCuThvmB4BHrw0bZn7AWF-9MAtuF-jX5RI6OWNbl5HGRn9JR1YeUEzkMEACIbhoGQ5CPulGr-VEUIsk3cNRMPV-QP3oLkpUOMIYTAXSY1DqLtcMobJQ9nbgaeeCA3BDWRDTDl428Tqf6KO2VNbuL920pHATfZvw8iiwMPARxe8eT2rC6oe9DgjuIT_reVAPKjqiLe1tBm8"/>
+</div>
+</td>
+<td class="px-4 py-2">
+<div class="text-sm font-medium">@alex_vance</div>
+<div class="text-[0.6875rem] text-on-surface-variant font-mono">#USR-9921</div>
+</td>
+<td class="px-4 py-2">
+<div class="text-sm">The Emerald Grove</div>
+<div class="text-[0.6875rem] text-primary">Quest: Native Ferns</div>
+</td>
+<td class="px-4 py-2">
+<span class="bg-yellow-900/30 text-yellow-500 text-[0.6rem] font-bold px-1.5 py-0.5 rounded border border-yellow-500/20">PENDING</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-primary hover:bg-primary/10 px-2 py-1 rounded text-xs transition-colors">Review</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-bright/5 transition-colors">
+<td class="px-4 py-2">
+<div class="w-10 h-10 rounded bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="River Photo" class="w-full h-full object-cover" data-alt="Close-up of clear river water over rocks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTxcqBOxSid3ECFeQ_Q3ttkZLhjLzFUNZFsiFwQTa8Mu7KFoV2yWOptEFBAa7Vf1ayit6yJidvib3UGYJhc4_lBP2i56VcyRCN7gow6OKQns2ly4ufe9WXME2JfnbSzC-cgNjwXSHfbpSFqhrEUmIBbHV9wR_L1kwFHN8jj7uYjCIxztfY5Bcf7LuAL8w3vMgHfRMpb4yb39t0_WVCqmiLN4ab36JX_MN264ttB0NrdIlVf4mxThrl2LR5-Nu8BWP5Zv304iLRhjQ"/>
+</div>
+</td>
+<td class="px-4 py-2">
+<div class="text-sm font-medium">@sarah_m</div>
+<div class="text-[0.6875rem] text-on-surface-variant font-mono">#USR-8824</div>
+</td>
+<td class="px-4 py-2">
+<div class="text-sm">River Runner</div>
+<div class="text-[0.6875rem] text-primary">Quest: Smooth Stone</div>
+</td>
+<td class="px-4 py-2">
+<span class="bg-green-900/30 text-green-500 text-[0.6rem] font-bold px-1.5 py-0.5 rounded border border-green-500/20">VERIFIED</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-on-surface-variant hover:bg-surface-bright px-2 py-1 rounded text-xs transition-colors">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-bright/5 transition-colors">
+<td class="px-4 py-2">
+<div class="w-10 h-10 rounded bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Mountain Photo" class="w-full h-full object-cover" data-alt="Wide mountain landscape at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDol1bzeega8IxCu8fc6XbyrfO5-ZeoKcAiyfgLhPLv-LgIBp5cGWu3Imyb6CxLtxE2VYsepJIprWTXWb0nNkliCeoXzIRf3zFKh5oP33-jB2lcYeTK3cFBmbHnA5kjai_Cifcuil7erNlaNp-yToDEF3qaIk_sKoSr13LYubL2dl91IGsBWQ1aDivPEo6Tg9rBZkZ_FEzQbDVzaGZWa14Khw80xhYTZsSb5nN_k5vspK2-svD_FmyLxGNahx-EiEYcv0VAd39g8e8"/>
+</div>
+</td>
+<td class="px-4 py-2">
+<div class="text-sm font-medium">@jason_k</div>
+<div class="text-[0.6875rem] text-on-surface-variant font-mono">#USR-7120</div>
+</td>
+<td class="px-4 py-2">
+<div class="text-sm">Peak Seeker</div>
+<div class="text-[0.6875rem] text-primary">Quest: Alpenglow</div>
+</td>
+<td class="px-4 py-2">
+<span class="bg-red-900/30 text-red-500 text-[0.6rem] font-bold px-1.5 py-0.5 rounded border border-red-500/20">FLAGGED</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-error hover:bg-error/10 px-2 py-1 rounded text-xs transition-colors">Audit</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Activity Heatmap / Quick Stats -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<div class="bg-surface-container rounded-xl p-4 shadow-[0_2px_4px_rgba(0,0,0,0.4)] flex-1">
+<h3 class="text-xs font-bold tracking-widest text-on-surface-variant mb-4">SYSTEM LOAD</h3>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-[0.6875rem] mb-1">
+<span class="text-on-surface-variant">CPU Usage</span>
+<span class="font-mono">42%</span>
+</div>
+<div class="h-1 bg-surface-container-low rounded-full">
+<div class="h-full bg-primary rounded-full w-[42%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[0.6875rem] mb-1">
+<span class="text-on-surface-variant">API Traffic</span>
+<span class="font-mono">78%</span>
+</div>
+<div class="h-1 bg-surface-container-low rounded-full">
+<div class="h-full bg-secondary rounded-full w-[78%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[0.6875rem] mb-1">
+<span class="text-on-surface-variant">Storage Capacity</span>
+<span class="font-mono">14%</span>
+</div>
+<div class="h-1 bg-surface-container-low rounded-full">
+<div class="h-full bg-tertiary rounded-full w-[14%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-4 shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<h3 class="text-xs font-bold tracking-widest text-on-surface-variant mb-4">HUNT GEOGRAPHY</h3>
+<div class="aspect-video bg-surface-container-lowest rounded overflow-hidden relative border border-outline-variant/15">
+<img alt="Map" class="w-full h-full object-cover opacity-50 grayscale contrast-125" data-alt="Simplified dark blue map with pinpoint dots" data-location="Global" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp_1qQTwG7m5eXCyWIngSFmP3BUfc5sv64i8rDhA7DR_GGfA7YyE6vv2jhenss9C-MEj28StjVKmxj1CvH1ov_13Xau-7VHe4Q3M8ks7KGdL01tTPh4siKW__KoYy-coNRsVfclOsyYgvK6jtelKjxOeuKWRTMNjVHBUaNi-vF6nLviF15LwzfCUNKHBIcaN79AEs7Nx_k37g1C-fXcfPR1gw4cGvC27Y1uMMmJvGipmJXKuXTH7nULilK8Fmqahp7FNZlMKzi-yM"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold border border-primary/30 backdrop-blur-sm">84 Active Areas</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Active Moderators Blade (Horizontal) -->
+<div class="mt-6 bg-surface-container p-4 rounded-xl border-t border-outline-variant/5 shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xs font-bold tracking-widest text-on-surface-variant">ACTIVE MODERATORS</h3>
+<div class="text-[0.6875rem] text-primary font-bold">12 ONLINE</div>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2">
+<div class="flex items-center gap-3 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/10 min-w-[160px]">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">EL</div>
+<div>
+<div class="text-xs font-bold">E. Lewis</div>
+<div class="text-[0.6rem] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Active</div>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/10 min-w-[160px]">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold text-xs">BK</div>
+<div>
+<div class="text-xs font-bold">B. Kim</div>
+<div class="text-[0.6rem] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Active</div>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/10 min-w-[160px]">
+<div class="w-8 h-8 rounded-full bg-tertiary/20 flex items-center justify-center text-tertiary font-bold text-xs">DR</div>
+<div>
+<div class="text-xs font-bold">D. Ross</div>
+<div class="text-[0.6rem] text-on-surface-variant flex items-center gap-1"><span class="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full"></span> Idle</div>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant/10 min-w-[160px]">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">MW</div>
+<div>
+<div class="text-xs font-bold">M. Wu</div>
+<div class="text-[0.6rem] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Active</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center h-16 px-4 bg-[#0b1326] border-t border-[#3e484f]/15 shadow-[0_-2px_4px_rgba(0,0,0,0.4)] rounded-t-[10px]">
+<a class="flex flex-col items-center text-[#8ed5ff] bg-[#171f33] rounded-[8px] py-1 px-3 active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="label-sm font-sans text-[0.625rem]">Hunt</span>
+</a>
+<a class="flex flex-col items-center text-[#bdc8d1] py-1 px-3 hover:bg-[#171f33] active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">pending_actions</span>
+<span class="label-sm font-sans text-[0.625rem]">Progress</span>
+</a>
+<a class="flex flex-col items-center text-[#bdc8d1] py-1 px-3 hover:bg-[#171f33] active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="label-sm font-sans text-[0.625rem]">Leaderboard</span>
+</a>
+<a class="flex flex-col items-center text-[#bdc8d1] py-1 px-3 hover:bg-[#171f33] active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="label-sm font-sans text-[0.625rem]">Profile</span>
+</a>
+</nav>
+</body></html>

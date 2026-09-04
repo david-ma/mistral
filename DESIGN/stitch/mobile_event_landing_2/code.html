@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hunt Active - Urban Neon 2024</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#0a0e14",
+              "on-secondary": "#1e2025",
+              "tertiary": "#edecff",
+              "on-tertiary-container": "#4c4e69",
+              "surface-container-lowest": "#000000",
+              "on-primary": "#004176",
+              "surface-container-low": "#0e141c",
+              "on-tertiary-fixed": "#393c55",
+              "primary-fixed": "#d3e4ff",
+              "secondary": "#9c9ea4",
+              "outline-variant": "#3c495b",
+              "primary": "#a2c9ff",
+              "on-error": "#490106",
+              "on-background": "#d9e6fd",
+              "surface-container-high": "#16202e",
+              "primary-dim": "#88bcff",
+              "tertiary-container": "#dcddfe",
+              "inverse-on-surface": "#51555c",
+              "inverse-primary": "#0061ab",
+              "on-primary-container": "#b4d2ff",
+              "inverse-surface": "#f8f9ff",
+              "error-dim": "#bb5551",
+              "surface-variant": "#1a2637",
+              "secondary-fixed-dim": "#d3d4da",
+              "on-secondary-container": "#bdbfc5",
+              "primary-container": "#004882",
+              "error-container": "#7f2927",
+              "secondary-container": "#393b40",
+              "surface-tint": "#a2c9ff",
+              "surface-container": "#121a25",
+              "surface-dim": "#0a0e14",
+              "on-error-container": "#ff9993",
+              "background": "#0a0e14",
+              "tertiary-fixed-dim": "#cecfef",
+              "on-primary-fixed-variant": "#005da5",
+              "on-primary-fixed": "#004075",
+              "tertiary-fixed": "#dcddfe",
+              "secondary-fixed": "#e1e2e8",
+              "on-secondary-fixed-variant": "#595b61",
+              "error": "#ee7d77",
+              "on-surface-variant": "#9facc1",
+              "surface-container-highest": "#1a2637",
+              "on-tertiary-fixed-variant": "#555873",
+              "tertiary-dim": "#cecfef",
+              "on-secondary-fixed": "#3d3f44",
+              "primary-fixed-dim": "#bbd6ff",
+              "on-surface": "#d9e6fd",
+              "surface-bright": "#1e2d41",
+              "secondary-dim": "#9c9ea4",
+              "outline": "#6a768a",
+              "on-tertiary": "#545671"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        background-color: #0a0e14;
+        color: #d9e6fd;
+        font-family: 'Inter', sans-serif;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-[#0e141c] flex items-center justify-between px-4 h-14 w-full border-b-0 sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#a2c9ff]" data-icon="target">target</span>
+<h1 class="text-[#a2c9ff] font-bold tracking-tighter font-['Inter'] text-lg">Hunt Active</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#9facc1]" data-icon="info">info</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow flex flex-col px-4 pt-6 pb-24">
+<!-- Hero Section -->
+<section class="relative w-full aspect-[4/5] rounded-lg overflow-hidden mb-8 bg-surface-container-high">
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent z-10"></div>
+<img alt="Urban Neon Scene" class="w-full h-full object-cover" data-alt="Vibrant neon lights reflecting on urban wet streets at night" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBnMcDmSmscY1CTDN7X8PBPxE1FXrqb-J2CNp4hJjEaNmC5QjzW7gG0syW1erC_ra7NGwafEBIQF8xeY_G3BPNKA9JxZo4ZSAN26Qkr_fAq5nXbg6fR3WhKNrtUPH7Wnr6qnTn616a_3yPAASI7S2XasZaGVBkeOwH39BPFM9LSv110bzVPFyMz8m1258eWU4nIsPQbviwAFqRgdk_Sm91XTiRR14AdLV53w-7NZUW7Manp1lRSaC5l30bJIWLf8HUCLgHMk9ov7E"/>
+<div class="absolute bottom-6 left-6 right-6 z-20">
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 bg-primary text-on-primary font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-bold rounded-sm">Live Now</span>
+<span class="px-2 py-1 bg-surface-container-highest text-primary font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-bold rounded-sm border border-outline-variant/20">Global Event</span>
+</div>
+<h2 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2 font-headline uppercase leading-none">
+                    Urban Neon 2024
+                </h2>
+<p class="text-on-surface-variant text-sm font-body max-w-xs leading-relaxed">
+                    A high-stakes photographic scavenger hunt through the neon-soaked arteries of the city. Find the light, win the prize.
+                </p>
+</div>
+</section>
+<!-- Stats Grid (Kinetic Console Style) -->
+<div class="grid grid-cols-2 gap-4 mb-8">
+<div class="bg-surface-container-low p-4 flex flex-col gap-1">
+<span class="text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-on-surface-variant font-label">Active Hunters</span>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-primary font-headline">142</span>
+<span class="material-symbols-outlined text-primary text-lg mb-1" data-icon="groups">groups</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 flex flex-col gap-1">
+<span class="text-[0.6875rem] uppercase tracking-[0.05em] font-medium text-on-surface-variant font-label">Objective Count</span>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-primary font-headline">12</span>
+<span class="text-on-surface-variant text-sm font-medium mb-1">Prompts</span>
+</div>
+</div>
+</div>
+<!-- Event Details / Logistics -->
+<div class="flex flex-col gap-6 mb-10">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-surface-container-highest shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface uppercase tracking-wider mb-1">The Perimeter</h3>
+<p class="text-xs text-on-surface-variant">Metropolitan Core. Zone A through F. Hunters must remain within signal range.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-surface-container-highest shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface uppercase tracking-wider mb-1">Time Remaining</h3>
+<p class="text-xs text-on-surface-variant">Ends in 04:22:18. All submissions are timestamped upon capture.</p>
+</div>
+</div>
+</div>
+<!-- Call to Action -->
+<div class="mt-auto">
+<button class="w-full h-16 bg-primary text-on-primary font-['Inter'] font-extrabold text-lg uppercase tracking-widest flex items-center justify-center gap-3 transition-transform duration-100 active:scale-95">
+                Join Hunt
+                <span class="material-symbols-outlined font-bold" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<p class="text-center mt-4 text-[0.6875rem] text-on-surface-variant font-label uppercase tracking-widest opacity-60">
+                No Registration Required
+            </p>
+</div>
+</main>
+<!-- BottomNavBar (Semantic Shell) -->
+<nav class="fixed bottom-0 left-0 w-full h-16 flex justify-around items-stretch bg-[#0e141c] z-50">
+<!-- Hunt Tab (Active) -->
+<div class="flex flex-col items-center justify-center text-[#a2c9ff] border-l-2 border-[#a2c9ff] bg-[#16202e] h-full w-full active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined mb-1" data-icon="camera">camera</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Hunt</span>
+</div>
+<!-- Gallery Tab -->
+<div class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined mb-1" data-icon="collections">collections</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Gallery</span>
+</div>
+<!-- Profile Tab -->
+<div class="flex flex-col items-center justify-center text-[#9facc1] h-full w-full hover:bg-[#16202e] active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined mb-1" data-icon="account_circle">account_circle</span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-[0.05em] font-medium">Profile</span>
+</div>
+</nav>
+</body></html>

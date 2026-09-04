@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Froggy Finder - Organizer Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#fdd0ea",
+              "tertiary-dim": "#5c4f00",
+              "tertiary-fixed-dim": "#edd139",
+              "on-secondary-container": "#654459",
+              "inverse-surface": "#0d0f0d",
+              "secondary-dim": "#66465a",
+              "surface-bright": "#f7f7f3",
+              "on-primary": "#cbffd8",
+              "tertiary-fixed": "#fcdf46",
+              "surface-dim": "#d3d5d0",
+              "tertiary-container": "#fcdf46",
+              "surface-variant": "#dcddd9",
+              "on-error": "#ffefee",
+              "inverse-primary": "#94feba",
+              "outline": "#767774",
+              "on-primary-fixed-variant": "#006e3e",
+              "surface": "#f7f7f3",
+              "error-container": "#fb5151",
+              "on-secondary-fixed": "#503246",
+              "on-tertiary-fixed-variant": "#685900",
+              "error": "#b31b25",
+              "surface-container-lowest": "#ffffff",
+              "on-error-container": "#570008",
+              "on-surface-variant": "#5a5c59",
+              "on-primary-container": "#006237",
+              "error-dim": "#9f0519",
+              "secondary": "#735166",
+              "on-secondary": "#ffeef5",
+              "on-tertiary-container": "#5d5000",
+              "on-primary-fixed": "#004e2a",
+              "on-tertiary": "#fff3c5",
+              "primary-dim": "#005c33",
+              "background": "#f7f7f3",
+              "surface-container-low": "#f1f1ed",
+              "secondary-fixed": "#fdd0ea",
+              "primary-fixed": "#94feba",
+              "surface-container-high": "#e2e3df",
+              "primary-fixed-dim": "#86efac",
+              "inverse-on-surface": "#9c9d9a",
+              "outline-variant": "#adadaa",
+              "surface-container": "#e8e8e4",
+              "surface-container-highest": "#dcddd9",
+              "tertiary": "#6a5b00",
+              "on-secondary-fixed-variant": "#6f4e63",
+              "surface-tint": "#006a3c",
+              "secondary-fixed-dim": "#eec3db",
+              "on-surface": "#2d2f2d",
+              "on-tertiary-fixed": "#483d00",
+              "on-background": "#2d2f2d",
+              "primary-container": "#94feba",
+              "primary": "#006a3c"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Be Vietnam Pro"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f7f7f3;
+        }
+        .zine-card {
+            border: 3px solid #2d2f2d;
+            box-shadow: 6px 6px 0px 0px #2d2f2d;
+        }
+        .zine-divider {
+            height: 4px;
+            background-color: #2d2f2d;
+            border-radius: 2px;
+            position: relative;
+        }
+        .zine-divider::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: -4px;
+            width: 8px;
+            height: 8px;
+            background: #2d2f2d;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center bg-[#f7f7f3]/80 backdrop-blur-lg border-b-4 border-[#006a3c] dark:border-[#86efac] shadow-[4px_4px_0px_0px_rgba(0,106,60,1)] px-4 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-[#006a3c]" data-icon="catching_pokemon">capture</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black text-2xl tracking-tight text-[#006a3c] -rotate-2">Froggy Finder</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-['Plus_Jakarta_Sans'] font-bold text-[#006a3c] hover:rotate-3 transition-transform" href="#">Hunt</a>
+<a class="font-['Plus_Jakarta_Sans'] font-bold text-[#735166] hover:rotate-3 transition-transform" href="#">Log</a>
+<a class="font-['Plus_Jakarta_Sans'] font-bold text-[#735166] hover:rotate-3 transition-transform" href="#">Profile</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 text-[#006a3c] active:scale-95 transition-all duration-200" data-icon="settings">settings</button>
+</div>
+</header>
+<main class="pt-28 pb-32 px-6 max-w-7xl mx-auto">
+<!-- Scrapbook Header Section -->
+<section class="mb-12 relative">
+<div class="absolute -top-6 -left-4 w-32 h-32 bg-primary-container rounded-full opacity-50 -z-10 rotate-12"></div>
+<h2 class="font-headline font-extrabold text-5xl md:text-7xl text-primary tracking-tighter -rotate-1 mb-2">Organizer Dashboard</h2>
+<p class="font-body text-xl text-on-surface-variant max-w-2xl">Welcome to the Lilypad Control Center. Manage your hunters and curate the pond.</p>
+</section>
+<!-- Pond Overview (Key Stats) -->
+<section class="mb-16">
+<div class="flex items-center gap-4 mb-8">
+<h3 class="font-headline font-bold text-3xl">Pond Overview</h3>
+<div class="zine-divider flex-grow"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Stat 1 -->
+<div class="zine-card bg-primary-fixed-dim p-8 rounded-xl flex flex-col justify-between aspect-square md:aspect-auto md:h-64 rotate-1">
+<span class="material-symbols-outlined text-5xl mb-4" data-icon="groups">groups</span>
+<div>
+<div class="font-headline font-black text-6xl">1,248</div>
+<div class="font-label font-bold uppercase tracking-widest text-on-primary-fixed">Hunters Active</div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="zine-card bg-tertiary-fixed p-8 rounded-xl flex flex-col justify-between aspect-square md:aspect-auto md:h-64 -rotate-1">
+<span class="material-symbols-outlined text-5xl mb-4" data-icon="search_check">search_check</span>
+<div>
+<div class="font-headline font-black text-6xl">452</div>
+<div class="font-label font-bold uppercase tracking-widest text-on-tertiary-fixed">Frogs Spotted</div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="zine-card bg-secondary-fixed p-8 rounded-xl flex flex-col justify-between aspect-square md:aspect-auto md:h-64 rotate-1">
+<span class="material-symbols-outlined text-5xl mb-4" data-icon="pest_control_rodent">pest_control_rodent</span>
+<div>
+<div class="font-headline font-black text-6xl">8.2k</div>
+<div class="font-label font-bold uppercase tracking-widest text-on-secondary-fixed">Flies Caught</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Moderation Lilypad Section -->
+<section>
+<div class="flex items-center gap-4 mb-8">
+<div class="zine-divider w-12"></div>
+<h3 class="font-headline font-bold text-3xl">Moderation Lilypad</h3>
+<div class="zine-divider flex-grow"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+<!-- Submissions Queue -->
+<div class="space-y-6">
+<!-- Submission 1 -->
+<div class="zine-card bg-surface-container-lowest p-6 rounded-xl flex gap-6 hover:-translate-y-1 transition-transform">
+<div class="w-32 h-32 rounded-lg bg-surface-container-highest overflow-hidden shrink-0 border-2 border-on-surface">
+<img alt="Cute frog on a leaf" class="w-full h-full object-cover" data-alt="A small green frog sitting on a bright green leaf" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlm_f5gpNFbTfAvxRtVWwDgB6ihxzRBpaTTNSCb3stI-s-jQN_XwbACakTnsO1ei5vSBT2jv_eynL3l_Dhr0DA1QziCg7uKDaIVs3uRZSE5jkcE2A5B3LwEQYPj4CQ2gf3pzaAzM1h8n4gPIxT3DXGhVnmZhEEkOV1E2J_xKxn_kTFSk0rdP07UcrvsA5xFJv6J9zZR4UJAQqN9R9BV8FLHwqC9lO2uXPFUORUmXkfSXf2ZhtLMv2EI9yY0YxjBTAtzN6HJ-sJujU"/>
+</div>
+<div class="flex flex-col justify-center gap-2">
+<div class="flex items-center gap-2">
+<span class="bg-tertiary text-on-tertiary px-3 py-1 rounded-full text-xs font-bold font-label uppercase">New Submission</span>
+<span class="text-on-surface-variant text-sm font-medium">2 mins ago</span>
+</div>
+<p class="font-body italic text-on-surface">"Looks like a very happy toad!"</p>
+<div class="flex gap-3 mt-2">
+<button class="bg-primary text-on-primary font-bold px-6 py-2 rounded-full text-sm border-2 border-on-surface hover:rotate-3 transition-transform">Approve</button>
+<button class="bg-surface-container-high text-on-surface-variant font-bold px-6 py-2 rounded-full text-sm border-2 border-on-surface hover:-rotate-3 transition-transform">Reject</button>
+</div>
+</div>
+</div>
+<!-- Submission 2 -->
+<div class="zine-card bg-surface-container-lowest p-6 rounded-xl flex gap-6 hover:-translate-y-1 transition-transform rotate-1">
+<div class="w-32 h-32 rounded-lg bg-surface-container-highest overflow-hidden shrink-0 border-2 border-on-surface">
+<img alt="Tree frog" class="w-full h-full object-cover" data-alt="Vibrant tree frog with red eyes on a branch" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC43e1DuCVEyQg9n21kq6Z8VIGlFVB96X0oCZTAFOcCD8Vwysw-Q1QliegUqH3_hsaZ9YrlBAx1W0mmeIyEoSL_yeJ1Kys0GRefEdXNwo5zE4K5QB68T-CYHk7Zw5EIEbh2RABhXGlxxS1-c9iVxapwwjBDJTsHcdjOvk4qn6rM_mIWaBjSB3I1wLnfL1Eh0jWTtoxPNsYfFOo0EIji7UyTQ5aGcy7xmDQngE6OjxGP99ooJhZqSpE1YolLF512QG9Vwe97BSDqT0Q"/>
+</div>
+<div class="flex flex-col justify-center gap-2">
+<div class="flex items-center gap-2">
+<span class="bg-tertiary text-on-tertiary px-3 py-1 rounded-full text-xs font-bold font-label uppercase">New Submission</span>
+<span class="text-on-surface-variant text-sm font-medium">15 mins ago</span>
+</div>
+<p class="font-body italic text-on-surface">"Found this little guy near the willow tree!"</p>
+<div class="flex gap-3 mt-2">
+<button class="bg-primary text-on-primary font-bold px-6 py-2 rounded-full text-sm border-2 border-on-surface hover:rotate-3 transition-transform">Approve</button>
+<button class="bg-surface-container-high text-on-surface-variant font-bold px-6 py-2 rounded-full text-sm border-2 border-on-surface hover:-rotate-3 transition-transform">Reject</button>
+</div>
+</div>
+</div>
+<!-- Submission 3 -->
+<div class="zine-card bg-surface-container-lowest p-6 rounded-xl flex gap-6 hover:-translate-y-1 transition-transform -rotate-1">
+<div class="w-32 h-32 rounded-lg bg-surface-container-highest overflow-hidden shrink-0 border-2 border-on-surface">
+<img alt="Bullfrog" class="w-full h-full object-cover" data-alt="Large bullfrog partially submerged in pond water" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDF9XP9LHDcKDV79yTwTDKgCnF8EHAyqHV-t6B0EgmSKIinr93y18Ca11SmyQgm1l6GwuXFX3bFOu5QBqU-SEnV8Z-qvRueOiyeimZGSFyqa3ih62I7GHVJVoXLkMA7TgBAokb_jYtt1f8QlEF63kNrCAoMr61GU_xZYC4Cg9K2YPDD1nd1G3ZbW9SroRdzhiAs7uHnTM0SeP6EG8s4fuQIT7yqFUkAHPEmO_6QcIkWsqlnIrRa1JzfZRI62r_dJJmLCEWZmCWNwQI"/>
+</div>
+<div class="flex flex-col justify-center gap-2">
+<div class="flex items-center gap-2">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold font-label uppercase">Flagged</span>
+<span class="text-on-surface-variant text-sm font-medium">1 hour ago</span>
+</div>
+<p class="font-body italic text-on-surface">"Is this a frog or a rock? AI is unsure."</p>
+<div class="flex gap-3 mt-2">
+<button class="bg-primary text-on-primary font-bold px-6 py-2 rounded-full text-sm border-2 border-on-surface hover:rotate-3 transition-transform">Approve</button>
+<button class="bg-error-container text-on-error-container font-bold px-6 py-2 rounded-full text-sm border-2 border-on-surface hover:-rotate-3 transition-transform">Remove</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Activity Grid -->
+<div class="grid grid-cols-2 gap-6">
+<div class="zine-card bg-primary-container p-6 rounded-xl col-span-2">
+<h4 class="font-headline font-bold text-xl mb-4">Live Pond Traffic</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center bg-surface/40 p-3 rounded-lg border-2 border-on-surface/10">
+<span class="font-body font-bold text-sm">North Lilypad Sector</span>
+<span class="bg-primary text-on-primary px-2 py-0.5 rounded-full text-xs">High Activity</span>
+</div>
+<div class="flex justify-between items-center bg-surface/40 p-3 rounded-lg border-2 border-on-surface/10">
+<span class="font-body font-bold text-sm">Mudbank Hollow</span>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded-full text-xs">Quiet</span>
+</div>
+<div class="flex justify-between items-center bg-surface/40 p-3 rounded-lg border-2 border-on-surface/10">
+<span class="font-body font-bold text-sm">Reed Forest Trail</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 rounded-full text-xs">Moderate</span>
+</div>
+</div>
+</div>
+<div class="zine-card bg-on-primary-container p-6 rounded-xl flex flex-col items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="forest">forest</span>
+<div class="font-headline font-black text-2xl">14</div>
+<div class="text-[10px] uppercase font-bold tracking-tighter">New Habitats</div>
+</div>
+<div class="zine-card bg-surface-container-highest p-6 rounded-xl flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-4xl mb-2" data-icon="verified">verified</span>
+<div class="font-headline font-black text-2xl">98%</div>
+<div class="text-[10px] uppercase font-bold tracking-tighter">Curated Rate</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Shell) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 bg-[#86efac] dark:bg-[#006a3c] border-4 border-[#006a3c] rounded-[3rem] fixed bottom-6 left-4 right-4 shadow-[0px_8px_0px_0px_rgba(0,106,60,1)]">
+<a class="flex flex-col items-center justify-center text-[#006a3c] dark:text-white p-2 hover:-rotate-3 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-xs uppercase tracking-widest">Hunt</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#fde047] text-[#006a3c] rounded-full p-4 border-2 border-[#006a3c] scale-110 -translate-y-2 animate-bounce" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-xs uppercase tracking-widest">Log</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#006a3c] dark:text-white p-2 hover:-rotate-3 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-xs uppercase tracking-widest">Profile</span>
+</a>
+</nav>
+</body></html>

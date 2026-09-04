@@ -69,7 +69,7 @@ function draw(
     .data(state.cells)
     .join('g')
     .attr('class', (d) =>
-      ['bingo-cell', d.isFreeSpace ? 'bingo-free-space' : '', d.imageUrl ? 'filled' : ''].filter(Boolean).join(' '),
+      ['bingo-cell', d.imageUrl ? 'filled' : ''].filter(Boolean).join(' '),
     )
     .attr('transform', (_, i) => {
       const col = i % n
